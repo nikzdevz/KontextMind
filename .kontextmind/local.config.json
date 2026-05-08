@@ -1,0 +1,6 @@
+{
+  "note": "Local-only configuration. Do not commit real secrets.",
+  "api_keys": {
+    "use_environment_variables": true
+  }
+}

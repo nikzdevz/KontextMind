@@ -1,0 +1,38 @@
+{
+  "project": {
+    "name": "kontextmind",
+    "root": ".",
+    "created_at": "2026-05-07T21:12:40.051Z"
+  },
+  "mode": "readonly",
+  "agents": [
+    "claude",
+    "codex",
+    "generic"
+  ],
+  "git": {
+    "enabled": "auto",
+    "available": false,
+    "use_for_change_detection": true
+  },
+  "indexing": {
+    "respect_toolignore": true,
+    "hash_algorithm": "sha256",
+    "changed_only": true,
+    "skip_large_files_over_mb": 2
+  },
+  "chatbot": {
+    "enabled": true,
+    "raw_code_access": false,
+    "response_policy": "no-code"
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 7331
+  },
+  "mcp": {
+    "enabled": true,
+    "transport": "stdio"
+  },
+  "phase": 1
+}

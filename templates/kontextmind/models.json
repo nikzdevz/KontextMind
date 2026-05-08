@@ -1,0 +1,6 @@
+{
+  "summary_model": null,
+  "qa_model": null,
+  "embedding_model": null,
+  "fallback_to_mock": true
+}

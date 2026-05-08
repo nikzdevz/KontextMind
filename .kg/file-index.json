@@ -1,0 +1,1280 @@
+{
+  "version": "1",
+  "generated_at": "2026-05-07T21:12:28.827Z",
+  "project": "kontextmind",
+  "root": ".",
+  "total_files_seen": 103,
+  "indexed_files": 103,
+  "ignored_files": 34,
+  "large_files_skipped": 0,
+  "secret_sensitive_files_skipped": 1,
+  "files": [
+    {
+      "path": "AllPhasePrompt/00_MASTER_PRODUCT_CONTEXT.md",
+      "language": "markdown",
+      "size_bytes": 3088,
+      "hash": "7e0da571c4630b3468742974675a48f4ee8756203759eb0443c9c34cbd1eedd4",
+      "modified_at": "2026-05-07T15:07:42.000Z",
+      "indexed_at": "2026-05-07T21:12:28.829Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "AllPhasePrompt/01_PHASE_1_FOUNDATION_INIT.md",
+      "language": "markdown",
+      "size_bytes": 10197,
+      "hash": "6d4ed20e05aa0fb15d40dce5ff50fd7c4ec320437ad668cccf24209b24e8961c",
+      "modified_at": "2026-05-07T15:07:42.000Z",
+      "indexed_at": "2026-05-07T21:12:28.829Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "AllPhasePrompt/02_PHASE_2_SCANNER_FILE_INDEX.md",
+      "language": "markdown",
+      "size_bytes": 5093,
+      "hash": "b7ccd2851bc8b53a33de41c4aaafad155984709de8d4d52354aafadf6359ffde",
+      "modified_at": "2026-05-07T15:07:42.000Z",
+      "indexed_at": "2026-05-07T21:12:28.829Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "AllPhasePrompt/03_PHASE_3_PARSER_KNOWLEDGE_GRAPH.md",
+      "language": "markdown",
+      "size_bytes": 4127,
+      "hash": "0b5474cba562d91060561741a69558f092da7dafe9524d63d850b800ef1d1640",
+      "modified_at": "2026-05-07T15:07:42.000Z",
+      "indexed_at": "2026-05-07T21:12:28.829Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "AllPhasePrompt/04_PHASE_4_SUMMARY_ENGINE.md",
+      "language": "markdown",
+      "size_bytes": 3786,
+      "hash": "afd2ebcde3880ae2a19193efd35d14d128a014eac180e682cdbbb753ad5c3fc1",
+      "modified_at": "2026-05-07T15:07:42.000Z",
+      "indexed_at": "2026-05-07T21:12:28.830Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "AllPhasePrompt/05_PHASE_5_CHATBOT_KB_ASK.md",
+      "language": "markdown",
+      "size_bytes": 4209,
+      "hash": "8dec3458d39d0ed79d1c0c98b2ec943391b86bad90cad3999c6497f152f01011",
+      "modified_at": "2026-05-07T15:07:42.000Z",
+      "indexed_at": "2026-05-07T21:12:28.830Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "AllPhasePrompt/06_PHASE_6_HTTP_API_SERVER.md",
+      "language": "markdown",
+      "size_bytes": 2635,
+      "hash": "94ed187c4498bce28d7086efef4dbf47844cfd16feda340751fbf312649a8ed2",
+      "modified_at": "2026-05-07T15:07:42.000Z",
+      "indexed_at": "2026-05-07T21:12:28.830Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "AllPhasePrompt/07_PHASE_7_MCP_SERVER.md",
+      "language": "markdown",
+      "size_bytes": 2995,
+      "hash": "eea9f0954d69a75a144844bd83d30c6653d4c2202bc0f203b7b9b44169570bfb",
+      "modified_at": "2026-05-07T15:07:42.000Z",
+      "indexed_at": "2026-05-07T21:12:28.830Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "AllPhasePrompt/08_PHASE_8_SECURITY_AUDIT.md",
+      "language": "markdown",
+      "size_bytes": 3410,
+      "hash": "ba1b1782bf441986db362ea51e3f0201c2cd54771c3a6e008e7be9b01dcb082f",
+      "modified_at": "2026-05-07T15:07:42.000Z",
+      "indexed_at": "2026-05-07T21:12:28.831Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "AllPhasePrompt/09_PHASE_9_OBSIDIAN_EXPORT.md",
+      "language": "markdown",
+      "size_bytes": 2434,
+      "hash": "01905b9dfaa002e3b7a1e4604733736b922a675f11cd7b969b226a108088e535",
+      "modified_at": "2026-05-07T15:07:42.000Z",
+      "indexed_at": "2026-05-07T21:12:28.831Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "AllPhasePrompt/10_PHASE_10_POLISH_RELEASE.md",
+      "language": "markdown",
+      "size_bytes": 3031,
+      "hash": "140492d55e4530cb38ddfd2ead0c8a746c03085a3c3b07a270854d1528d1f3cc",
+      "modified_at": "2026-05-07T15:07:42.000Z",
+      "indexed_at": "2026-05-07T21:12:28.831Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "AllPhasePrompt/README.md",
+      "language": "markdown",
+      "size_bytes": 632,
+      "hash": "b5b12ec54bf0d924e4c05989ebc7957f2b88d846844d6bc799853cf0b3eac1bf",
+      "modified_at": "2026-05-07T15:07:42.000Z",
+      "indexed_at": "2026-05-07T21:12:28.831Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "apps/cli/package.json",
+      "language": "json",
+      "size_bytes": 637,
+      "hash": "ff5e8f439bcd34e16c351bc4a54e9a31995605f26a9953b77ae1896966c9e4ad",
+      "modified_at": "2026-05-07T20:37:12.976Z",
+      "indexed_at": "2026-05-07T21:12:28.831Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "apps/cli/src/commands/doctor.ts",
+      "language": "typescript",
+      "size_bytes": 5170,
+      "hash": "8dbc19fd825b94b5a57ba39b01008bdfb6596cd2a2b57faac335394f6aed6613",
+      "modified_at": "2026-05-07T21:04:09.235Z",
+      "indexed_at": "2026-05-07T21:12:28.831Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "apps/cli/src/commands/init.ts",
+      "language": "typescript",
+      "size_bytes": 1869,
+      "hash": "6e7be82863add82a8abe29797e6c4f9009eac24fae6e139c125201bb87b8ed8c",
+      "modified_at": "2026-05-07T20:38:16.598Z",
+      "indexed_at": "2026-05-07T21:12:28.832Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "apps/cli/src/commands/placeholder.ts",
+      "language": "typescript",
+      "size_bytes": 558,
+      "hash": "1dd106c818c575770c80091d34ce69c4ab6b8fe9f3eac8b1eba33caf9f3d748d",
+      "modified_at": "2026-05-07T20:38:19.865Z",
+      "indexed_at": "2026-05-07T21:12:28.832Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "apps/cli/src/commands/scan.ts",
+      "language": "typescript",
+      "size_bytes": 2003,
+      "hash": "267634f3ef5ee91c3e8135cb41a57f3f1d1fe10204f9bc89ea7eec1891744e8d",
+      "modified_at": "2026-05-07T21:02:23.817Z",
+      "indexed_at": "2026-05-07T21:12:28.832Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "apps/cli/src/commands/status.ts",
+      "language": "typescript",
+      "size_bytes": 4465,
+      "hash": "e439ba3549ff7d13009fc93ff0bad0094c569ed0114bb22a962e9365b1e27ce4",
+      "modified_at": "2026-05-07T21:03:27.348Z",
+      "indexed_at": "2026-05-07T21:12:28.832Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "apps/cli/src/index.ts",
+      "language": "typescript",
+      "size_bytes": 2073,
+      "hash": "0ea3adf474f6a552a658e71365aabdd42afdf43136103029a77ea0149948b1df",
+      "modified_at": "2026-05-07T21:02:48.651Z",
+      "indexed_at": "2026-05-07T21:12:28.832Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "apps/cli/src/utils/errors.ts",
+      "language": "typescript",
+      "size_bytes": 785,
+      "hash": "d04dfe39decb391974ec3fae3fdf52bc073c34ea2d790db0624274c51d08713f",
+      "modified_at": "2026-05-07T20:37:41.526Z",
+      "indexed_at": "2026-05-07T21:12:28.832Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "apps/cli/src/utils/paths.ts",
+      "language": "typescript",
+      "size_bytes": 1920,
+      "hash": "daab36c309089bbf3f443bfbc782ac9606ef6cae938e0a6d0bd3926c862033f7",
+      "modified_at": "2026-05-07T20:37:40.472Z",
+      "indexed_at": "2026-05-07T21:12:28.833Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "apps/cli/src/utils/print.ts",
+      "language": "typescript",
+      "size_bytes": 1028,
+      "hash": "ee35b1d27b1cce1c3d77a89bd272d6fad39289056a274ee3ae380848126f6950",
+      "modified_at": "2026-05-07T20:37:39.422Z",
+      "indexed_at": "2026-05-07T21:12:28.833Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "apps/cli/tsconfig.json",
+      "language": "json",
+      "size_bytes": 140,
+      "hash": "421de2fbcf96c3360601e77375193a88300d916c963027052c3badd8045f76d5",
+      "modified_at": "2026-05-07T20:37:14.040Z",
+      "indexed_at": "2026-05-07T21:12:28.833Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "apps/cli/tsup.config.ts",
+      "language": "typescript",
+      "size_bytes": 218,
+      "hash": "26c4d55acd485e6074d0733228cf1ad68a0322f9b99bb306a3313c1989151ece",
+      "modified_at": "2026-05-07T20:37:15.102Z",
+      "indexed_at": "2026-05-07T21:12:28.833Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "docs/architecture.md",
+      "language": "markdown",
+      "size_bytes": 6472,
+      "hash": "44f6d23f2d9555178e81f3ea26881fc448694076561f7e2dea413080a5aa368d",
+      "modified_at": "2026-05-07T20:45:56.077Z",
+      "indexed_at": "2026-05-07T21:12:28.834Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "docs/cli.md",
+      "language": "markdown",
+      "size_bytes": 4719,
+      "hash": "4aa6e3967f73f7610feeccc8f15e9c03994055427eb72e3045e27b208849d9d8",
+      "modified_at": "2026-05-07T20:45:57.119Z",
+      "indexed_at": "2026-05-07T21:12:28.834Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "docs/phase-1.md",
+      "language": "markdown",
+      "size_bytes": 5089,
+      "hash": "a7c83e446d70f732fe1ef01f25d3114e075a40d097a439d8a00657190bd89dff",
+      "modified_at": "2026-05-07T20:45:53.886Z",
+      "indexed_at": "2026-05-07T21:12:28.834Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "docs/roadmap.md",
+      "language": "markdown",
+      "size_bytes": 5425,
+      "hash": "d5f4aea1e63c6baa246df4102385235abfbd744832c858d9b39a3ec7bcad548b",
+      "modified_at": "2026-05-07T20:45:54.937Z",
+      "indexed_at": "2026-05-07T21:12:28.835Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "docs/security.md",
+      "language": "markdown",
+      "size_bytes": 1857,
+      "hash": "4e9f32f951aa15a94b4546eb9845aa6b0ef92bde8bbb93d4845025549d39ffda",
+      "modified_at": "2026-05-07T20:45:58.184Z",
+      "indexed_at": "2026-05-07T21:12:28.835Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "eslint.config.js",
+      "language": "javascript",
+      "size_bytes": 287,
+      "hash": "a053dde9ef69e05f87aada2b3e7b288f1ce704af818734bc868bc0eb7d410909",
+      "modified_at": "2026-05-07T20:36:58.168Z",
+      "indexed_at": "2026-05-07T21:12:28.835Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "LICENSE",
+      "language": "unknown",
+      "size_bytes": 1067,
+      "hash": "21de8d87fef530fc36ab5cc47ad912eb6dc5134053ccd9da51331b4485d8ff9e",
+      "modified_at": "2026-05-07T20:47:28.931Z",
+      "indexed_at": "2026-05-07T21:12:28.836Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "size_bytes": 730,
+      "hash": "a2cb239a69a866bce3e775fc326a009c8f20a6397275d5f068ebb16d85154d7a",
+      "modified_at": "2026-05-07T20:36:38.988Z",
+      "indexed_at": "2026-05-07T21:12:28.836Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/adapters/package.json",
+      "language": "json",
+      "size_bytes": 661,
+      "hash": "15a63c2385741bf60f8d4f14b4a4e3598474bd20ed3b2b83c5cc292346472da7",
+      "modified_at": "2026-05-07T20:42:24.076Z",
+      "indexed_at": "2026-05-07T21:12:28.836Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/adapters/src/claude.ts",
+      "language": "typescript",
+      "size_bytes": 1301,
+      "hash": "d8c6e1db6d58dc2d058fe177c3d20ccb14a50de12712ce224f5a5d559a199881",
+      "modified_at": "2026-05-07T20:42:27.322Z",
+      "indexed_at": "2026-05-07T21:12:28.837Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/adapters/src/codex.ts",
+      "language": "typescript",
+      "size_bytes": 1318,
+      "hash": "7776cb05ebd60b674bb60bcb4741161bf6dda65bb7a094e0de731033d8c9e10c",
+      "modified_at": "2026-05-07T20:42:28.510Z",
+      "indexed_at": "2026-05-07T21:12:28.837Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/adapters/src/continue.ts",
+      "language": "typescript",
+      "size_bytes": 1103,
+      "hash": "f85977f67d7322c4b7892e8913a09dd6edeca338c9e45463753c2cdaef374f54",
+      "modified_at": "2026-05-07T20:42:30.609Z",
+      "indexed_at": "2026-05-07T21:12:28.837Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/adapters/src/copilot.ts",
+      "language": "typescript",
+      "size_bytes": 1088,
+      "hash": "90e4f81fa0399371270594f04158eb8034b4d5b100395cec844a4307a3ca6eef",
+      "modified_at": "2026-05-07T20:42:31.680Z",
+      "indexed_at": "2026-05-07T21:12:28.837Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/adapters/src/cursor.ts",
+      "language": "typescript",
+      "size_bytes": 1032,
+      "hash": "94653d9d7e5abf301b4dcf924f2482da7de90c1407ee8cf5834389dfb6ba3a0a",
+      "modified_at": "2026-05-07T20:42:29.561Z",
+      "indexed_at": "2026-05-07T21:12:28.838Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/adapters/src/generic.ts",
+      "language": "typescript",
+      "size_bytes": 2085,
+      "hash": "a43c779d029695254878d0c68a49e27316d5b75c541e4842e394c3e5a71cc7dc",
+      "modified_at": "2026-05-07T20:42:32.733Z",
+      "indexed_at": "2026-05-07T21:12:28.838Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/adapters/src/index.ts",
+      "language": "typescript",
+      "size_bytes": 496,
+      "hash": "786fcc1e779afa6579e003207a3927eea2bb3a2bc16971bafcd9bb9a18fe5152",
+      "modified_at": "2026-05-07T20:42:26.260Z",
+      "indexed_at": "2026-05-07T21:12:28.838Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/adapters/tsconfig.json",
+      "language": "json",
+      "size_bytes": 140,
+      "hash": "421de2fbcf96c3360601e77375193a88300d916c963027052c3badd8045f76d5",
+      "modified_at": "2026-05-07T20:42:25.201Z",
+      "indexed_at": "2026-05-07T21:12:28.838Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/adapters/tsup.config.ts",
+      "language": "typescript",
+      "size_bytes": 184,
+      "hash": "dfdb381875b916efc046c44b775deb074d9e06a707ab25518c15722e3a75f6a6",
+      "modified_at": "2026-05-07T20:47:31.038Z",
+      "indexed_at": "2026-05-07T21:12:28.839Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/package.json",
+      "language": "json",
+      "size_bytes": 728,
+      "hash": "f26d69c91aa0a00c465c8da022b6a249ba156c49ff3fe2a1a5f5b645eeb2ff44",
+      "modified_at": "2026-05-07T20:59:15.632Z",
+      "indexed_at": "2026-05-07T21:12:28.839Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/config/defaults.ts",
+      "language": "typescript",
+      "size_bytes": 4533,
+      "hash": "780a3a5b8674bcbe3d526b2028d985b5ce958fd1fc421066073c678e8c3809a5",
+      "modified_at": "2026-05-07T20:39:30.484Z",
+      "indexed_at": "2026-05-07T21:12:28.839Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/config/schema.ts",
+      "language": "typescript",
+      "size_bytes": 3502,
+      "hash": "9b741a7487a091524458528ebec38d6a0fea1792a72311db1b1fae824b200c2c",
+      "modified_at": "2026-05-07T20:51:05.870Z",
+      "indexed_at": "2026-05-07T21:12:28.839Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/filesystem/ensure-dir.ts",
+      "language": "typescript",
+      "size_bytes": 513,
+      "hash": "f91e059b4c98b302e85aba98e1199d34db365985222fc039bc3e643eb1edbc3f",
+      "modified_at": "2026-05-07T20:40:50.631Z",
+      "indexed_at": "2026-05-07T21:12:28.839Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/filesystem/file-exists.ts",
+      "language": "typescript",
+      "size_bytes": 232,
+      "hash": "7a68296f01b636858f12839069361073ab8727bbf41fbc7b421278f9b33438f7",
+      "modified_at": "2026-05-07T20:40:52.737Z",
+      "indexed_at": "2026-05-07T21:12:28.840Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/filesystem/write-file-safe.ts",
+      "language": "typescript",
+      "size_bytes": 522,
+      "hash": "7644c7496d94451faa08c97543f7caa8cc052c4914c596de38e3d0fc18a51e50",
+      "modified_at": "2026-05-07T20:40:51.684Z",
+      "indexed_at": "2026-05-07T21:12:28.840Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/index.ts",
+      "language": "typescript",
+      "size_bytes": 1078,
+      "hash": "c85d2b00aadb21e0d8c0d029eba210f5a34c8db2f46f014cad8c1ad498f3e789",
+      "modified_at": "2026-05-07T21:02:09.652Z",
+      "indexed_at": "2026-05-07T21:12:28.840Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/init/create-files.ts",
+      "language": "typescript",
+      "size_bytes": 2366,
+      "hash": "4fc24c83abfb9d3f0fe6224e756b51b3612d3554f89226d7b2d776df195ed8cd",
+      "modified_at": "2026-05-07T20:41:23.930Z",
+      "indexed_at": "2026-05-07T21:12:28.840Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/init/detect-project.ts",
+      "language": "typescript",
+      "size_bytes": 1049,
+      "hash": "12e95003100c104074ab116c5c0b4ea44bb49f64f0cab8a5b69d457ea06dcdf8",
+      "modified_at": "2026-05-07T20:41:22.821Z",
+      "indexed_at": "2026-05-07T21:12:28.840Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/init/init-project.ts",
+      "language": "typescript",
+      "size_bytes": 6055,
+      "hash": "b0ceeb9f4e7b5bcf9af554b7ccd58d11bd72af236e32aeb22618986874f7d8c1",
+      "modified_at": "2026-05-07T20:41:24.974Z",
+      "indexed_at": "2026-05-07T21:12:28.841Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/policies/default-policy.ts",
+      "language": "typescript",
+      "size_bytes": 1714,
+      "hash": "513765285dcac24557086c269b6bdfcef4124c30bf62ad5443e65522e21be9c6",
+      "modified_at": "2026-05-07T20:40:49.564Z",
+      "indexed_at": "2026-05-07T21:12:28.841Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/scanner/file-index.ts",
+      "language": "typescript",
+      "size_bytes": 5530,
+      "hash": "b3f30d417ec66c61f0b5701f949a642de70998d34f6119b4535d969985c1d5cd",
+      "modified_at": "2026-05-07T21:06:02.122Z",
+      "indexed_at": "2026-05-07T21:12:28.841Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/scanner/git-info.ts",
+      "language": "typescript",
+      "size_bytes": 2547,
+      "hash": "36d246d846a6a3325f13f0981e781fab9b6635ca30834033be888bcb0b8ae046",
+      "modified_at": "2026-05-07T21:00:47.028Z",
+      "indexed_at": "2026-05-07T21:12:28.841Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/scanner/hash-file.ts",
+      "language": "typescript",
+      "size_bytes": 1461,
+      "hash": "00a5a46f0f3dc3d21c7dc55eea6f0461b9b0c9761f21a379092add44e529f7c4",
+      "modified_at": "2026-05-07T21:00:09.655Z",
+      "indexed_at": "2026-05-07T21:12:28.841Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/scanner/ignore-rules.ts",
+      "language": "typescript",
+      "size_bytes": 3547,
+      "hash": "49fcef4bb6a6d00c7ef47f22c03da15ee355776499d367498d75610001b0beb5",
+      "modified_at": "2026-05-07T21:11:42.777Z",
+      "indexed_at": "2026-05-07T21:12:28.842Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/scanner/index.ts",
+      "language": "typescript",
+      "size_bytes": 295,
+      "hash": "bcb930f13340625cfb4b0d62cde9dce173c07cb3e44c7256e54a6ae563962127",
+      "modified_at": "2026-05-07T21:01:44.110Z",
+      "indexed_at": "2026-05-07T21:12:28.842Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/scanner/language-detect.ts",
+      "language": "typescript",
+      "size_bytes": 2726,
+      "hash": "b4ef022ca64860079568010b3dd3ebc111d2a03418c5a0a13df4cdc43ed29777",
+      "modified_at": "2026-05-07T20:59:58.438Z",
+      "indexed_at": "2026-05-07T21:12:28.842Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/scanner/scan-project.ts",
+      "language": "typescript",
+      "size_bytes": 5711,
+      "hash": "1fc5d0abb4c89784720d2f08c9f4c89b6a612f0771950f0b49fe71bcde8a9648",
+      "modified_at": "2026-05-07T21:08:19.807Z",
+      "indexed_at": "2026-05-07T21:12:28.842Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/scanner/scan-types.ts",
+      "language": "typescript",
+      "size_bytes": 1139,
+      "hash": "d767e067246f6501180d631eed7cea5838437bc38dd3833bf0779fefd555fef1",
+      "modified_at": "2026-05-07T20:59:25.670Z",
+      "indexed_at": "2026-05-07T21:12:28.842Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/scanner/walk-files.ts",
+      "language": "typescript",
+      "size_bytes": 3465,
+      "hash": "c2ec8527628dafcb72ff48da1166a92b4427a5a109d6c9f240c5d2a87e26fdde",
+      "modified_at": "2026-05-07T21:00:26.951Z",
+      "indexed_at": "2026-05-07T21:12:28.842Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/templates/render-template.ts",
+      "language": "typescript",
+      "size_bytes": 1058,
+      "hash": "75561fdf55ce8d4a55ac8819b8797176dae5d06d2a427620f5419cd017445910",
+      "modified_at": "2026-05-07T20:52:46.439Z",
+      "indexed_at": "2026-05-07T21:12:28.843Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/templates/template-types.ts",
+      "language": "typescript",
+      "size_bytes": 18961,
+      "hash": "6c48cba112c4dffc6ca0eb0b87e5a18196ec667bd2ddd9890f0eaf152896ea3a",
+      "modified_at": "2026-05-07T20:40:33.310Z",
+      "indexed_at": "2026-05-07T21:12:28.843Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/src/types/index.ts",
+      "language": "typescript",
+      "size_bytes": 2886,
+      "hash": "469ec10c8e68bc7925c9bc8054942e644ebc2062f62aa3ce482b3bef3b2e7b6e",
+      "modified_at": "2026-05-07T20:39:28.369Z",
+      "indexed_at": "2026-05-07T21:12:28.843Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/tsconfig.json",
+      "language": "json",
+      "size_bytes": 140,
+      "hash": "421de2fbcf96c3360601e77375193a88300d916c963027052c3badd8045f76d5",
+      "modified_at": "2026-05-07T20:38:51.546Z",
+      "indexed_at": "2026-05-07T21:12:28.843Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/core/tsup.config.ts",
+      "language": "typescript",
+      "size_bytes": 184,
+      "hash": "dfdb381875b916efc046c44b775deb074d9e06a707ab25518c15722e3a75f6a6",
+      "modified_at": "2026-05-07T20:47:29.982Z",
+      "indexed_at": "2026-05-07T21:12:28.843Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/mcp/package.json",
+      "language": "json",
+      "size_bytes": 652,
+      "hash": "eca8cef5a5ec381bdafe328775bcd2f00c31694d5ca83b199f02931055d38fc1",
+      "modified_at": "2026-05-07T20:43:10.546Z",
+      "indexed_at": "2026-05-07T21:12:28.843Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/mcp/src/index.ts",
+      "language": "typescript",
+      "size_bytes": 2787,
+      "hash": "50cd4ac2bcff7e593119390a040b58a713f27cf80c8fbcb568dce2799bbeb953",
+      "modified_at": "2026-05-07T20:43:12.644Z",
+      "indexed_at": "2026-05-07T21:12:28.843Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/mcp/tsconfig.json",
+      "language": "json",
+      "size_bytes": 140,
+      "hash": "421de2fbcf96c3360601e77375193a88300d916c963027052c3badd8045f76d5",
+      "modified_at": "2026-05-07T20:43:11.597Z",
+      "indexed_at": "2026-05-07T21:12:28.844Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/mcp/tsup.config.ts",
+      "language": "typescript",
+      "size_bytes": 184,
+      "hash": "dfdb381875b916efc046c44b775deb074d9e06a707ab25518c15722e3a75f6a6",
+      "modified_at": "2026-05-07T20:47:33.296Z",
+      "indexed_at": "2026-05-07T21:12:28.844Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/server/package.json",
+      "language": "json",
+      "size_bytes": 656,
+      "hash": "b7bc564aaa82d7c0f306885ceebea3c26bf20d78995f0300b098766e728fc343",
+      "modified_at": "2026-05-07T20:43:07.287Z",
+      "indexed_at": "2026-05-07T21:12:28.844Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/server/src/index.ts",
+      "language": "typescript",
+      "size_bytes": 1059,
+      "hash": "0e585cd5dbf2ff223f40a4fe5760123048af451a57dbd57003fb2f54e2cde969",
+      "modified_at": "2026-05-07T20:43:09.408Z",
+      "indexed_at": "2026-05-07T21:12:28.844Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/server/tsconfig.json",
+      "language": "json",
+      "size_bytes": 140,
+      "hash": "421de2fbcf96c3360601e77375193a88300d916c963027052c3badd8045f76d5",
+      "modified_at": "2026-05-07T20:43:08.348Z",
+      "indexed_at": "2026-05-07T21:12:28.844Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "packages/server/tsup.config.ts",
+      "language": "typescript",
+      "size_bytes": 184,
+      "hash": "dfdb381875b916efc046c44b775deb074d9e06a707ab25518c15722e3a75f6a6",
+      "modified_at": "2026-05-07T20:47:32.123Z",
+      "indexed_at": "2026-05-07T21:12:28.845Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "language": "yaml",
+      "size_bytes": 73449,
+      "hash": "a2e6f6004caffd75d25978a834ecaf2ebd570004d13c69bf43159144f7b03df2",
+      "modified_at": "2026-05-07T20:59:14.622Z",
+      "indexed_at": "2026-05-07T21:12:28.845Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "language": "yaml",
+      "size_bytes": 39,
+      "hash": "c902351c13bf65fa0de06ce6e24760045b879db843c64c8a25c446f4e4a24996",
+      "modified_at": "2026-05-07T20:36:53.454Z",
+      "indexed_at": "2026-05-07T21:12:28.845Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "prettier.config.js",
+      "language": "javascript",
+      "size_bytes": 172,
+      "hash": "8e765cc45b2adcc51a542af59efb136d02c15c452f60e8f19a8657335afbeb2e",
+      "modified_at": "2026-05-07T20:36:59.223Z",
+      "indexed_at": "2026-05-07T21:12:28.845Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "README.md",
+      "language": "markdown",
+      "size_bytes": 7210,
+      "hash": "8ba1f3ecbda3e8df134e59def36714e92c4a58a665f5c25053b5b901779ec008",
+      "modified_at": "2026-05-07T20:45:52.835Z",
+      "indexed_at": "2026-05-07T21:12:28.845Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "templates/AGENTS.md",
+      "language": "markdown",
+      "size_bytes": 158,
+      "hash": "ec4c1e9602eabc0874dedfeee3e4d6861f53715ec3dc1731d4b0a4e21f7f09aa",
+      "modified_at": "2026-05-07T20:43:43.445Z",
+      "indexed_at": "2026-05-07T21:12:28.846Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "templates/CLAUDE.md",
+      "language": "markdown",
+      "size_bytes": 158,
+      "hash": "ca7a6e6dae7d7bf9e6f413082a27da64b8ef3aeba60067d09c8a698be7d6b8a4",
+      "modified_at": "2026-05-07T20:43:42.277Z",
+      "indexed_at": "2026-05-07T21:12:28.846Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "templates/context/project.md",
+      "language": "markdown",
+      "size_bytes": 485,
+      "hash": "66a317956d94b014a1ae5668591a6bf11d815df19fec445bfb0c0a55a9b93745",
+      "modified_at": "2026-05-07T20:43:48.797Z",
+      "indexed_at": "2026-05-07T21:12:28.846Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "templates/copilot-instructions.md",
+      "language": "markdown",
+      "size_bytes": 175,
+      "hash": "d59834b210c092cde9d47ff72f08e87f77778faad7e226aee105aaf401ae8daf",
+      "modified_at": "2026-05-07T20:43:46.679Z",
+      "indexed_at": "2026-05-07T21:12:28.846Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "templates/cursor-rule.mdc",
+      "language": "unknown",
+      "size_bytes": 140,
+      "hash": "4fb2d0c00eb8b18438984d0fcdd13585267bf95b6cc8705363c9d738b924d711",
+      "modified_at": "2026-05-07T20:43:45.612Z",
+      "indexed_at": "2026-05-07T21:12:28.846Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "templates/instructions.master.md",
+      "language": "markdown",
+      "size_bytes": 837,
+      "hash": "07d5101ca5e28bd6d305dc98ae0cfd56e5b35afd7f2a0a409bb376e41fc04ab4",
+      "modified_at": "2026-05-07T20:43:41.211Z",
+      "indexed_at": "2026-05-07T21:12:28.846Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "templates/kontextmind/config.json",
+      "language": "json",
+      "size_bytes": 663,
+      "hash": "900703554e40e6f853d3d347a9978665d36a863dd8a240ea9b3d9b99cd77482b",
+      "modified_at": "2026-05-07T20:44:07.348Z",
+      "indexed_at": "2026-05-07T21:12:28.846Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "templates/kontextmind/local.config.json",
+      "language": "json",
+      "size_bytes": 128,
+      "hash": "deb71582c72345b2ba6d76559a91542929509e16dbca876849864326628237d7",
+      "modified_at": "2026-05-07T20:44:14.764Z",
+      "indexed_at": "2026-05-07T21:12:28.847Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "templates/kontextmind/models.json",
+      "language": "json",
+      "size_bytes": 102,
+      "hash": "8e259f223ccfb5eb745bdcbef16f70aaf9bc04e6409eca03bd970aacad0cd1a9",
+      "modified_at": "2026-05-07T20:44:10.477Z",
+      "indexed_at": "2026-05-07T21:12:28.847Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "templates/kontextmind/policy.json",
+      "language": "json",
+      "size_bytes": 780,
+      "hash": "73a9522db7c7bd4c7c50bdf96180f0fb2363ffdbf3ad91d1640a7ce6ef940048",
+      "modified_at": "2026-05-07T20:44:08.401Z",
+      "indexed_at": "2026-05-07T21:12:28.847Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "templates/kontextmind/providers.json",
+      "language": "json",
+      "size_bytes": 672,
+      "hash": "8b24b02dba0f9bc765d3b7f4e4c421b8b5382d5da5d31231f8e78ab7c97b879a",
+      "modified_at": "2026-05-07T20:44:09.443Z",
+      "indexed_at": "2026-05-07T21:12:28.848Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "templates/kontextmind/registry.json",
+      "language": "json",
+      "size_bytes": 115,
+      "hash": "2ee7f9247e24704a162c9196a66bb3cdadc32dc46c0d8c53368336d5e4a8d0ad",
+      "modified_at": "2026-05-07T20:44:12.683Z",
+      "indexed_at": "2026-05-07T21:12:28.848Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "templates/kontextmind/tool-linking.json",
+      "language": "json",
+      "size_bytes": 424,
+      "hash": "5e4d6a10423fc06dbc2ba0761a4a5b875edc49eef1b519a14af98935c16722a6",
+      "modified_at": "2026-05-07T20:44:11.628Z",
+      "indexed_at": "2026-05-07T21:12:28.849Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "templates/README_AI.md",
+      "language": "markdown",
+      "size_bytes": 135,
+      "hash": "4dcd050b480b4fbeff350724f7aceb9c5678a33624d9fb2919cf9b8adc33eca5",
+      "modified_at": "2026-05-07T20:43:44.526Z",
+      "indexed_at": "2026-05-07T21:12:28.850Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "templates/toolignore",
+      "language": "unknown",
+      "size_bytes": 741,
+      "hash": "608a1c1e4cfe7ec5ec0a11893979d58e2c0e69e0707894486f68de6927e83c91",
+      "modified_at": "2026-05-07T20:43:47.744Z",
+      "indexed_at": "2026-05-07T21:12:28.850Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "tests/integration/init-command.test.ts",
+      "language": "typescript",
+      "size_bytes": 8201,
+      "hash": "8945457fcfe3aa6ba90c47c1db330805aa79f0d5ee0d0de91c3ff2b9ad238483",
+      "modified_at": "2026-05-07T20:53:10.877Z",
+      "indexed_at": "2026-05-07T21:12:28.850Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "tests/unit/config-schema.test.ts",
+      "language": "typescript",
+      "size_bytes": 9104,
+      "hash": "372fd9fc0fc4f900053074428f7b1f51131db6f692c5e42aa4afd4bc6994615c",
+      "modified_at": "2026-05-07T20:47:13.795Z",
+      "indexed_at": "2026-05-07T21:12:28.850Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "tests/unit/git-info.test.ts",
+      "language": "typescript",
+      "size_bytes": 1203,
+      "hash": "c9d1aab046b55e7d845d49c8569e1069dd48d05722f79cd5276ea1b28598ca74",
+      "modified_at": "2026-05-07T21:05:17.362Z",
+      "indexed_at": "2026-05-07T21:12:28.851Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "tests/unit/hash-file.test.ts",
+      "language": "typescript",
+      "size_bytes": 2875,
+      "hash": "cede15ee574064fbabdf7734d60d8bc7d3e2ba613931e00825a7bd44ac77c124",
+      "modified_at": "2026-05-07T21:05:05.586Z",
+      "indexed_at": "2026-05-07T21:12:28.851Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "tests/unit/ignore-rules.test.ts",
+      "language": "typescript",
+      "size_bytes": 2994,
+      "hash": "fa1f55618844e9dabafb7ff8223222e4cb693eb9ba1d15e01305ff2a5aed70c4",
+      "modified_at": "2026-05-07T21:04:48.504Z",
+      "indexed_at": "2026-05-07T21:12:28.851Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "tests/unit/language-detect.test.ts",
+      "language": "typescript",
+      "size_bytes": 4274,
+      "hash": "dbd6f1393246777b5dc880738fab88c5afd39d5bf31838dcdd5e36e9ac336eb3",
+      "modified_at": "2026-05-07T21:04:30.725Z",
+      "indexed_at": "2026-05-07T21:12:28.851Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "tests/unit/template-render.test.ts",
+      "language": "typescript",
+      "size_bytes": 5998,
+      "hash": "dec3e34f8d4d3093a4323d54a8b447edec3400a0368f7194cefba2f1382abfa7",
+      "modified_at": "2026-05-07T20:47:12.734Z",
+      "indexed_at": "2026-05-07T21:12:28.852Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "tsconfig.json",
+      "language": "json",
+      "size_bytes": 441,
+      "hash": "0a8be186bc27c957002968ab8e377f5de9ee03ecc49dc1235b840263b608e09a",
+      "modified_at": "2026-05-07T20:36:54.808Z",
+      "indexed_at": "2026-05-07T21:12:28.852Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    },
+    {
+      "path": "vitest.config.ts",
+      "language": "typescript",
+      "size_bytes": 263,
+      "hash": "e4e3b55ca1663206961e1706ec4eb7411a184b587edb78c71c059cc24ba64ce7",
+      "modified_at": "2026-05-07T20:47:09.790Z",
+      "indexed_at": "2026-05-07T21:12:28.852Z",
+      "summary_status": "missing",
+      "ignored": false,
+      "ignore_reason": null
+    }
+  ],
+  "ignored": [
+    {
+      "path": ".context",
+      "reason": "hidden"
+    },
+    {
+      "path": ".gitignore",
+      "reason": "hidden"
+    },
+    {
+      "path": ".kg",
+      "reason": "hidden"
+    },
+    {
+      "path": ".kontextmind",
+      "reason": "hidden"
+    },
+    {
+      "path": ".logs",
+      "reason": "hidden"
+    },
+    {
+      "path": ".mcp",
+      "reason": "hidden"
+    },
+    {
+      "path": ".npmrc",
+      "reason": "hidden"
+    },
+    {
+      "path": ".obsidian-export",
+      "reason": "hidden"
+    },
+    {
+      "path": ".sessions",
+      "reason": "hidden"
+    },
+    {
+      "path": ".summaries",
+      "reason": "hidden"
+    },
+    {
+      "path": ".test-files-1778187146822",
+      "reason": "hidden"
+    },
+    {
+      "path": ".test-files-1778187146824",
+      "reason": "hidden"
+    },
+    {
+      "path": ".test-files-1778187146826",
+      "reason": "hidden"
+    },
+    {
+      "path": ".test-files-1778187146828",
+      "reason": "hidden"
+    },
+    {
+      "path": ".test-files-1778187146857",
+      "reason": "hidden"
+    },
+    {
+      "path": ".test-files-1778187146859",
+      "reason": "hidden"
+    },
+    {
+      "path": ".test-files-1778187146860",
+      "reason": "hidden"
+    },
+    {
+      "path": ".test-files-1778187214927",
+      "reason": "hidden"
+    },
+    {
+      "path": ".test-files-1778187479069",
+      "reason": "hidden"
+    },
+    {
+      "path": ".test-files-1778188163134",
+      "reason": "hidden"
+    },
+    {
+      "path": ".test-files-1778188269988",
+      "reason": "hidden"
+    },
+    {
+      "path": ".test-files-1778188332789",
+      "reason": "hidden"
+    },
+    {
+      "path": "apps/cli/dist/",
+      "reason": "toolignore"
+    },
+    {
+      "path": "apps/cli/node_modules/",
+      "reason": "toolignore"
+    },
+    {
+      "path": "node_modules/",
+      "reason": "toolignore"
+    },
+    {
+      "path": "packages/adapters/dist/",
+      "reason": "toolignore"
+    },
+    {
+      "path": "packages/adapters/node_modules/",
+      "reason": "toolignore"
+    },
+    {
+      "path": "packages/core/dist/",
+      "reason": "toolignore"
+    },
+    {
+      "path": "packages/core/node_modules/",
+      "reason": "toolignore"
+    },
+    {
+      "path": "packages/mcp/dist/",
+      "reason": "toolignore"
+    },
+    {
+      "path": "packages/mcp/node_modules/",
+      "reason": "toolignore"
+    },
+    {
+      "path": "packages/server/dist/",
+      "reason": "toolignore"
+    },
+    {
+      "path": "packages/server/node_modules/",
+      "reason": "toolignore"
+    }
+  ]
+}

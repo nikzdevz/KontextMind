@@ -1,0 +1,34 @@
+{
+  "project": {
+    "name": "{{PROJECT_NAME}}",
+    "root": ".",
+    "created_at": "{{CREATED_AT}}"
+  },
+  "mode": "{{MODE}}",
+  "agents": {{AGENTS_JSON}},
+  "git": {
+    "enabled": "{{GIT_MODE}}",
+    "available": {{GIT_AVAILABLE}},
+    "use_for_change_detection": true
+  },
+  "indexing": {
+    "respect_toolignore": true,
+    "hash_algorithm": "sha256",
+    "changed_only": true,
+    "skip_large_files_over_mb": 2
+  },
+  "chatbot": {
+    "enabled": true,
+    "raw_code_access": false,
+    "response_policy": "no-code"
+  },
+  "server": {
+    "host": "127.0.0.1",
+    "port": 7331
+  },
+  "mcp": {
+    "enabled": true,
+    "transport": "stdio"
+  },
+  "phase": 1
+}

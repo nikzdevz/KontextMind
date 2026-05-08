@@ -1,0 +1,9 @@
+{
+  "tools": [
+    "project.status",
+    "project.search",
+    "project.get_file_summary",
+    "project.ask_readonly"
+  ],
+  "note": "Tool implementations will be added in later phases."
+}

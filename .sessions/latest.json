@@ -1,0 +1,10 @@
+{
+  "session_id": null,
+  "agent": null,
+  "mode": "readonly",
+  "user_goal": null,
+  "started_at": null,
+  "ended_at": null,
+  "phase": 1,
+  "notes": "No active session yet."
+}

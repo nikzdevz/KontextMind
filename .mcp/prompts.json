@@ -1,0 +1,9 @@
+{
+  "prompts": [
+    "explain_project",
+    "resume_last_task",
+    "answer_without_code",
+    "prepare_handoff"
+  ],
+  "note": "Prompts will be implemented in later phases."
+}

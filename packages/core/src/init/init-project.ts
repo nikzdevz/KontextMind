@@ -1,0 +1,210 @@
+import path from 'path';
+import type { InitOptions, InitResult, AgentType, Mode, GitMode, Provider } from '../types/index.js';
+import { detectProject, detectGitAvailable } from './detect-project.js';
+import { createFiles, createDirectories, prepareFileContent, FileToCreate } from './create-files.js';
+import {
+  ALL_TEMPLATES,
+} from '../templates/template-types.js';
+import {
+  createDefaultConfig,
+  createDefaultPolicy,
+  createDefaultProviders,
+  createDefaultModels,
+  createDefaultToolLinking,
+  createDefaultRegistry,
+  createDefaultSession,
+  getDefaultAgents,
+  getDefaultMode,
+  getDefaultGitMode,
+  getDefaultProvider,
+  KONTEXTMIND_VERSION,
+} from '../config/defaults.js';
+import { writeFileSafe } from '../filesystem/write-file-safe.js';
+
+function resolveOptions(options: InitOptions): {
+  agents: AgentType[];
+  mode: Mode;
+  git: GitMode;
+  provider: Provider;
+  force: boolean;
+} {
+  return {
+    agents: options.agents ?? getDefaultAgents(),
+    mode: options.mode ?? getDefaultMode(),
+    git: options.git ?? getDefaultGitMode(),
+    provider: options.provider ?? getDefaultProvider(),
+    force: options.force ?? false,
+  };
+}
+
+function getTemplateVariables(
+  projectName: string,
+  mode: Mode,
+  gitMode: GitMode,
+  gitAvailable: boolean,
+  provider: Provider,
+  agents: AgentType[]
+): Record<string, string | boolean> {
+  return {
+    PROJECT_NAME: projectName,
+    CREATED_AT: new Date().toISOString(),
+    MODE: mode,
+    GIT_MODE: gitMode,
+    GIT_AVAILABLE: gitAvailable,
+    PROVIDER: provider,
+    AGENTS: agents.join(','),
+    AGENTS_JSON: JSON.stringify(agents),
+    KONTEXTMIND_VERSION,
+  };
+}
+
+export async function initProject(options: InitOptions = {}): Promise<InitResult> {
+  const projectRoot = process.cwd();
+  const resolved = resolveOptions(options);
+
+  // Detect project details
+  const detected = detectProject(projectRoot);
+  const gitAvailable = detectGitAvailable(projectRoot);
+
+  // Create template variables
+  const variables = getTemplateVariables(
+    detected.name,
+    resolved.mode,
+    resolved.git,
+    gitAvailable,
+    resolved.provider,
+    resolved.agents
+  );
+
+  // Ensure base directories exist
+  const baseDirs = [
+    '.kontextmind',
+    '.kontextmind/chatbot',
+    '.kontextmind/cache',
+    '.context',
+    '.mcp',
+    '.kg',
+    '.kg/nodes',
+    '.kg/edges',
+    '.kg/embeddings',
+    '.summaries',
+    '.summaries/files',
+    '.summaries/functions',
+    '.summaries/modules',
+    '.summaries/api',
+    '.summaries/decisions',
+    '.sessions',
+    '.sessions/history',
+    '.logs',
+    '.obsidian-export',
+  ];
+
+  await createDirectories(baseDirs);
+
+  // Prepare files from templates
+  const filesToCreate: FileToCreate[] = [];
+
+  for (const template of ALL_TEMPLATES) {
+    const content = prepareFileContent(template, variables);
+    filesToCreate.push({
+      relativePath: path.join(projectRoot, template.filename),
+      content,
+    });
+  }
+
+  // Create config files
+  const configJson = createDefaultConfig(
+    detected.name,
+    variables.CREATED_AT as string,
+    resolved.mode,
+    resolved.agents,
+    resolved.git,
+    gitAvailable,
+    resolved.provider
+  );
+
+  const policyJson = createDefaultPolicy(resolved.mode);
+  const providersJson = createDefaultProviders(resolved.provider);
+  const modelsJson = createDefaultModels();
+  const toolLinkingJson = createDefaultToolLinking();
+  const registryJson = createDefaultRegistry(variables.CREATED_AT as string);
+  const sessionJson = createDefaultSession(resolved.mode);
+
+  const configFiles: FileToCreate[] = [
+    {
+      relativePath: path.join(projectRoot, '.kontextmind/config.json'),
+      content: JSON.stringify(configJson, null, 2),
+    },
+    {
+      relativePath: path.join(projectRoot, '.kontextmind/policy.json'),
+      content: JSON.stringify(policyJson, null, 2),
+    },
+    {
+      relativePath: path.join(projectRoot, '.kontextmind/providers.json'),
+      content: JSON.stringify(providersJson, null, 2),
+    },
+    {
+      relativePath: path.join(projectRoot, '.kontextmind/models.json'),
+      content: JSON.stringify(modelsJson, null, 2),
+    },
+    {
+      relativePath: path.join(projectRoot, '.kontextmind/tool-linking.json'),
+      content: JSON.stringify(toolLinkingJson, null, 2),
+    },
+    {
+      relativePath: path.join(projectRoot, '.kontextmind/registry.json'),
+      content: JSON.stringify(registryJson, null, 2),
+    },
+    {
+      relativePath: path.join(projectRoot, '.kontextmind/local.config.json'),
+      content: JSON.stringify({
+        note: 'Local-only configuration. Do not commit real secrets.',
+        api_keys: { use_environment_variables: true },
+      }, null, 2),
+    },
+    {
+      relativePath: path.join(projectRoot, '.kontextmind/secrets.example.json'),
+      content: JSON.stringify({
+        OPENAI_API_KEY: 'set-this-in-your-environment',
+        ANTHROPIC_API_KEY: 'set-this-in-your-environment',
+        OLLAMA_API_KEY: 'optional-for-local',
+        OPENAI_COMPATIBLE_API_KEY: 'set-this-in-your-environment',
+      }, null, 2),
+    },
+    {
+      relativePath: path.join(projectRoot, '.sessions/latest.json'),
+      content: JSON.stringify(sessionJson, null, 2),
+    },
+  ];
+
+  // Create empty log files
+  const logFiles: FileToCreate[] = [
+    'agent-actions.log',
+    'read-events.log',
+    'summary-generation.log',
+    'security-events.log',
+    'qna-events.log',
+    'mcp-events.log',
+    'api-events.log',
+    'cost-events.log',
+    'error-events.log',
+  ].map(logFile => ({
+    relativePath: path.join(projectRoot, '.logs', logFile),
+    content: '',
+  }));
+
+  // Combine all files
+  const allFiles = [...filesToCreate, ...configFiles, ...logFiles];
+
+  // Create files
+  const result = await createFiles(allFiles, resolved.force);
+
+  return {
+    created: result.created.map(f => path.relative(projectRoot, f)),
+    skipped: result.skipped.map(f => path.relative(projectRoot, f)),
+    warnings: result.warnings,
+  };
+}
+
+export { detectProject, detectGitAvailable } from './detect-project.js';
+export { createFiles, createDirectories } from './create-files.js';

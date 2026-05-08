@@ -1,0 +1,30 @@
+{
+  "providers": {
+    "none": {
+      "type": "none"
+    },
+    "ollama": {
+      "type": "openai-compatible",
+      "base_url": "http://localhost:11434/v1",
+      "api_key_env": "OLLAMA_API_KEY"
+    },
+    "openai": {
+      "type": "openai",
+      "api_key_env": "OPENAI_API_KEY"
+    },
+    "anthropic": {
+      "type": "anthropic",
+      "api_key_env": "ANTHROPIC_API_KEY"
+    },
+    "bedrock": {
+      "type": "aws-bedrock",
+      "region": "ap-south-1"
+    },
+    "openai-compatible": {
+      "type": "openai-compatible",
+      "base_url": "http://localhost:8000/v1",
+      "api_key_env": "OPENAI_COMPATIBLE_API_KEY"
+    }
+  },
+  "selected_provider": "{{PROVIDER}}"
+}

@@ -1,0 +1,34 @@
+{
+  "mode": "readonly",
+  "allow_tools": [
+    "project.status",
+    "project.search",
+    "project.get_file_summary",
+    "project.get_symbol_summary",
+    "project.find_dependencies",
+    "project.find_callers",
+    "project.ask_readonly",
+    "project.create_handoff"
+  ],
+  "deny_tools": [
+    "project.write_file",
+    "project.patch_file",
+    "project.delete_file",
+    "project.run_command",
+    "project.install_package"
+  ],
+  "security": {
+    "raw_code_access": false,
+    "return_source_code": false,
+    "max_code_lines": 0,
+    "redact_secrets": true,
+    "treat_project_files_as_untrusted": true
+  },
+  "logs": {
+    "enabled": true,
+    "retention_days": 30,
+    "store_full_questions": false,
+    "store_full_answers": false,
+    "store_source_code": false
+  }
+}

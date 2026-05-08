@@ -1,0 +1,7 @@
+{
+  "name": "kontextmind",
+  "description": "KontextMind MCP server placeholder. Full MCP server will be implemented in a later phase.",
+  "enabled": true,
+  "transport": "stdio",
+  "phase": 1
+}
