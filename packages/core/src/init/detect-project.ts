@@ -6,6 +6,7 @@ export interface DetectedProject {
   root: string;
   hasPackageJson: boolean;
   hasGit: boolean;
+  initialized: boolean;
 }
 
 export function detectProject(projectRoot: string = process.cwd()): DetectedProject {
@@ -31,6 +32,7 @@ export function detectProject(projectRoot: string = process.cwd()): DetectedProj
     root: projectRoot,
     hasPackageJson,
     hasGit: existsSync(path.join(projectRoot, '.git')),
+    initialized: existsSync(path.join(projectRoot, '.kontextmind', 'config.json')),
   };
 }
 
