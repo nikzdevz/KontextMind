@@ -29,7 +29,7 @@ kontextmind init [options]
 | `--agents <list>` | | Comma-separated agent list | claude,codex,generic |
 | `--mode <mode>` | | Mode: readonly, suggest, edit-with-approval, full-agent | readonly |
 | `--git <mode>` | | Git integration: auto, enabled, disabled | auto |
-| `--provider <provider>` | | LLM provider: none, openai, anthropic, ollama, bedrock, openai-compatible | none |
+| `--provider <provider>` | | LLM provider: mock, openai-compatible, openai, anthropic, ollama, bedrock | mock |
 
 **Examples:**
 
@@ -148,25 +148,22 @@ WARN Scanner not implemented yet. This will be added in Phase 2.
 Result: healthy for Phase 1
 ```
 
-### Future Commands (Phase 2+)
+### All Commands (Phases 1-10 Complete)
 
-The following commands are not implemented in Phase 1:
+All commands are now implemented:
 
 ```bash
-kontextmind scan       # Scan project files (Phase 2)
-kontextmind index      # Index project files (Phase 2)
-kontextmind summarize  # Generate summaries (Phase 4)
-kontextmind ask        # Ask questions (Phase 5)
-kontextmind serve      # Start HTTP server (Phase 6)
-kontextmind chat       # Start chatbot (Phase 5)
-kontextmind export     # Export to Obsidian (Phase 9)
-```
-
-Running these commands in Phase 1 will show:
-
-```
-Command not implemented in Phase 1.
-This command will be added in a later phase.
+kontextmind init            # Initialize project (Phase 1)
+kontextmind scan            # Scan project files (Phase 2)
+kontextmind index           # Index symbols (Phase 3)
+kontextmind summarize       # Generate summaries (Phase 4)
+kontextmind kb build        # Build chatbot KB (Phase 5)
+kontextmind ask             # Ask questions (Phase 5)
+kontextmind serve           # Start HTTP server (Phase 6)
+kontextmind mcp             # Start MCP server (Phase 7)
+kontextmind secrets         # Scan for secrets (Phase 8)
+kontextmind audit           # View audit summary (Phase 8)
+kontextmind obsidian export # Export to Obsidian (Phase 9)
 ```
 
 ### Global Options
@@ -223,6 +220,8 @@ Security and operational policy.
 | Variable | Description |
 |----------|-------------|
 | `KONTEXTMIND_VERSION` | KontextMind version |
-| `OPENAI_API_KEY` | OpenAI API key |
-| `ANTHROPIC_API_KEY` | Anthropic API key |
-| `OLLAMA_API_KEY` | Ollama API key |
+| `OPENAI_API_KEY` | OpenAI API key (for openai-compatible provider) |
+| `ANTHROPIC_API_KEY` | Anthropic API key (future) |
+| `OLLAMA_API_KEY` | Ollama API key (future) |
+
+For OpenAI-compatible providers, set `OPENAI_API_KEY` to your API key or leave blank for local models.

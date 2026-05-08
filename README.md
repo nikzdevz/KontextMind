@@ -151,6 +151,60 @@ kontextmind audit --since 24h
 kontextmind audit --json
 ```
 
+## LLM Providers
+
+KontextMind supports multiple LLM providers for AI-powered features:
+
+| Provider | Description |
+|----------|-------------|
+| `mock` | Built-in mock provider (no API key needed) |
+| `openai-compatible` | Any OpenAI-compatible API (LM Studio, Ollama, LocalAI, Together AI, etc.) |
+| `openai` | OpenAI API (future) |
+| `anthropic` | Anthropic Claude API (future) |
+| `ollama` | Ollama local models (future) |
+
+### Quick Start (No API Key)
+
+```bash
+# Use mock provider for testing
+kontextmind summarize --mock
+kontextmind kb build --mock
+```
+
+### OpenAI-Compatible Setup
+
+Configure `.kontextmind/providers.json`:
+
+```json
+{
+  "providers": {
+    "primary": {
+      "provider": "openai-compatible",
+      "apiKey": "your-api-key",
+      "baseUrl": "https://api.openai.com/v1",
+      "model": "gpt-4"
+    }
+  }
+}
+```
+
+For local models (LM Studio, Ollama):
+
+```json
+{
+  "providers": {
+    "primary": {
+      "provider": "openai-compatible",
+      "apiKey": "not-needed",
+      "baseUrl": "http://localhost:8080/v1",
+      "model": "llama-3"
+    }
+  }
+}
+```
+
+See [docs/providers.md](docs/providers.md) for detailed setup instructions.
+
 ## MCP Server
 
 KontextMind includes a full Model Context Protocol server:
@@ -203,8 +257,8 @@ This creates backlinks between notes and applies redaction automatically.
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/kontextmind.git
-cd kontextmind
+git clone https://github.com/nikzdevz/KontextMind.git
+cd KontextMind
 
 # Install dependencies
 pnpm install
