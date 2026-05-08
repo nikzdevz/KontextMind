@@ -1,0 +1,20 @@
+KontextMind KB Build
+Building knowledge base...
+
+{
+  "filesCreated": [
+    "/home/ubuntu/eval-repos/express-api/.kontextmind/chatbot/project-overview.md",
+    "/home/ubuntu/eval-repos/express-api/.kontextmind/chatbot/architecture.md",
+    "/home/ubuntu/eval-repos/express-api/.kontextmind/chatbot/common-questions.json",
+    "/home/ubuntu/eval-repos/express-api/.kontextmind/chatbot/api-flows.json",
+    "/home/ubuntu/eval-repos/express-api/.kontextmind/chatbot/file-summaries.json",
+    "/home/ubuntu/eval-repos/express-api/.kontextmind/chatbot/function-summaries.json",
+    "/home/ubuntu/eval-repos/express-api/.kontextmind/chatbot/dependency-map.json",
+    "/home/ubuntu/eval-repos/express-api/.kontextmind/chatbot/entity-map.json",
+    "/home/ubuntu/eval-repos/express-api/.kontextmind/chatbot/troubleshooting.json",
+    "/home/ubuntu/eval-repos/express-api/.kontextmind/chatbot/response-policy.json"
+  ],
+  "questionsGenerated": 10,
+  "durationMs": 16,
+  "errors": []
+}

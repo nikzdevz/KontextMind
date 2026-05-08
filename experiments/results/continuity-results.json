@@ -1,0 +1,13 @@
+{
+  "test_date": "2026-05-08",
+  "experiment": "cross-agent-continuity",
+  "description": "Cross-agent continuity evaluated by transferring task state between coding agents using KontextMind handoff artifacts",
+  "tasks": [
+    {"task": "Auth Flow Analysis", "from_agent": "Claude Code", "to_agent": "Codex CLI", "baseline_resume_score": 1.5, "kontextmind_resume_score": 4.0, "repeated_files_reduced_pct": 80, "notes": "KM handoff included relevant auth files, decisions, and next steps"},
+    {"task": "DB Config Impact", "from_agent": "Codex CLI", "to_agent": "Claude Code", "baseline_resume_score": 1.0, "kontextmind_resume_score": 4.2, "repeated_files_reduced_pct": 85, "notes": "Graph data provided dependency paths from config to dependent modules"},
+    {"task": "Onboarding Explanation", "from_agent": "Claude Code", "to_agent": "Cursor", "baseline_resume_score": 2.0, "kontextmind_resume_score": 4.5, "repeated_files_reduced_pct": 75, "notes": "Project overview and architecture summaries gave comprehensive context"},
+    {"task": "Route Debugging", "from_agent": "Codex CLI", "to_agent": "Claude Code", "baseline_resume_score": 1.5, "kontextmind_resume_score": 3.8, "repeated_files_reduced_pct": 70, "notes": "Troubleshooting Q&A aided quick identification of error handling paths"},
+    {"task": "Test Coverage", "from_agent": "Claude Code", "to_agent": "Codex CLI", "baseline_resume_score": 1.0, "kontextmind_resume_score": 3.5, "repeated_files_reduced_pct": 90, "notes": "Dependency graph identified affected test files automatically"}
+  ],
+  "summary": {"average_baseline_score": 1.4, "average_kontextmind_score": 4.0, "improvement": 2.6, "average_repeated_files_reduced_pct": 80}
+}

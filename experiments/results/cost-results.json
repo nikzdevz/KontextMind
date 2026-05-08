@@ -1,0 +1,13 @@
+{
+  "test_date": "2026-05-08",
+  "methodology": "Token estimates calculated using approximate character-to-token conversion (1 token ~ 4 characters)",
+  "cost_per_1k_tokens": 0.01,
+  "repositories": [
+    {"name": "node-express-realworld", "language": "Node.js/TypeScript", "total_source_loc": 12677, "estimated_raw_tokens": 190155, "kontextmind_summary_tokens": 9325, "token_reduction_pct": 95.1, "baseline_cost_usd": 1.90, "build_cost_usd": 0.09, "net_cost_reduction_pct": 95.3},
+    {"name": "Express.js", "language": "JavaScript", "total_source_loc": 25642, "estimated_raw_tokens": 384630, "kontextmind_summary_tokens": 14432, "token_reduction_pct": 96.2, "baseline_cost_usd": 3.85, "build_cost_usd": 0.14, "net_cost_reduction_pct": 96.4},
+    {"name": "next-learn", "language": "React/Next.js", "total_source_loc": 9169, "estimated_raw_tokens": 137535, "kontextmind_summary_tokens": 15254, "token_reduction_pct": 88.9, "baseline_cost_usd": 1.38, "build_cost_usd": 0.15, "net_cost_reduction_pct": 89.1},
+    {"name": "full-stack-fastapi-template", "language": "Python/TypeScript", "total_source_loc": 8927, "estimated_raw_tokens": 133905, "kontextmind_summary_tokens": 16210, "token_reduction_pct": 87.9, "baseline_cost_usd": 1.34, "build_cost_usd": 0.16, "net_cost_reduction_pct": 88.1},
+    {"name": "KontextMind", "language": "TypeScript", "total_source_loc": 19444, "estimated_raw_tokens": 291660, "kontextmind_summary_tokens": 21210, "token_reduction_pct": 92.7, "baseline_cost_usd": 2.92, "build_cost_usd": 0.21, "net_cost_reduction_pct": 92.8}
+  ],
+  "summary": {"average_token_reduction_pct": 92.2, "average_cost_reduction_pct": 92.3, "total_baseline_tokens": 1137885, "total_kontextmind_tokens": 76431}
+}

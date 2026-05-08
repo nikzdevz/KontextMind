@@ -1,0 +1,71 @@
+{
+  "initialized": true,
+  "errors": [],
+  "project": "fastapi-full-stack-template",
+  "mode": "readonly",
+  "phase": 1,
+  "agents": [
+    "claude",
+    "codex",
+    "generic"
+  ],
+  "gitMode": "auto",
+  "gitAvailable": true,
+  "claudeMd": true,
+  "agentsMd": true,
+  "toolignore": true,
+  "gitBranch": "master",
+  "gitCommit": "13652b51",
+  "fileIndexStatus": {
+    "exists": true,
+    "fileCount": 201,
+    "valid": true
+  },
+  "lastScanTime": "2026-05-08T05:41:38.972Z",
+  "indexStatus": {
+    "hasFileIndex": true,
+    "hasSymbolIndex": true,
+    "hasDependencyIndex": true,
+    "hasGraph": true,
+    "symbolCount": 297,
+    "dependencyCount": 266,
+    "graphNodes": 460,
+    "graphEdges": 674
+  },
+  "lastIndexTime": "2026-05-08T05:41:40.099Z",
+  "summaryStatus": {
+    "hasSummaries": true,
+    "fileCount": 50,
+    "functionCount": 0,
+    "stats": {
+      "total": 50,
+      "fresh": 50,
+      "stale": 0,
+      "missing": 0,
+      "failed": 0,
+      "partial": 0
+    }
+  },
+  "lastSummarizeTime": null,
+  "kbStatus": {
+    "ready": true,
+    "hasOverview": true,
+    "hasArchitecture": true,
+    "questionCount": 15,
+    "lastBuildTime": null,
+    "files": [
+      "README.md",
+      "api-flows.json",
+      "architecture.md",
+      "common-questions.json",
+      "dependency-map.json",
+      "entity-map.json",
+      "file-summaries.json",
+      "function-summaries.json",
+      "project-overview.md",
+      "response-policy.json",
+      "troubleshooting.json"
+    ]
+  },
+  "lastAskTime": null
+}

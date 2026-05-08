@@ -1,0 +1,22 @@
+{
+  "audit": {
+    "totalQuestions": 0,
+    "rawCodeReads": 0,
+    "blockedAttempts": 0,
+    "secretsDetected": 0,
+    "summariesGenerated": 0,
+    "staleSummaries": 0,
+    "securityEvents": 0,
+    "apiRequests": 0,
+    "mcpCalls": 0,
+    "mostAccessedFiles": [],
+    "lastBlockedEvent": null
+  },
+  "cost": {
+    "totalCost": 0,
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "estimatedCostUSD": "0.000000"
+  },
+  "since": null
+}

@@ -1,0 +1,557 @@
+[
+{"question_number": 1, "question": "What is the purpose of this project?", "result": {
+  "answer": "Node.js (v18+), pnpm, and a code editor with Claude Code integration are recommended. For full functionality, configure an LLM provider in .kontextmind/config.json.",
+  "confidence": 0.8,
+  "sources": [
+    {
+      "type": "qa",
+      "name": "What are the prerequisites for running this project?",
+      "relevance": 0.8
+    },
+    {
+      "type": "file_summary",
+      "name": "e2e/jest.config.ts",
+      "relevance": 0.4
+    },
+    {
+      "type": "file_summary",
+      "name": "e2e/src/support/global-setup.ts",
+      "relevance": 0.4
+    },
+    {
+      "type": "file_summary",
+      "name": "e2e/src/support/global-teardown.ts",
+      "relevance": 0.4
+    },
+    {
+      "type": "file_summary",
+      "name": "jest.config.ts",
+      "relevance": 0.4
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/models/http-exception.model.ts",
+      "relevance": 0.4
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/auth/register-input.model.ts",
+      "relevance": 0.4
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/auth/registered-user.model.ts",
+      "relevance": 0.4
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/auth/user-request.d.ts",
+      "relevance": 0.4
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/profile/profile.model.ts",
+      "relevance": 0.4
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/tag/tag.model.ts",
+      "relevance": 0.4
+    },
+    {
+      "type": "file_summary",
+      "name": "src/tests/services/tag.service.test.ts",
+      "relevance": 0.4
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 2, "question": "What are the main modules or components?", "result": {
+  "answer": "Node.js (v18+), pnpm, and a code editor with Claude Code integration are recommended. For full functionality, configure an LLM provider in .kontextmind/config.json.",
+  "confidence": 0.5,
+  "sources": [
+    {
+      "type": "qa",
+      "name": "What are the prerequisites for running this project?",
+      "relevance": 0.5
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 3, "question": "What framework does this project use?", "result": {
+  "answer": "Run \"kontextmind index\" to generate a dependency graph. The knowledge graph will show all imports and relationships between files.",
+  "confidence": 0.6666666666666666,
+  "sources": [
+    {
+      "type": "qa",
+      "name": "What dependencies does this project have?",
+      "relevance": 0.6666666666666666
+    },
+    {
+      "type": "file_summary",
+      "name": "e2e/jest.config.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "e2e/src/support/global-setup.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "e2e/src/support/global-teardown.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "jest.config.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/models/http-exception.model.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/auth/register-input.model.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/auth/registered-user.model.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/auth/user-request.d.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/profile/profile.model.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/tag/tag.model.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/tests/services/tag.service.test.ts",
+      "relevance": 0.3333333333333333
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 4, "question": "How does the application start?", "result": {
+  "answer": "The codebase is organized into packages: /packages/core for core logic, /packages/adapters for integrations, /packages/mcp for MCP server, and /apps/cli for the command-line interface.",
+  "confidence": 0.4,
+  "sources": [
+    {
+      "type": "qa",
+      "name": "How is the codebase organized?",
+      "relevance": 0.4
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 5, "question": "What are the main configuration files?", "result": {
+  "answer": "Node.js (v18+), pnpm, and a code editor with Claude Code integration are recommended. For full functionality, configure an LLM provider in .kontextmind/config.json.",
+  "confidence": 0.5,
+  "sources": [
+    {
+      "type": "qa",
+      "name": "What are the prerequisites for running this project?",
+      "relevance": 0.5
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 6, "question": "Which file handles authentication?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 7, "question": "What does the main entry point do?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 8, "question": "Which functions are responsible for database access?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 9, "question": "Which files are related to user management?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 10, "question": "Which module handles API routes?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/routes.ts",
+      "relevance": 0.4
+    },
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 11, "question": "If I change the auth service, what files may be affected?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 12, "question": "Which files depend on the database config?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 13, "question": "Which APIs depend on the user service?", "result": {
+  "answer": "Import from @kontextmind/core for core functionality. See the individual package exports and README files for detailed API usage.",
+  "confidence": 0.3333333333333333,
+  "sources": [
+    {
+      "type": "qa",
+      "name": "How do I use the main APIs?",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/article/author.mapper.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/auth/auth.controller.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/auth/auth.service.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/auth/registered-user.model.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/auth/user-request.d.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/auth/user.model.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/profile/profile.service.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/profile/profile.utils.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/prisma/seed.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/tests/services/article.service.test.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/tests/services/auth.service.test.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/tests/services/profile.service.test.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "file_summary",
+      "name": "src/tests/utils/profile.utils.test.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 14, "question": "Which tests should be checked after changing login?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 15, "question": "Which environment variables are used by the backend?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 16, "question": "Where should I check if login fails?", "result": {
+  "answer": "1. Run \"pnpm build\" to ensure CLI is built\n2. Check \"kontextmind doctor\" for configuration issues\n3. Verify Node.js version (v18+)\n4. Check .kontextmind/config.json exists",
+  "confidence": 0.4,
+  "sources": [
+    {
+      "type": "qa",
+      "name": "The CLI is not working, what should I check?",
+      "relevance": 0.4
+    },
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/auth/auth.service.ts",
+      "relevance": 0.4
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 17, "question": "Which files are involved in request validation?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 18, "question": "Where is error handling implemented?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 19, "question": "Which file should I inspect for database connection issues?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 20, "question": "Which module handles external API calls?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "file_summary",
+      "name": "src/app/routes/routes.ts",
+      "relevance": 0.3333333333333333
+    },
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 21, "question": "What secrets are used in this project?", "result": {
+  "answer": "Node.js (v18+), pnpm, and a code editor with Claude Code integration are recommended. For full functionality, configure an LLM provider in .kontextmind/config.json.",
+  "confidence": 0.6666666666666666,
+  "sources": [
+    {
+      "type": "qa",
+      "name": "What are the prerequisites for running this project?",
+      "relevance": 0.6666666666666666
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 22, "question": "Which files read environment variables?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 23, "question": "What was the last task?", "result": {
+  "answer": "This project serves as a centralized knowledge base for AI agents. It stores project context, summaries, and policies to improve AI-assisted development.",
+  "confidence": 0.4,
+  "sources": [
+    {
+      "type": "qa",
+      "name": "What is the purpose of source?",
+      "relevance": 0.4
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 24, "question": "Which files were discussed in the last session?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 25, "question": "What should the next agent do first?", "result": {
+  "answer": "1. Run \"pnpm build\" to ensure CLI is built\n2. Check \"kontextmind doctor\" for configuration issues\n3. Verify Node.js version (v18+)\n4. Check .kontextmind/config.json exists",
+  "confidence": 0.5,
+  "sources": [
+    {
+      "type": "qa",
+      "name": "The CLI is not working, what should I check?",
+      "relevance": 0.5
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 26, "question": "What decisions were made previously?", "result": {
+  "answer": "No relevant information found. Try rephrasing your question.",
+  "confidence": 0,
+  "sources": [
+    {
+      "type": "project",
+      "name": "project-overview"
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+,
+{"question_number": 27, "question": "What pending work remains?", "result": {
+  "answer": "1. Run \"pnpm build\" to ensure CLI is built\n2. Check \"kontextmind doctor\" for configuration issues\n3. Verify Node.js version (v18+)\n4. Check .kontextmind/config.json exists",
+  "confidence": 0.5,
+  "sources": [
+    {
+      "type": "qa",
+      "name": "The CLI is not working, what should I check?",
+      "relevance": 0.5
+    }
+  ],
+  "raw_code_access": false,
+  "policy_applied": true
+}}
+]

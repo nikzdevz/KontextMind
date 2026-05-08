@@ -1,0 +1,71 @@
+{
+  "initialized": true,
+  "errors": [],
+  "project": "kontextmind",
+  "mode": "readonly",
+  "phase": 1,
+  "agents": [
+    "claude",
+    "codex",
+    "generic"
+  ],
+  "gitMode": "auto",
+  "gitAvailable": false,
+  "claudeMd": true,
+  "agentsMd": true,
+  "toolignore": true,
+  "gitBranch": "devin/1778218606-research-paper-experiments",
+  "gitCommit": "44976202",
+  "fileIndexStatus": {
+    "exists": true,
+    "fileCount": 184,
+    "valid": true
+  },
+  "lastScanTime": "2026-05-08T05:41:53.247Z",
+  "indexStatus": {
+    "hasFileIndex": true,
+    "hasSymbolIndex": true,
+    "hasDependencyIndex": true,
+    "hasGraph": true,
+    "symbolCount": 467,
+    "dependencyCount": 228,
+    "graphNodes": 595,
+    "graphEdges": 873
+  },
+  "lastIndexTime": "2026-05-08T05:41:55.708Z",
+  "summaryStatus": {
+    "hasSummaries": true,
+    "fileCount": 50,
+    "functionCount": 0,
+    "stats": {
+      "total": 50,
+      "fresh": 50,
+      "stale": 0,
+      "missing": 0,
+      "failed": 0,
+      "partial": 0
+    }
+  },
+  "lastSummarizeTime": null,
+  "kbStatus": {
+    "ready": true,
+    "hasOverview": true,
+    "hasArchitecture": true,
+    "questionCount": 15,
+    "lastBuildTime": null,
+    "files": [
+      "README.md",
+      "api-flows.json",
+      "architecture.md",
+      "common-questions.json",
+      "dependency-map.json",
+      "entity-map.json",
+      "file-summaries.json",
+      "function-summaries.json",
+      "project-overview.md",
+      "response-policy.json",
+      "troubleshooting.json"
+    ]
+  },
+  "lastAskTime": null
+}

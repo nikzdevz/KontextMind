@@ -1,0 +1,20 @@
+KontextMind KB Build
+Building knowledge base...
+
+{
+  "filesCreated": [
+    "/home/ubuntu/repos/KontextMind/.kontextmind/chatbot/project-overview.md",
+    "/home/ubuntu/repos/KontextMind/.kontextmind/chatbot/architecture.md",
+    "/home/ubuntu/repos/KontextMind/.kontextmind/chatbot/common-questions.json",
+    "/home/ubuntu/repos/KontextMind/.kontextmind/chatbot/api-flows.json",
+    "/home/ubuntu/repos/KontextMind/.kontextmind/chatbot/file-summaries.json",
+    "/home/ubuntu/repos/KontextMind/.kontextmind/chatbot/function-summaries.json",
+    "/home/ubuntu/repos/KontextMind/.kontextmind/chatbot/dependency-map.json",
+    "/home/ubuntu/repos/KontextMind/.kontextmind/chatbot/entity-map.json",
+    "/home/ubuntu/repos/KontextMind/.kontextmind/chatbot/troubleshooting.json",
+    "/home/ubuntu/repos/KontextMind/.kontextmind/chatbot/response-policy.json"
+  ],
+  "questionsGenerated": 10,
+  "durationMs": 18,
+  "errors": []
+}

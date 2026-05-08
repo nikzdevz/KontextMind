@@ -1,0 +1,12 @@
+KontextMind Summarize
+Generating summaries...
+
+{
+  "summariesGenerated": 39,
+  "summariesUpdated": 0,
+  "summariesFailed": 0,
+  "totalCost": 9325,
+  "durationMs": 32,
+  "errors": [],
+  "dryRun": false
+}
