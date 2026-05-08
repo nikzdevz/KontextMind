@@ -12,27 +12,20 @@ export interface GenerateTextResult {
   text: string;
   model: string;
   provider: string;
-  tokens?: {
-    input: number;
-    output: number;
-    total: number;
+  usage?: {
+    inputTokens: number;
+    outputTokens: number;
+    totalTokens: number;
   };
-  cost?: {
-    input: number;
-    output: number;
-    total: number;
-  };
+  cost?: number;
+  durationMs?: number;
   finishReason?: 'stop' | 'length' | 'error';
+  error?: string;
 }
 
 export interface ModelProvider {
-  readonly name: string;
-  readonly defaultModel: string;
-  readonly supportedModels: string[];
-
+  getName(): string;
   generateText(input: GenerateTextInput): Promise<GenerateTextResult>;
-
-  isConfigured(): boolean;
 }
 
 export interface ProviderConfig {

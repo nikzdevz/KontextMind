@@ -1,5 +1,6 @@
 import type { ModelProvider, ProviderConfig, GenerateTextInput, GenerateTextResult } from './provider-types.js';
 import { MockProvider } from './mock-provider.js';
+import { OpenAICompatibleProvider } from './openai-compatible-provider.js';
 
 export type { ModelProvider } from './provider-types.js';
 
@@ -59,14 +60,20 @@ export function createProviderFromConfig(config: ProviderConfig): ModelProvider 
     return new MockProvider();
   }
 
-  // Placeholder for real providers (Phase 5+)
-  // For now, fall back to mock if not configured
-  if (!config.apiKey || config.apiKey === 'mock') {
+  // For openai-compatible provider, create with config
+  if (config.provider === 'openai-compatible') {
+    const provider = new OpenAICompatibleProvider(config);
+    registry.registerProvider('openai-compatible', provider);
+    return provider;
+  }
+
+  // For other providers that need API key but aren't configured
+  if (!config.apiKey || config.apiKey === 'mock' || config.apiKey === 'none') {
     console.warn(`Provider '${config.provider}' not configured, falling back to mock provider`);
     return new MockProvider();
   }
 
-  // TODO: Implement real providers in Phase 5+
+  // TODO: Implement other providers (anthropic, openai, ollama, bedrock)
   console.warn(`Provider '${config.provider}' is a placeholder, using mock provider`);
   return new MockProvider();
 }

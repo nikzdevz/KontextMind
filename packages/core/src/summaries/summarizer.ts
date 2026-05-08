@@ -46,7 +46,7 @@ export async function summarizeProject(options: SummarizerOptions): Promise<Summ
       errors: ['No provider available. Configure a provider in .kontextmind/config.json'],
     };
   }
-  const model = options.model || provider.defaultModel;
+  const model = options.model || 'gpt-3.5-turbo';
 
   // Load file index
   const fileIndex = loadFileIndex(projectRoot);
@@ -185,10 +185,10 @@ async function generateFileSummary(
   const result = await provider.generateText({ prompt, model });
 
   // Build cost info if available
-  const cost = result.tokens ? {
-    inputTokens: result.tokens.input,
-    outputTokens: result.tokens.output,
-    total: result.tokens.total,
+  const cost = result.usage ? {
+    inputTokens: result.usage.inputTokens,
+    outputTokens: result.usage.outputTokens,
+    total: result.usage.totalTokens,
   } : undefined;
 
   return {
@@ -197,9 +197,9 @@ async function generateFileSummary(
     hash: file.hash,
     language: file.language || 'unknown',
     summaryStatus: 'fresh',
-    provider: provider.name,
+    provider: provider.getName(),
     model,
-    confidence: provider.name === 'mock' ? 0.5 : 0.8,
+    confidence: provider.getName() === 'mock' ? 0.5 : 0.8,
     cost,
     purpose: result.text,
     symbols,

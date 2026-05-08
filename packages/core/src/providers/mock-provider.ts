@@ -1,22 +1,19 @@
 import type { ModelProvider, GenerateTextInput, GenerateTextResult } from './provider-types.js';
 
 export class MockProvider implements ModelProvider {
-  readonly name = 'mock';
-  readonly defaultModel = 'mock-summary';
-  readonly supportedModels = ['mock-summary'];
+  getName(): string {
+    return 'mock';
+  }
 
   private mockResponses: Map<string, string> = new Map();
 
-  isConfigured(): boolean {
-    return true;
-  }
-
   async generateText(input: GenerateTextInput): Promise<GenerateTextResult> {
     const prompt = input.prompt;
-    const model = input.model || this.defaultModel;
+    const model = input.model || 'mock-summary';
 
     // Generate a mock summary based on the prompt content
-    let summary = this.generateMockSummary(prompt);
+    const summary = this.generateMockSummary(prompt);
+    const startTime = Date.now();
 
     // Simulate token counts (rough estimate)
     const inputTokens = Math.ceil(prompt.length / 4);
@@ -25,17 +22,14 @@ export class MockProvider implements ModelProvider {
     return {
       text: summary,
       model,
-      provider: this.name,
-      tokens: {
-        input: inputTokens,
-        output: outputTokens,
-        total: inputTokens + outputTokens,
+      provider: 'mock',
+      usage: {
+        inputTokens,
+        outputTokens,
+        totalTokens: inputTokens + outputTokens,
       },
-      cost: {
-        input: 0,
-        output: 0,
-        total: 0,
-      },
+      cost: 0,
+      durationMs: Date.now() - startTime,
       finishReason: 'stop',
     };
   }
