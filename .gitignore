@@ -1,0 +1,52 @@
+node_modules
+dist
+build
+coverage
+.turbo
+.vercel
+.output
+dist-srv
+
+# Environment
+.env
+.env.local
+.env.production
+.env*
+!.env.example
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+pnpm-debug.log*
+
+# Docker
+.dockerignore
+
+# Package managers
+pnpm-debug.log*
+package-lock.json
+
+# Build artifacts
+*.tgz
+*.tar.gz
+
+# Data directories
+data/
+/data
+kontextmind-summarize.log
+
+# Claude Code
+.claude/logs/
+.claude/scheduled_tasks.json
+.claude/settings.local.json

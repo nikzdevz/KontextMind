@@ -1,0 +1,65 @@
+# Dependencies
+node_modules
+packages/*/node_modules
+apps/*/node_modules
+
+# Build outputs
+dist
+build
+*.tsbuildinfo
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Test coverage
+coverage
+.nyc_output
+
+# Environment files (security)
+.env
+.env.local
+.env.*.local
+
+# Git
+.git
+.gitignore
+
+# Documentation (reduce layer size)
+*.md
+!README.md
+
+# Test files
+*.test.ts
+*.spec.ts
+__tests__
+test
+vitest.config.ts
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.travis.yml
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# Temporary files
+.tmp
+.temp
+*.tmp
+
+# TypeScript cache
+*.tsbuildinfo

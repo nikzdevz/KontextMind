@@ -1,0 +1,26 @@
+{
+	"mcpServers": {
+		"kontextmind": {
+			"command": "npx",
+			"args": [
+				"kontextmind",
+				"mcp",
+				"--mode",
+				"full-agent"
+			],
+			"alwaysAllow": [
+				"project.status",
+				"project.search",
+				"project.get_file_summary",
+				"project.get_symbol_summary",
+				"project.find_dependencies",
+				"project.find_callers",
+				"project.find_related_files",
+				"project.ask_readonly",
+				"project.create_handoff",
+				"project.refresh_summary",
+				"project.security_scan"
+			]
+		}
+	}
+}

@@ -1,0 +1,28 @@
+# .toolignore Template
+
+This template generates .toolignore files to tell KontextMind which files to skip.
+
+## Files to Always Ignore
+
+- `.git/` - Git repository
+- `node_modules/` - npm/yarn/pnpm dependencies
+- `venv/` / `.venv/` - Python virtual environments
+- `dist/` / `build/` - Build output
+- `coverage/` - Test coverage
+- `vendor/` - Composer/vendor dependencies
+- `.env` / `.env.*` - Environment files with secrets
+
+## Secrets to Ignore
+
+- `*.pem` - Private keys
+- `*.key` - Key files
+- `*.crt` - Certificate files
+- `credentials.json` - Credentials files
+- `secrets/` - Secrets directory
+
+## Other
+
+- `*.min.js` - Minified JavaScript
+- `.DS_Store` - macOS metadata
+- `.cache/` - Cache directories
+- `tmp/` / `temp/` - Temporary files
