@@ -1,8 +1,0 @@
-{
-  "resources": [
-    "kontextmind://project/overview",
-    "kontextmind://project/current-state",
-    "kontextmind://handoff/latest"
-  ],
-  "note": "Resources will be implemented in later phases."
-}

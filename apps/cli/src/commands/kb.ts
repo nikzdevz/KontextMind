@@ -3,8 +3,47 @@ import chalk from 'chalk';
 import { buildChatbotKB, getKBStatus } from '@kontextmind/core';
 import { detectProject } from '@kontextmind/core';
 import { resolveInProject, FILES } from '../utils/paths.js';
-import { readFileSync, existsSync } from 'fs';
 import { type ProviderConfig } from '@kontextmind/core';
+import { getGlobalConfig, type GlobalConfig } from '../utils/global-config.js';
+import { existsSync, readFileSync } from 'fs';
+
+function loadProviderConfig(globalConfig: GlobalConfig): ProviderConfig {
+  // 1. Check global config for default provider first
+  if (globalConfig.defaultProvider && globalConfig.providers[globalConfig.defaultProvider]) {
+    const gp = globalConfig.providers[globalConfig.defaultProvider];
+    return {
+      name: globalConfig.defaultProvider,
+      provider: gp.provider as ProviderConfig['provider'],
+      apiKey: gp.apiKey,
+      baseUrl: gp.baseUrl,
+      model: gp.model,
+    };
+  }
+
+  // 2. Check project providers.json for selected_provider
+  const projectConfigPath = resolveInProject(FILES.providersJson);
+  if (existsSync(projectConfigPath)) {
+    try {
+      const projectConfig = JSON.parse(readFileSync(projectConfigPath, 'utf-8'));
+      const selectedProvider = projectConfig.selected_provider;
+      if (selectedProvider && selectedProvider !== 'none' && projectConfig.providers?.[selectedProvider]) {
+        const pp = projectConfig.providers[selectedProvider];
+        return {
+          name: selectedProvider,
+          provider: pp.type as ProviderConfig['provider'],
+          apiKey: pp.api_key || (pp.api_key_env ? `env:${pp.api_key_env}` : undefined),
+          baseUrl: pp.base_url,
+          model: pp.model,
+        };
+      }
+    } catch {
+      // Fall through to mock
+    }
+  }
+
+  // 3. Default to mock
+  return { name: 'mock', provider: 'mock' };
+}
 
 export async function kbBuildCommand(options: OptionValues): Promise<void> {
   try {
@@ -17,24 +56,28 @@ export async function kbBuildCommand(options: OptionValues): Promise<void> {
       process.exit(1);
     }
 
-    // Build provider config
-    const configPath = resolveInProject(FILES.configJson);
-    let provider: ProviderConfig = { name: 'mock', provider: 'mock' };
+    // Load provider config - checks global first, then project
+    const globalConfig = getGlobalConfig();
+    let provider = loadProviderConfig(globalConfig);
 
-    if (existsSync(configPath)) {
-      try {
-        const config = JSON.parse(readFileSync(configPath, 'utf-8'));
-        if (config.provider && config.provider !== 'none') {
-          provider = {
-            name: config.provider,
-            provider: config.provider as ProviderConfig['provider'],
-            apiKey: config.apiKey,
-            baseUrl: config.baseUrl,
-            model: config.model,
-          };
-        }
-      } catch {
-        // Use default mock
+    // Override with CLI options
+    if (options.mock) {
+      provider = { name: 'mock', provider: 'mock' };
+    } else if (options.provider) {
+      // CLI option overrides - for explicit provider selection
+      const explicitProvider = options.provider as string;
+      if (globalConfig.providers[explicitProvider]) {
+        const gp = globalConfig.providers[explicitProvider];
+        provider = {
+          name: explicitProvider,
+          provider: gp.provider as ProviderConfig['provider'],
+          apiKey: gp.apiKey,
+          baseUrl: gp.baseUrl,
+          model: gp.model,
+        };
+      } else {
+        provider.provider = options.provider as ProviderConfig['provider'];
+        provider.name = options.provider;
       }
     }
 

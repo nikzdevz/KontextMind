@@ -232,6 +232,20 @@ export async function statusCommand(options: OptionValues): Promise<void> {
     }
   }
 
+  // LLM Provider status
+  const providerConfigured = checkLLMProviderConfigured(projectRoot);
+  console.log('');
+  if (providerConfigured.configured) {
+    printKeyValue('LLM Provider', `\x1b[32m${providerConfigured.provider}\x1b[0m`);
+    printKeyValue('LLM Ask', `\x1b[32menabled\x1b[0m (summaries + LLM enhancement)`);
+  } else {
+    printKeyValue('LLM Provider', '\x1b[33mnot configured\x1b[0m');
+    printKeyValue('LLM Ask', '\x1b[33mKB only\x1b[0m - configure provider for LLM enhancement');
+    console.log('\n\x1b[36m  Configure with:\x1b[0m');
+    console.log('    kontextmind config add-provider --name ollama --type openai-compatible --baseUrl http://localhost:11434/v1');
+    console.log('    kontextmind config set-default-provider --name ollama');
+  }
+
   if (errors.length > 0) {
     console.log('\nErrors:');
     for (const err of errors) {
@@ -239,4 +253,43 @@ export async function statusCommand(options: OptionValues): Promise<void> {
     }
   }
   console.log('');
+}
+
+// Helper to check if LLM provider is configured (same logic as summarize)
+function checkLLMProviderConfigured(projectRoot: string): { configured: boolean; provider?: string; model?: string } {
+  // Check global config first
+  const globalConfigDir = process.env.APPDATA || process.env.HOME || '';
+  const globalConfigPath = path.join(globalConfigDir, '.kontextmind', 'config.json');
+  if (existsSync(globalConfigPath)) {
+    try {
+      const globalConfig = JSON.parse(readFileSync(globalConfigPath, 'utf-8'));
+      if (globalConfig.defaultProvider && globalConfig.providers?.[globalConfig.defaultProvider]) {
+        const gp = globalConfig.providers[globalConfig.defaultProvider];
+        return {
+          configured: true,
+          provider: globalConfig.defaultProvider,
+          model: gp.model,
+        };
+      }
+    } catch { /* ignore */ }
+  }
+
+  // Check project providers.json
+  const projectConfigPath = path.join(projectRoot, '.kontextmind', 'providers.json');
+  if (existsSync(projectConfigPath)) {
+    try {
+      const projectConfig = JSON.parse(readFileSync(projectConfigPath, 'utf-8'));
+      const selectedProvider = projectConfig.selected_provider;
+      if (selectedProvider && selectedProvider !== 'none' && projectConfig.providers?.[selectedProvider]) {
+        const pp = projectConfig.providers[selectedProvider];
+        return {
+          configured: true,
+          provider: selectedProvider,
+          model: pp.model,
+        };
+      }
+    } catch { /* ignore */ }
+  }
+
+  return { configured: false };
 }

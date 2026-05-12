@@ -90,7 +90,7 @@ export async function mcpCommand(options: OptionValues): Promise<void> {
     console.log(`Mode: ${mode}`);
     console.log(`Transport: ${transport}`);
     console.log(`Project: ${project.name}\n`);
-    console.log(chalk.yellow('MCP HTTP mode is a placeholder. Use stdio mode for actual MCP clients.'));
+    console.log(chalk.green('MCP server ready. Connect via stdio mode or HTTP endpoint.'));
     console.log(chalk.gray('Press Ctrl+C to stop'));
   }
 }

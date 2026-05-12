@@ -5,7 +5,8 @@ import { writeFileSafe } from '../filesystem/write-file-safe.js';
 import { type QuestionAnswer, type QACategory, type ChatbotPolicy, type QAResult, type AskOptions, type SourceReference, type KBSearchResult } from './chatbot-types.js';
 import { loadFileSummary, getAllFileSummaries, getAllFunctionSummaries } from '../summaries/summary-storage.js';
 import { loadSymbolIndex } from '../parser/index.js';
-import { type ProviderConfig } from '../providers/provider-types.js';
+import { type ProviderConfig, type ModelProvider } from '../providers/provider-types.js';
+import { createProviderFromConfig } from '../providers/provider-registry.js';
 
 // KB directories
 const KB_DIR = '.kontextmind/chatbot';
@@ -233,124 +234,92 @@ function generateCuratedQuestions(projectRoot: string): QuestionAnswer[] {
   const questions: QuestionAnswer[] = [
     // Project overview
     {
-      question: `What is ${projectName}?`,
-      answer: `${projectName} is a project managed by KontextMind. It provides a shared context and knowledge base for AI coding agents.`,
+      question: `What is this project about?`,
+      answer: `${projectName} is a shared project brain for AI coding agents. It provides a centralized knowledge base that stores project context, code summaries, and architectural decisions to help AI assistants understand and work with the codebase more effectively.`,
       category: 'project_overview',
-      tags: ['project', 'overview', 'basic'],
+      tags: ['project', 'about', 'overview'],
       createdAt: new Date().toISOString(),
     },
     {
-      question: `What is the purpose of ${projectName}?`,
-      answer: `This project serves as a centralized knowledge base for AI agents. It stores project context, summaries, and policies to improve AI-assisted development.`,
+      question: `What is the purpose of this project?`,
+      answer: `${projectName} serves as a centralized knowledge base for AI agents. It stores project context, summaries, and policies to improve AI-assisted development. It helps AI coding agents understand the project without reading all the code.`,
       category: 'project_overview',
       tags: ['purpose', 'goals'],
       createdAt: new Date().toISOString(),
     },
-
-    // Architecture
     {
-      question: `What is the architecture of ${projectName}?`,
-      answer: `The project uses a modular architecture with separate packages for core functionality, adapters, MCP server, and CLI. Run "kontextmind index" and check the knowledge graph for detailed architecture.`,
-      category: 'architecture',
-      tags: ['architecture', 'structure', 'modules'],
+      question: `Why should I use this?`,
+      answer: `${projectName} helps AI coding agents work more effectively by providing instant context about the project. Instead of reading thousands of files, agents can ask questions and get immediate, informed answers. It also tracks work sessions and tasks for better continuity.`,
+      category: 'project_overview',
+      tags: ['why', 'use', 'benefits'],
       createdAt: new Date().toISOString(),
     },
+
+    // MCP
     {
-      question: `How is the codebase organized?`,
-      answer: `The codebase is organized into packages: /packages/core for core logic, /packages/adapters for integrations, /packages/mcp for MCP server, and /apps/cli for the command-line interface.`,
+      question: `Does this project have MCP support?`,
+      answer: `Yes! This project includes a full MCP (Model Context Protocol) server. The MCP server provides tools for AI coding agents to query the project knowledge base, search files, get summaries, and more.`,
       category: 'architecture',
-      tags: ['organization', 'structure', 'folders'],
+      tags: ['mcp', 'server', 'feature'],
+      createdAt: new Date().toISOString(),
+    },
+
+    // Features
+    {
+      question: `What features does this project have?`,
+      answer: `${projectName} includes: (1) Code scanning and indexing, (2) AI-powered code summarization, (3) Knowledge graph generation, (4) MCP server for AI integration, (5) Chatbot knowledge base for Q&A, (6) Security audit tools, (7) CLI commands, (8) Session and task tracking.`,
+      category: 'project_overview',
+      tags: ['features', 'capabilities'],
       createdAt: new Date().toISOString(),
     },
 
     // Setup
     {
-      question: `How do I set up ${projectName}?`,
-      answer: `Run "pnpm install" to install dependencies, then "pnpm build" to build the project. Use "kontextmind init" to initialize KontextMind in your project.`,
+      question: `How do I set up this project?`,
+      answer: `Run "pnpm install" to install dependencies, then "pnpm build" to build. Use "kontextmind init" to initialize the project context. For full functionality, configure an LLM provider.`,
       category: 'setup',
-      tags: ['setup', 'installation', 'getting started'],
+      tags: ['setup', 'installation'],
       createdAt: new Date().toISOString(),
     },
     {
-      question: `What are the prerequisites for running this project?`,
-      answer: `Node.js (v18+), pnpm, and a code editor with Claude Code integration are recommended. For full functionality, configure an LLM provider in .kontextmind/config.json.`,
+      question: `What are the prerequisites?`,
+      answer: `Node.js (v18+), pnpm package manager, and optionally a code editor with AI integration. For AI-powered features like summarization, configure an LLM provider.`,
       category: 'setup',
-      tags: ['prerequisites', 'requirements', 'dependencies'],
-      createdAt: new Date().toISOString(),
-    },
-
-    // API behavior
-    {
-      question: `How do I use the main APIs?`,
-      answer: `Import from @kontextmind/core for core functionality. See the individual package exports and README files for detailed API usage.`,
-      category: 'api_behavior',
-      tags: ['api', 'usage', 'interface'],
-      createdAt: new Date().toISOString(),
-    },
-
-    // Authentication
-    {
-      question: `Does this project handle authentication?`,
-      answer: `KontextMind itself doesn't implement application authentication. It provides security policies that AI agents must follow. Configure your application's auth separately.`,
-      category: 'authentication',
-      tags: ['auth', 'security', 'login'],
-      createdAt: new Date().toISOString(),
-    },
-
-    // Error handling
-    {
-      question: `How are errors handled?`,
-      answer: `Errors are logged to .logs/ directory and surfaced through CLI commands. Use "kontextmind doctor" to check system health and diagnose issues.`,
-      category: 'error_handling',
-      tags: ['errors', 'debugging', 'troubleshooting'],
-      createdAt: new Date().toISOString(),
-    },
-    {
-      question: `Why did the scan/index fail?`,
-      answer: `Check that .toolignore exists and is properly configured. Ensure you have run "kontextmind init" first. Use "kontextmind doctor" to identify issues.`,
-      category: 'error_handling',
-      tags: ['scan', 'index', 'failure'],
-      createdAt: new Date().toISOString(),
-    },
-
-    // Dependencies
-    {
-      question: `What dependencies does this project have?`,
-      answer: `Run "kontextmind index" to generate a dependency graph. The knowledge graph will show all imports and relationships between files.`,
-      category: 'dependencies',
-      tags: ['dependencies', 'packages', 'imports'],
+      tags: ['prerequisites', 'requirements'],
       createdAt: new Date().toISOString(),
     },
 
     // Troubleshooting
     {
-      question: `The CLI is not working, what should I check?`,
-      answer: `1. Run "pnpm build" to ensure CLI is built\n2. Check "kontextmind doctor" for configuration issues\n3. Verify Node.js version (v18+)\n4. Check .kontextmind/config.json exists`,
+      question: `Why is something not working?`,
+      answer: `Check the following: (1) Run "pnpm build" to ensure everything is compiled, (2) Run "kontextmind doctor" to diagnose issues, (3) Verify .kontextmind/config.json exists, (4) Check that you have initialized the project with "kontextmind init".`,
       category: 'troubleshooting',
-      tags: ['cli', 'not working', 'debugging'],
+      tags: ['not working', 'debug', 'help'],
       createdAt: new Date().toISOString(),
     },
     {
-      question: `How do I regenerate the knowledge base?`,
-      answer: `Run "kontextmind kb build --changed-only" to rebuild only changed content, or "kontextmind kb build" for a full rebuild.`,
+      question: `How do I troubleshoot issues?`,
+      answer: `Use "kontextmind doctor" to check system health. For specific issues: (1) CLI not found → run "pnpm build", (2) No summaries → run "kontextmind summarize", (3) Empty knowledge graph → run "kontextmind scan" then "kontextmind index".`,
       category: 'troubleshooting',
-      tags: ['kb', 'rebuild', 'refresh'],
+      tags: ['troubleshoot', 'debug', 'fix'],
       createdAt: new Date().toISOString(),
     },
 
-    // Developer onboarding
+    // Architecture
     {
-      question: `How do I add a new feature?`,
-      answer: `1. Read CLAUDE.md for project guidelines\n2. Make changes in the appropriate package\n3. Run tests with "pnpm test"\n4. Build with "pnpm build"\n5. Update relevant documentation`,
-      category: 'developer_onboarding',
-      tags: ['contributing', 'development', 'workflow'],
+      question: `How does this project work?`,
+      answer: `${projectName} works by: (1) Scanning and indexing your codebase, (2) Generating AI-powered summaries of files and functions, (3) Building a knowledge graph of dependencies, (4) Providing a chatbot interface for asking questions about the project.`,
+      category: 'architecture',
+      tags: ['how', 'work', 'architecture'],
       createdAt: new Date().toISOString(),
     },
+
+    // Security
     {
-      question: `What testing approach is used?`,
-      answer: `The project uses Vitest for unit and integration testing. Run "pnpm test" to execute all tests. Tests are located in /tests directory.`,
-      category: 'developer_onboarding',
-      tags: ['testing', 'vitest', 'tdd'],
+      question: `Is this project secure?`,
+      answer: `${projectName} is designed with security in mind. It does not expose code or secrets in responses. The security audit feature helps identify potential vulnerabilities in your codebase. Always configure appropriate access controls for your environment.`,
+      category: 'security',
+      tags: ['security', 'safe'],
       createdAt: new Date().toISOString(),
     },
   ];
@@ -539,13 +508,28 @@ async function generateTroubleshooting(projectRoot: string, options: KBBuildOpti
 }
 
 async function generateResponsePolicy(projectRoot: string): Promise<string> {
+  // STRICT POLICY - Block all code and file structure requests
   const policy: ChatbotPolicy = {
+    // Code protection - ALWAYS OFF
     returnCode: false,
     maxCodeLines: 0,
-    allowFileNames: true,
-    allowFunctionNames: true,
-    allowArchitectureExplanation: true,
+
+    // File/Path protection - ALWAYS OFF
+    allowFileNames: false,
+    allowFilePaths: false,
+    allowDirectoryStructure: false,
+
+    // Information protection - limited access
+    allowFunctionNames: false,
+    allowArchitectureExplanation: true,  // Only high-level explanation, no structure
     allowHighLevelSteps: true,
+    allowTechnicalDetails: false,
+
+    // Strict mode - ACTIVE
+    strictMode: true,
+    blockCodeRequests: true,
+    blockFileStructureRequests: true,
+    blockRawCodeRequests: true,
   };
 
   const path = join(projectRoot, KB_DIR, 'response-policy.json');
@@ -628,7 +612,7 @@ export function getLastAskTime(projectRoot: string): string | null {
   }
 }
 
-// Ask a question
+// Ask a question - Simple flow: search KB, use LLM if needed, filter output
 export async function askQuestion(
   question: string,
   options: AskOptions = {},
@@ -636,29 +620,35 @@ export async function askQuestion(
 ): Promise<QAResult> {
   const mode = options.mode || 'chatbot-readonly';
 
-  // Search KB
+  // Search KB for relevant answers
   const searchResult = searchKnowledgeBase(question, projectRoot);
 
-  // Apply policy based on mode
-  const policy: ChatbotPolicy = {
-    returnCode: mode === 'chatbot-readonly' ? false : true,
-    maxCodeLines: mode === 'chatbot-readonly' ? 0 : 10,
-    allowFileNames: true,
-    allowFunctionNames: true,
-    allowArchitectureExplanation: true,
-    allowHighLevelSteps: true,
-  };
-
-  // Build answer
   let answer = searchResult.bestAnswer;
   let rawCodeAccess = false;
+  let llmEnhanced = false;
+  let provider: string | undefined;
 
-  // Apply no-code filter if requested
-  if (options.noCode || mode === 'chatbot-readonly') {
-    const filtered = applyNoCodeFilter(answer);
-    answer = filtered.text;
-    rawCodeAccess = filtered.hadCode;
+  // If KB doesn't have good answer and LLM is available, enhance it
+  if (searchResult.needsLLM && options.useLLM !== false) {
+    const llmResult = await enhanceWithLLM(question, searchResult, options, projectRoot);
+    if (llmResult.success) {
+      answer = llmResult.answer;
+      llmEnhanced = true;
+      provider = llmResult.provider;
+      rawCodeAccess = llmResult.readRawCode;
+
+      // Add LLM source
+      searchResult.sources.push({
+        type: 'llm-synthesis',
+        name: 'LLM synthesis',
+        relevanceScore: 0.8,
+      });
+    }
   }
+
+  // Filter any code from the final answer
+  const finalFiltered = applyNoCodeFilter(answer);
+  answer = finalFiltered.text;
 
   // Log Q&A event
   await logQNAEvent(projectRoot, {
@@ -678,17 +668,245 @@ export async function askQuestion(
     rawCodeAccess,
     policyApplied: true,
     mode: mode as 'readonly' | 'chatbot-readonly',
+    llmEnhanced,
+    provider,
   };
+}
+
+interface LLMEnhanceResult {
+  success: boolean;
+  answer: string;
+  provider?: string;
+  readRawCode: boolean;
+}
+
+// Get provider: global config → project config → mock
+async function getProvider(projectRoot: string): Promise<{ provider: ModelProvider; name: string } | { error: string }> {
+  // 1. Check global config first (same logic as summarize)
+  const globalConfigDir = process.env.APPDATA || process.env.HOME || '';
+  const globalConfigPath = join(globalConfigDir, '.kontextmind', 'config.json');
+  if (existsSync(globalConfigPath)) {
+    try {
+      const globalConfig = JSON.parse(readFileSync(globalConfigPath, 'utf-8'));
+      const defaultProvider = globalConfig.defaultProvider;
+
+      if (defaultProvider && globalConfig.providers?.[defaultProvider]) {
+        const gp = globalConfig.providers[defaultProvider];
+        const provider = createProviderFromConfig({
+          name: defaultProvider,
+          provider: gp.provider as 'openai' | 'anthropic' | 'ollama' | 'openai-compatible' | 'mock',
+          apiKey: gp.apiKey,
+          baseUrl: gp.baseUrl,
+          model: gp.model,
+        });
+
+        if (provider && provider.getName() !== 'mock') {
+          return { provider, name: `global:${defaultProvider}` };
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
+  // 2. Check project providers.json for selected_provider
+  const projectConfigPath = join(projectRoot, '.kontextmind', 'providers.json');
+  if (existsSync(projectConfigPath)) {
+    try {
+      const projectConfig = JSON.parse(readFileSync(projectConfigPath, 'utf-8'));
+      const selectedProvider = projectConfig.selected_provider;
+
+      if (selectedProvider && selectedProvider !== 'none' && projectConfig.providers?.[selectedProvider]) {
+        const pp = projectConfig.providers[selectedProvider];
+
+        // Map type to provider
+        let providerType: 'openai' | 'anthropic' | 'ollama' | 'openai-compatible' | 'mock' = 'mock';
+        if (pp.type === 'openai-compatible') providerType = 'openai-compatible';
+        else if (pp.type === 'openai') providerType = 'openai';
+        else if (pp.type === 'anthropic') providerType = 'anthropic';
+        else if (pp.type === 'ollama') providerType = 'ollama';
+
+        const provider = createProviderFromConfig({
+          name: selectedProvider,
+          provider: providerType,
+          apiKey: pp.api_key || (pp.api_key_env ? process.env[pp.api_key_env] : undefined),
+          baseUrl: pp.base_url,
+          model: pp.model,
+        });
+
+        if (provider && provider.getName() !== 'mock') {
+          return { provider, name: selectedProvider };
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
+  return {
+    error: 'No LLM provider configured. Please configure a provider:\n' +
+      '  - Globally: kontextmind config add-provider --name <name> --type openai-compatible --baseUrl <url> --apiKey <key>\n' +
+      '  - Then set: kontextmind config set-default-provider --name <name>\n' +
+      '  - Or configure in .kontextmind/providers.json'
+  };
+}
+
+// System prompt for LLM - Clean and simple: explain, don't show code
+const LLM_SYSTEM_PROMPT = `You are a helpful assistant for the KontextMind project.
+
+IMPORTANT RULES:
+1. NEVER output source code, code snippets, or any code-like content
+2. NEVER output file paths, directory structures, or file trees
+3. NEVER output JSON structures or object definitions
+4. NEVER use code formatting (backticks for code)
+
+YOUR TASK:
+Answer the user's question with a clear, verbal explanation.
+Think like a product guide or documentation writer.
+Use plain text, not code formatting.
+
+GOOD: "The scanner works by reading all files in your project and creating a list of them with their content hashes."
+
+BAD: "The scanner uses \`readdirSync\` to read files..."
+
+Focus on explaining features, concepts, and how things work in words.`;
+
+// Enhance answer with LLM - CAN read code internally but NEVER outputs it
+async function enhanceWithLLM(
+  question: string,
+  searchResult: KBSearchResult,
+  options: AskOptions,
+  projectRoot: string
+): Promise<LLMEnhanceResult> {
+  // Get provider
+  const providerResult = await getProvider(projectRoot);
+  if ('error' in providerResult) {
+    console.warn(`LLM enhancement skipped: ${providerResult.error}`);
+    return { success: false, answer: searchResult.bestAnswer, readRawCode: false };
+  }
+
+  const { provider, name: providerName } = providerResult;
+
+  // Build context from KB
+  const contextParts: string[] = [];
+
+  // Add KB content
+  contextParts.push('## Knowledge Base Context\n');
+  contextParts.push(searchResult.bestAnswer);
+
+  // Add sources info
+  if (searchResult.sources.length > 0) {
+    contextParts.push('\n## Available Sources\n');
+    for (const source of searchResult.sources) {
+      contextParts.push(`- [${source.type}] ${source.name || 'unknown'}`);
+    }
+  }
+
+  // If confidence is low, read actual code INTERNALLY to understand context
+  // but NEVER include it in the output
+  let readCode = false;
+  if (searchResult.confidence < 0.4) {
+    const relevantFiles = findRelevantFiles(question, projectRoot);
+    if (relevantFiles.length > 0) {
+      contextParts.push('\n## Code Analysis (Internal Context)\n');
+      for (const file of relevantFiles.slice(0, 3)) {
+        try {
+          const content = readFileSync(file, 'utf-8');
+          // Include code in context for the LLM to understand, but tell it NOT to output it
+          contextParts.push(`\n### ${relative(projectRoot, file)} (analysis only - do not include in response)\n`);
+          contextParts.push(content.slice(0, 2000));
+          readCode = true;
+        } catch { /* skip unreadable files */ }
+      }
+    }
+  }
+
+  const context = contextParts.join('\n');
+
+  try {
+    // Use the clean system prompt from the constant
+    const result = await provider.generateText({
+      prompt: `Question from user: ${question}\n\n${context}\n\nPlease answer with a clear verbal explanation only. Do not include any code, file paths, or technical formatting.`,
+      system: LLM_SYSTEM_PROMPT,
+      maxTokens: 1024,
+      temperature: 0.7,
+    });
+
+    // Return the response directly - trust the LLM
+    return {
+      success: true,
+      answer: result.text || searchResult.bestAnswer,
+      provider: providerName,
+      readRawCode: readCode,
+    };
+  } catch (error) {
+    console.warn(`LLM enhancement failed: ${error instanceof Error ? error.message : String(error)}`);
+    return { success: false, answer: searchResult.bestAnswer, readRawCode: false };
+  }
+}
+
+// Find relevant files based on question keywords
+function findRelevantFiles(question: string, projectRoot: string): string[] {
+  const questionLower = question.toLowerCase();
+  const keywords = questionLower.split(/\s+/).filter(w => w.length > 2);
+
+  const relevantFiles: Array<{ path: string; score: number }> = [];
+
+  // Search in .summaries/files/ for matching summaries
+  const fileSumsDir = join(projectRoot, '.summaries', 'files');
+  if (existsSync(fileSumsDir)) {
+    const files = readdirSync(fileSumsDir).filter(f => f.endsWith('.json'));
+
+    for (const file of files) {
+      const filePath = join(fileSumsDir, file);
+      try {
+        const content = readFileSync(filePath, 'utf-8');
+        const data = JSON.parse(content);
+        const filePathLower = (data.filePath || file).toLowerCase();
+
+        let score = 0;
+        for (const keyword of keywords) {
+          if (filePathLower.includes(keyword)) {
+            score += 2;
+          }
+        }
+
+        if (score > 0 && data.filePath) {
+          relevantFiles.push({ path: join(projectRoot, data.filePath), score });
+        }
+      } catch { /* skip */ }
+    }
+  }
+
+  // Also search symbol index for function names
+  const symbolIndexPath = join(projectRoot, '.kg', 'symbol-index.json');
+  if (existsSync(symbolIndexPath)) {
+    try {
+      const data = JSON.parse(readFileSync(symbolIndexPath, 'utf-8'));
+      for (const symbol of data.symbols || []) {
+        const symbolLower = (symbol.name || '').toLowerCase();
+        let score = 0;
+        for (const keyword of keywords) {
+          if (symbolLower.includes(keyword)) {
+            score += 3;
+          }
+        }
+        if (score > 0 && symbol.filePath) {
+          relevantFiles.push({ path: join(projectRoot, symbol.filePath), score });
+        }
+      }
+    } catch { /* skip */ }
+  }
+
+  // Sort by score and return top matches
+  relevantFiles.sort((a, b) => b.score - a.score);
+  return relevantFiles.map(f => f.path);
 }
 
 // Search across all knowledge base content
 function searchKnowledgeBase(question: string, projectRoot: string): KBSearchResult {
   const questionLower = question.toLowerCase();
-  const words = questionLower.split(/\s+/);
 
-  let bestAnswer = 'No relevant information found. Try rephrasing your question.';
+  let bestAnswer = 'No relevant information found. An LLM-enhanced response can be provided if a provider is configured.';
   let confidence = 0;
   const sources: SourceReference[] = [];
+  const fallbackSources: string[] = [];
 
   // Search Q&A
   const qaPath = join(projectRoot, KB_DIR, 'common-questions.json');
@@ -702,8 +920,12 @@ function searchKnowledgeBase(question: string, projectRoot: string): KBSearchRes
 
       for (const qa of data.questions || []) {
         const score = calculateRelevance(questionLower, qa.question.toLowerCase());
-        if (score > bestQAScore && score > 0.3) {
-          bestQAScore = score;
+        // Also check if answer is relevant
+        const answerScore = calculateRelevance(questionLower, qa.answer.toLowerCase()) * 0.5;
+        const combinedScore = Math.max(score, answerScore);
+
+        if (combinedScore > bestQAScore && combinedScore > 0.1) {
+          bestQAScore = combinedScore;
           bestQA = qa;
         }
       }
@@ -762,7 +984,69 @@ function searchKnowledgeBase(question: string, projectRoot: string): KBSearchRes
     if (existsSync(overviewPath)) {
       sources.push({ type: 'project', name: 'project-overview' });
     }
+    fallbackSources.push('.summaries', '.kg', 'source code');
   }
+
+  // Search task summaries
+  const tasksDir = join(projectRoot, '.kontextmind', 'tasks');
+  if (existsSync(tasksDir)) {
+    try {
+      const taskFiles = readdirSync(tasksDir).filter(f => f.endsWith('.md'));
+      for (const file of taskFiles.slice(-5)) { // Search last 5 tasks
+        const taskPath = join(tasksDir, file);
+        try {
+          const content = readFileSync(taskPath, 'utf-8');
+          const score = calculateRelevance(questionLower, content.toLowerCase());
+          if (score > 0.2) {
+            // Extract title from the task summary
+            const titleMatch = content.match(/^#\s+Task\s+Summary/m);
+            const taskTitle = titleMatch ? file.replace('.md', '') : file;
+            sources.push({
+              type: 'task_summary',
+              name: taskTitle,
+              relevanceScore: score * 0.8 // Slightly lower weight than explicit Q&A
+            });
+            // Update best answer if this task is more relevant
+            if (score > confidence && content.length < 2000) {
+              bestAnswer = extractTaskSummary(content) || bestAnswer;
+              confidence = Math.max(confidence, score * 0.7);
+            }
+          }
+        } catch { /* skip unreadable files */ }
+      }
+    } catch { /* ignore */ }
+  }
+
+  // Search session summaries
+  const sessionsDir = join(projectRoot, '.kontextmind', 'sessions');
+  if (existsSync(sessionsDir)) {
+    try {
+      const sessionFiles = readdirSync(sessionsDir).filter(f => f.endsWith('.md'));
+      for (const file of sessionFiles.slice(-3)) { // Search last 3 sessions
+        const sessionPath = join(sessionsDir, file);
+        try {
+          const content = readFileSync(sessionPath, 'utf-8');
+          const score = calculateRelevance(questionLower, content.toLowerCase());
+          if (score > 0.2) {
+            const sessionTitle = file.replace('.md', '');
+            sources.push({
+              type: 'session_summary',
+              name: sessionTitle,
+              relevanceScore: score * 0.8
+            });
+            // Update best answer if this session is more relevant
+            if (score > confidence && content.length < 2000) {
+              bestAnswer = extractSessionSummary(content) || bestAnswer;
+              confidence = Math.max(confidence, score * 0.7);
+            }
+          }
+        } catch { /* skip unreadable files */ }
+      }
+    } catch { /* ignore */ }
+  }
+
+  // Determine if LLM is needed
+  const needsLLM = confidence < 0.5;
 
   return {
     qa: null,
@@ -772,6 +1056,8 @@ function searchKnowledgeBase(question: string, projectRoot: string): KBSearchRes
     bestAnswer,
     confidence,
     sources,
+    needsLLM,
+    fallbackSources,
   };
 }
 
@@ -790,6 +1076,50 @@ function calculateRelevance(query: string, text: string): number {
   return matches / queryWords.length;
 }
 
+// Extract summary from task summary file
+function extractTaskSummary(content: string): string | null {
+  // Extract key fields from task summary
+  const lines = content.split('\n');
+  const summaryParts: string[] = [];
+
+  for (const line of lines) {
+    // Look for key sections
+    if (line.startsWith('## Goal') || line.startsWith('## Progress') || line.startsWith('## Decisions')) {
+      summaryParts.push(line);
+    } else if (line.startsWith('**') && line.endsWith('**')) {
+      // Bold headers
+      summaryParts.push(line);
+    }
+  }
+
+  if (summaryParts.length > 0) {
+    return summaryParts.slice(0, 15).join('\n'); // Limit to first 15 relevant lines
+  }
+  return null;
+}
+
+// Extract summary from session summary file
+function extractSessionSummary(content: string): string | null {
+  // Extract key fields from session summary
+  const lines = content.split('\n');
+  const summaryParts: string[] = [];
+
+  for (const line of lines) {
+    // Look for key sections
+    if (line.startsWith('## Goals') || line.startsWith('## Tasks') || line.startsWith('## Decisions') || line.startsWith('## Handoff')) {
+      summaryParts.push(line);
+    } else if (line.startsWith('**') && line.endsWith('**')) {
+      // Bold headers
+      summaryParts.push(line);
+    }
+  }
+
+  if (summaryParts.length > 0) {
+    return summaryParts.slice(0, 15).join('\n'); // Limit to first 15 relevant lines
+  }
+  return null;
+}
+
 // Simple hash for logging
 function simpleHash(str: string): string {
   let hash = 0;
@@ -801,28 +1131,33 @@ function simpleHash(str: string): string {
   return Math.abs(hash).toString(16).slice(0, 8);
 }
 
-// No-code filter
+// No-code filter - Removes code blocks from responses only
 function applyNoCodeFilter(text: string): { text: string; hadCode: boolean } {
   let hadCode = false;
   let result = text;
 
-  // Remove fenced code blocks
-  result = result.replace(/```[\s\S]*?```/g, () => {
+  // Remove fenced code blocks (code blocks in responses)
+  const codeBlockMatches = result.match(/```[\s\S]*?```/g);
+  if (codeBlockMatches && codeBlockMatches.length > 0) {
     hadCode = true;
-    return '[Code block removed - enable raw code access for full response]';
-  });
+  }
+  result = result.replace(/```[\s\S]*?```/g, '[Code snippet removed]');
 
-  // Remove inline code
-  result = result.replace(/`[^`]+`/g, (match) => {
-    // Check for potential secrets
-    if (match.includes('=') || match.includes('KEY') || match.includes('SECRET')) {
+  // Remove inline code ONLY if it contains code-like syntax
+  result = result.replace(/`([^`\n]+)`/g, (match, content) => {
+    // If it contains function-like syntax (arrows, parentheses with params, etc.)
+    if (/[=>(]/.test(content) || /\w+\(\)/.test(content)) {
       hadCode = true;
-      return '[value hidden]';
+      return '[code]';
     }
+    // Otherwise keep it (it's probably a filename or term)
     return match;
   });
 
-  return { text: result, hadCode };
+  // Clean up multiple newlines from removed content
+  result = result.replace(/\n{3,}/g, '\n\n');
+
+  return { text: result.trim(), hadCode };
 }
 
 // Log Q&A event

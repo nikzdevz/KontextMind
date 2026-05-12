@@ -120,7 +120,6 @@ export function getAuditSummary(since?: Date): AuditSummary {
               }
               break;
             case 'code_blocked':
-            case 'policy_violation':
               summary.blockedAttempts++;
               if (!summary.lastBlockedEvent || event.timestamp > summary.lastBlockedEvent) {
                 summary.lastBlockedEvent = event.timestamp;

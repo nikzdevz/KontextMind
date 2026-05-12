@@ -231,30 +231,30 @@ export async function doctorCommand(options: OptionValues): Promise<void> {
     message: 'Run "kontextmind serve" to start the server'
   });
 
-  // Phase 2 expected warnings for unimplemented features
-  const expectedWarnings = [
-    {
-      name: 'MCP server',
-      check: () => {
-        const serverJson = resolveInProject(FILES.mcpServerJson);
-        if (!existsSync(serverJson)) return false;
-        const content = JSON.parse(readFileSync(serverJson, 'utf-8'));
-        return content.phase < 7;
-      },
-      message: 'placeholder only. Full implementation in Phase 7.'
-    }
-  ];
+  // Phase 7 checks: MCP Server
+  const mcpToolsPath = resolveInProject('.mcp/tools.json');
+  const mcpToolsExist = existsSync(mcpToolsPath);
+  checks.push({
+    name: 'MCP tools',
+    status: mcpToolsExist ? 'pass' : 'warn',
+    message: mcpToolsExist ? 'defined' : 'not found. Run kontextmind mcp'
+  });
 
-  for (const warnCheck of expectedWarnings) {
-    if (warnCheck.check()) {
-      checks.push({
-        name: warnCheck.name,
-        status: 'warn',
-        message: warnCheck.message
-      });
-      warnings.push(`${warnCheck.name} ${warnCheck.message}`);
-    }
-  }
+  const mcpResourcesPath = resolveInProject('.mcp/resources.json');
+  const mcpResourcesExist = existsSync(mcpResourcesPath);
+  checks.push({
+    name: 'MCP resources',
+    status: mcpResourcesExist ? 'pass' : 'warn',
+    message: mcpResourcesExist ? 'defined' : 'not found. Run kontextmind mcp'
+  });
+
+  const mcpPromptsPath = resolveInProject('.mcp/prompts.json');
+  const mcpPromptsExist = existsSync(mcpPromptsPath);
+  checks.push({
+    name: 'MCP prompts',
+    status: mcpPromptsExist ? 'pass' : 'warn',
+    message: mcpPromptsExist ? 'defined' : 'not found. Run kontextmind mcp'
+  });
 
   const healthy = errors.length === 0;
 

@@ -8,3 +8,6 @@ export * from './symbol-index.js';
 export * from './dependency-index.js';
 export * from './knowledge-graph.js';
 export * from './indexer.js';
+
+// Re-export DependencyIndex type
+export type { DependencyIndex, DependencyRecord } from './parser-types.js';

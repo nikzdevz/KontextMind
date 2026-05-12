@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
 import { initCommand } from './commands/init.js';
+import { deinitCommand } from './commands/deinit.js';
 import { statusCommand } from './commands/status.js';
 import { doctorCommand } from './commands/doctor.js';
 import { scanCommand } from './commands/scan.js';
@@ -14,6 +15,7 @@ import { secretsScanCommand } from './commands/secrets.js';
 import { auditCommand } from './commands/audit.js';
 import { obsidianExportCommand } from './commands/obsidian.js';
 import { placeholderCommand } from './commands/placeholder.js';
+import { configCommand } from './commands/config.js';
 
 const program = new Command();
 
@@ -27,11 +29,17 @@ program
   .description('Initialize KontextMind in the current project')
   .option('-y, --yes', 'Skip prompts and use defaults')
   .option('-f, --force', 'Overwrite existing KontextMind-generated files')
+  .option('-r, --reset', 'Delete existing KontextMind data and reinitialize from scratch')
   .option('--agents <list>', 'Comma-separated agent list (claude,codex,cursor,continue,copilot,generic)')
   .option('--mode <mode>', 'Mode: readonly, suggest, edit-with-approval, full-agent')
   .option('--git <mode>', 'Git integration: auto, enabled, disabled')
   .option('--provider <provider>', 'LLM provider: none, openai, anthropic, ollama, bedrock, openai-compatible')
   .action(initCommand);
+
+program
+  .command('deinit')
+  .description('Remove KontextMind completely from the current project')
+  .action(deinitCommand);
 
 program
   .command('status')
@@ -139,5 +147,19 @@ for (const cmd of futureCommands) {
     .command(cmd)
     .action(() => placeholderCommand(cmd));
 }
+
+program
+  .command('config')
+  .description('Manage KontextMind configuration and providers')
+  .option('--action <action>', 'Action: show, add, remove, list, test, set-api-key')
+  .option('--name <name>', 'Provider name')
+  .option('--type <type>', 'Provider type (e.g., openai-compatible)')
+  .option('--baseUrl <url>', 'API base URL')
+  .option('--apiKey <key>', 'API key')
+  .option('--model <model>', 'Model name')
+  .option('--provider <name>', 'Set default provider')
+  .option('--prompt <text>', 'Test prompt')
+  .option('--global', 'Use global configuration')
+  .action(configCommand);
 
 program.parse();

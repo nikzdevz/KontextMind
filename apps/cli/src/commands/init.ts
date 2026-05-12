@@ -1,14 +1,56 @@
+import path from 'path';
+import { existsSync, rm } from 'fs';
 import { OptionValues } from 'commander';
 import { initProject } from '@kontextmind/core';
 import { printInfo, printSuccess, printWarning, printSection } from '../utils/print.js';
 import { handleError } from '../utils/errors.js';
 
+// Recursive directory deletion helper
+async function deleteDirectory(dirPath: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    rm(dirPath, { recursive: true, force: true }, (err) => {
+      if (err) reject(err);
+      else resolve();
+    });
+  });
+}
+
 export async function initCommand(options: OptionValues): Promise<void> {
   printSection('KontextMind Init');
 
+  const reset = Boolean(options.reset);
+
+  if (reset) {
+    printInfo('Reset mode: Deleting existing KontextMind data...');
+    // Delete all KontextMind directories
+    const kmDirs = [
+      '.kontextmind',
+      '.context',
+      '.kg',
+      '.summaries',
+      '.sessions',
+      '.logs',
+      '.obsidian-export',
+    ];
+
+    for (const dir of kmDirs) {
+      const dirPath = path.join(process.cwd(), dir);
+      if (existsSync(dirPath)) {
+        try {
+          // Use rimraf-like recursive delete
+          await deleteDirectory(dirPath);
+          printSuccess(`  Deleted: ${dir}`);
+        } catch (error) {
+          printWarning(`  Failed to delete ${dir}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
+    }
+    printSuccess('Reset complete. Proceeding with initialization...\n');
+  }
+
   const cliOptions = {
     yes: Boolean(options.yes),
-    force: Boolean(options.force),
+    force: reset ? true : Boolean(options.force), // Force on reset to overwrite
     agents: options.agents ? String(options.agents).split(',').map(a => a.trim()) : undefined,
     mode: options.mode as 'readonly' | 'suggest' | 'edit-with-approval' | 'full-agent' | undefined,
     git: options.git as 'auto' | 'enabled' | 'disabled' | undefined,

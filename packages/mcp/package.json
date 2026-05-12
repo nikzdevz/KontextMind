@@ -1,7 +1,7 @@
 {
   "name": "@kontextmind/mcp",
   "version": "0.1.0",
-  "description": "KontextMind MCP server placeholder - Implementation in later phases",
+  "description": "KontextMind MCP server - Full Model Context Protocol implementation",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

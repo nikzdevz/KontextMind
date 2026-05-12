@@ -115,6 +115,9 @@ async function setApiKey(options: OptionValues): Promise<void> {
     return;
   }
 
+  // Get provider-specific defaults
+  const providerDefaults = getProviderDefaults(name);
+
   if (global) {
     const config = loadGlobalConfig();
     if (config.providers[name]) {
@@ -122,14 +125,20 @@ async function setApiKey(options: OptionValues): Promise<void> {
       config.providers[name].apiKey = apiKey;
       printSuccess(`Updated API key for global provider: ${chalk.green(name)}`);
     } else {
-      // Auto-create provider with default openai-compatible settings
+      // Auto-create provider with provider-specific defaults
       config.providers[name] = {
         provider: 'openai-compatible',
         apiKey: apiKey,
-        baseUrl: 'https://api.anthropic.com/v1',
-        model: 'claude-sonnet-4-7',
+        baseUrl: providerDefaults.baseUrl,
+        model: providerDefaults.model,
       };
       printSuccess(`Created and set API key for global provider: ${chalk.green(name)}`);
+      if (providerDefaults.baseUrl !== 'https://api.anthropic.com/v1') {
+        printInfo(`  Base URL: ${chalk.dim(providerDefaults.baseUrl)}`);
+      }
+      if (providerDefaults.model) {
+        printInfo(`  Model: ${chalk.dim(providerDefaults.model)}`);
+      }
     }
     saveGlobalConfig(config);
   } else {
@@ -146,15 +155,45 @@ async function setApiKey(options: OptionValues): Promise<void> {
         config.providers[name] = {
           type: 'openai-compatible',
           api_key: apiKey,
-          base_url: 'https://api.anthropic.com/v1',
-          model: 'claude-sonnet-4-7',
+          base_url: providerDefaults.baseUrl,
+          model: providerDefaults.model,
         };
         printSuccess(`Created and set API key for project provider: ${chalk.green(name)}`);
+        if (providerDefaults.baseUrl !== 'https://api.anthropic.com/v1') {
+          printInfo(`  Base URL: ${chalk.dim(providerDefaults.baseUrl)}`);
+        }
+        if (providerDefaults.model) {
+          printInfo(`  Model: ${chalk.dim(providerDefaults.model)}`);
+        }
       }
       writeFileSync(projectConfigPath, JSON.stringify(config, null, 2), 'utf-8');
     } else {
       printWarning('Project not initialized. Use --global or run: kontextmind init --yes');
     }
+  }
+}
+
+/**
+ * Get provider-specific default configuration
+ */
+function getProviderDefaults(providerName: string): { baseUrl: string; model: string } {
+  switch (providerName.toLowerCase()) {
+    case 'opusmax':
+      return {
+        baseUrl: 'https://api.opusmax.pro/v1',
+        model: 'claude-opus-4-7',
+      };
+    case 'claude':
+    case 'anthropic':
+      return {
+        baseUrl: 'https://api.anthropic.com/v1',
+        model: 'claude-sonnet-4-7',
+      };
+    default:
+      return {
+        baseUrl: 'https://api.anthropic.com/v1',
+        model: 'claude-sonnet-4-7',
+      };
   }
 }
 
