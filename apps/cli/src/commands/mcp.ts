@@ -81,13 +81,15 @@ function sendNotification(method: string, params?: unknown): void {
 export async function mcpCommand(options: OptionValues): Promise<void> {
   const projectRoot = process.cwd();
   const project = detectProject(projectRoot);
+  const transport = (options.transport as 'stdio' | 'http') || 'stdio';
+  const mode = (options.mode as 'readonly' | 'chatbot-readonly' | 'suggest' | 'edit-with-approval') || 'readonly';
 
   // Set MCP server status - show initializing state
   setMCPServerStatus({
     running: true,
     version: MCP_VERSION,
-    mode: (options.mode as 'readonly' | 'chatbot-readonly' | 'suggest' | 'edit-with-approval') || 'readonly',
-    transport: (options.transport as 'stdio' | 'http') || 'stdio',
+    mode,
+    transport,
     startedAt: new Date().toISOString(),
     providerConfigured: true,
   });
