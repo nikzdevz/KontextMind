@@ -11,9 +11,9 @@ import {
   getVersionHistory,
   getLatestVersion,
   computeStatistics,
-  toJSONL,
-  toChatML,
-  toShareGPT,
+  jsonl,
+  chatml,
+  sharegpt,
 } from '@kontextmind/core';
 
 export async function datasetExportCommand(options: OptionValues): Promise<void> {
@@ -65,16 +65,16 @@ export async function datasetExportCommand(options: OptionValues): Promise<void>
     let content: string;
     switch (format) {
       case 'chatml':
-        content = toChatML(dedupResult.records);
+        content = chatml.toChatML(dedupResult.records);
         break;
       case 'sharegpt':
-        content = toShareGPT(dedupResult.records);
+        content = sharegpt.toShareGPT(dedupResult.records);
         break;
       case 'json':
         content = JSON.stringify(dedupResult.records, null, 2);
         break;
       default:
-        content = toJSONL(dedupResult.records);
+        content = jsonl.toJSONL(dedupResult.records);
     }
 
     // Write output
@@ -252,16 +252,16 @@ export async function datasetVersionCommand(action: string, options: OptionValue
         let content: string;
         switch (format) {
           case 'chatml':
-            content = toChatML(records);
+            content = chatml.toChatML(records);
             break;
           case 'sharegpt':
-            content = toShareGPT(records);
+            content = sharegpt.toShareGPT(records);
             break;
           case 'json':
             content = JSON.stringify(records, null, 2);
             break;
           default:
-            content = toJSONL(records);
+            content = jsonl.toJSONL(records);
         }
 
         const { writeFileSync } = await import('fs');
