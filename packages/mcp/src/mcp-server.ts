@@ -2504,10 +2504,14 @@ async function handleShouldContinue(): Promise<{ content: Array<{ type: string; 
 }
 
 // Handle MCP resource call
-export async function handleResourceCall(uri: string): Promise<{ contents: Array<{ uri: string; text: string; mimeType: string }> }> {
-  const projectRoot = getProjectRoot();
+export async function handleResourceCall(
+  uri: string,
+  _args?: Record<string, unknown>,
+  projectRoot?: string
+): Promise<{ contents: Array<{ uri: string; text: string; mimeType: string }> }> {
+  const root = projectRoot || getProjectRoot();
 
-  await logMCPEvent(projectRoot, {
+  await logMCPEvent(root, {
     timestamp: new Date().toISOString(),
     resource: uri,
     mode: 'readonly',
@@ -2518,7 +2522,7 @@ export async function handleResourceCall(uri: string): Promise<{ contents: Array
 
   switch (uri) {
     case 'kontextmind://project/overview': {
-      const overviewPath = join(projectRoot, '.kontextmind', 'chatbot', 'project-overview.md');
+      const overviewPath = join(root, '.kontextmind', 'chatbot', 'project-overview.md');
       if (existsSync(overviewPath)) {
         content = readFileSync(overviewPath, 'utf-8');
         mimeType = 'text/markdown';
@@ -2529,7 +2533,7 @@ export async function handleResourceCall(uri: string): Promise<{ contents: Array
     }
 
     case 'kontextmind://project/architecture': {
-      const archPath = join(projectRoot, '.kontextmind', 'chatbot', 'architecture.md');
+      const archPath = join(root, '.kontextmind', 'chatbot', 'architecture.md');
       if (existsSync(archPath)) {
         content = readFileSync(archPath, 'utf-8');
         mimeType = 'text/markdown';
@@ -2540,7 +2544,7 @@ export async function handleResourceCall(uri: string): Promise<{ contents: Array
     }
 
     case 'kontextmind://project/current-state': {
-      const statePath = join(projectRoot, '.context', 'current-state.md');
+      const statePath = join(root, '.context', 'current-state.md');
       if (existsSync(statePath)) {
         content = readFileSync(statePath, 'utf-8');
         mimeType = 'text/markdown';
@@ -2645,11 +2649,12 @@ export async function handleResourceCall(uri: string): Promise<{ contents: Array
 // Handle MCP prompt call
 export async function handlePromptCall(
   promptName: string,
-  args: Record<string, unknown>
+  args: Record<string, unknown>,
+  projectRoot?: string
 ): Promise<{ messages: Array<{ role: string; content: { type: string; text: string } }> }> {
-  const projectRoot = getProjectRoot();
+  const root = projectRoot || getProjectRoot();
 
-  await logMCPEvent(projectRoot, {
+  await logMCPEvent(root, {
     timestamp: new Date().toISOString(),
     prompt: promptName,
     arguments_summary: JSON.stringify(args).slice(0, 100),
@@ -2679,7 +2684,7 @@ export async function handlePromptCall(
       break;
 
     case 'resume_last_task': {
-      const handoffPath = join(projectRoot, '.context', 'handoff.md');
+      const handoffPath = join(root, '.context', 'handoff.md');
       const handoffContent = existsSync(handoffPath) ? readFileSync(handoffPath, 'utf-8') : '';
       text = `## Resume Context\n\nLatest handoff:\n\n${handoffContent.substring(0, 2000) || 'No handoff available'}`;
       break;

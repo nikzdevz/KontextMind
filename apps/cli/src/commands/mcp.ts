@@ -82,25 +82,12 @@ export async function mcpCommand(options: OptionValues): Promise<void> {
   const projectRoot = process.cwd();
   const project = detectProject(projectRoot);
 
-  if (!project.initialized) {
-    console.error(JSON.stringify({
-      jsonrpc: '2.0',
-      error: { code: -32000, message: 'KontextMind is not initialized in this directory. Run: kontextmind init' },
-      id: null,
-    }));
-    process.exit(1);
-  }
-
-  const mode = (options.mode as 'readonly' | 'chatbot-readonly' | 'suggest' | 'edit-with-approval') || 'readonly';
-  const transport = (options.transport as 'stdio' | 'http') || 'stdio';
-  const port = parseInt(String(options.port || '7332'), 10);
-
-  // Set MCP server status
+  // Set MCP server status - show initializing state
   setMCPServerStatus({
     running: true,
     version: MCP_VERSION,
-    mode,
-    transport,
+    mode: (options.mode as 'readonly' | 'chatbot-readonly' | 'suggest' | 'edit-with-approval') || 'readonly',
+    transport: (options.transport as 'stdio' | 'http') || 'stdio',
     startedAt: new Date().toISOString(),
     providerConfigured: true,
   });
@@ -149,6 +136,14 @@ export async function mcpCommand(options: OptionValues): Promise<void> {
 
         try {
           const message = JSON.parse(trimmed);
+
+          // Check if project is initialized before handling most methods
+          const needsInitCheck = !['initialize', 'ping'].includes(message.method);
+
+          if (needsInitCheck && !project.initialized) {
+            sendError(message.id, -32000, 'KontextMind is not initialized. Run: kontextmind init');
+            continue;
+          }
 
           // Handle different MCP methods
           switch (message.method) {
@@ -252,10 +247,17 @@ export async function mcpCommand(options: OptionValues): Promise<void> {
 
   } else {
     // HTTP mode
+    if (!project.initialized) {
+      console.log(chalk.red('KontextMind is not initialized in this directory.'));
+      console.log(`Run: ${chalk.cyan('kontextmind init')}`);
+      process.exit(1);
+    }
+
+    const port = parseInt(String(options.port || '7332'), 10);
+
     console.log(chalk.bold('KontextMind MCP Server'));
     console.log(`Starting MCP server at http://127.0.0.1:${port}/mcp\n`);
-    console.log(`Mode: ${mode}`);
-    console.log(`Transport: ${transport}`);
+    console.log(`Mode: ${project.mode || 'readonly'}`);
     console.log(`Project: ${project.name}\n`);
     console.log(chalk.green('MCP server ready. Connect via stdio mode or HTTP endpoint.'));
     console.log(chalk.gray('Press Ctrl+C to stop'));
