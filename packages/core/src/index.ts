@@ -36,6 +36,7 @@ export * from './filesystem/file-exists.js';
 export { initProject, detectProject, detectGitAvailable, createFiles, createDirectories } from './init/init-project.js';
 export type { DetectedProject } from './init/detect-project.js';
 export type { FileToCreate } from './init/create-files.js';
+export type { MCPServerConfig, MCPConfig, MCPConfigResult } from './init/init-project.js';
 
 // Scanner
 export * from './scanner/index.js';
