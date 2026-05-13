@@ -116,7 +116,6 @@ export async function mcpCommand(options: OptionValues): Promise<void> {
       },
       id: null,
     }) + '\n');
-    process.stdout.flush();
 
     // Handle stdio input with proper buffering
     let buffer = '';
