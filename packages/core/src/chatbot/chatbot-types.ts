@@ -7,6 +7,8 @@ export interface QAAccuracy {
 }
 
 export interface QAResult {
+  // Unique ID for tracking and feedback (especially for API clients)
+  responseId: string;
   answer: string;
   confidence: number;
   sources: SourceReference[];
@@ -15,6 +17,11 @@ export interface QAResult {
   mode: 'readonly' | 'chatbot-readonly';
   llmEnhanced: boolean;
   provider?: string;
+  // Source of the request - helps determine if feedback is expected
+  source: 'cli' | 'api' | 'mcp';
+  // Feedback status for API clients
+  feedbackSupported: boolean;
+  feedbackReceived?: 'like' | 'dislike' | null;
 }
 
 export interface SourceReference {
@@ -93,6 +100,11 @@ export interface AskOptions {
   json?: boolean;
   noCode?: boolean;
   useLLM?: boolean;
+  // Source of the request - determines if feedback is expected
+  source?: 'cli' | 'api' | 'mcp';
+  // Session tracking for multi-turn conversations
+  sessionId?: string;
+  conversationTurn?: number;
 }
 
 export interface KBSearchResult {
@@ -105,4 +117,114 @@ export interface KBSearchResult {
   sources: SourceReference[];
   needsLLM: boolean;
   fallbackSources: string[];
+}
+
+// Feedback types for response quality tracking
+export interface ResponseFeedback {
+  responseId: string;
+  feedback: 'like' | 'dislike';
+  reason?: string;
+  userComment?: string;
+  timestamp: string;
+  source: 'cli' | 'api' | 'mcp';
+}
+
+// Q&A event for logging with feedback support
+export interface QNAEvent {
+  responseId: string;
+  sessionId: string | null;  // Link to session for conversation context
+  question: string;
+  questionHash: string;
+  answer: string;
+  confidence: number;
+  sources: string[];
+  rawCodeAccess: boolean;
+  mode: string;
+  source: 'cli' | 'api' | 'mcp';
+  feedbackSupported: boolean;
+  feedbackReceived?: 'like' | 'dislike' | null;
+  feedbackTimestamp?: string;
+  codeRequestDetected?: boolean;
+  timestamp: string;
+  conversationTurn?: number;  // Position in conversation for session tracking
+  topics?: string[];        // Topics discussed in this turn
+}
+
+// Session types for multi-turn conversations
+export interface ChatMessage {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: string;
+  responseId?: string;           // Links to QNAEvent
+  feedbackReceived?: 'like' | 'dislike';
+  attachments?: Attachment[];
+}
+
+export interface Attachment {
+  type: 'file' | 'image' | 'code';
+  name: string;
+  content?: string;
+  path?: string;
+}
+
+export interface ConversationContext {
+  topics: string[];             // Topics discussed in session
+  entities: EntityReference[];   // Files/modules referenced
+  intentHistory: string[];        // User intent progression
+  lastQuestionEmbedding?: number[];
+}
+
+export interface EntityReference {
+  id: string;
+  name: string;
+  type: string;
+  referenceCount: number;
+}
+
+export interface SessionMetadata {
+  messageCount: number;
+  userMessageCount: number;
+  assistantMessageCount: number;
+  totalTokens: number;
+  averageConfidence: number;
+  sourcesUsed: string[];
+  startedAt: string;
+  lastActivityAt: string;
+}
+
+export interface ChatSession {
+  id: string;
+  projectName: string;
+  projectRoot: string;
+  createdAt: string;
+  updatedAt: string;
+  messages: ChatMessage[];
+  context: ConversationContext;
+  metadata: SessionMetadata;
+}
+
+export interface SessionSummary {
+  id: string;
+  projectName: string;
+  createdAt: string;
+  lastActivityAt: string;
+  messageCount: number;
+  topics: string[];
+  preview: string;  // First user message or "New conversation"
+}
+
+// Options for creating a session
+export interface SessionOptions {
+  projectName?: string;
+  systemPrompt?: string;
+  metadata?: Partial<SessionMetadata>;
+}
+
+// Context building options for askQuestion integration
+export interface ContextOptions {
+  maxTurns?: number;        // Number of conversation turns to include
+  maxTokens?: number;       // Token budget for context
+  includeSystemPrompt?: boolean;
+  includeTopics?: boolean;
 }

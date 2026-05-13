@@ -3,6 +3,9 @@ import { createServer, IncomingMessage, ServerResponse, Server } from 'http';
 import { URL } from 'url';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
+import { sessionService } from './services/session-service.js';
+import { askService } from './services/ask-service.js';
+import { datasetService } from './services/dataset-service.js';
 
 const LOG_FILE = '.logs/api-events.log';
 const SERVER_VERSION = '0.1.0';
@@ -139,7 +142,7 @@ async function handleStatus(res: ServerResponse): Promise<void> {
   sendJson(res, 200, output);
 }
 
-// Route: POST /ask
+// Route: POST /ask (with optional session support)
 async function handleAsk(res: ServerResponse, body: Record<string, unknown> | null): Promise<void> {
   const projectRoot = getProjectRoot();
 
@@ -148,14 +151,123 @@ async function handleAsk(res: ServerResponse, body: Record<string, unknown> | nu
     return;
   }
 
-  sendJson(res, 200, {
-    answer: `The project is managed by KontextMind. Configure LLM provider and run "kontextmind kb build" first.`,
-    confidence: 0.3,
-    sources: [],
-    raw_code_access: false,
-    policy_applied: true,
-    note: 'Full ask requires @kontextmind/core. Use CLI: kontextmind ask'
-  });
+  const { question, sessionId, mode } = body;
+
+  try {
+    // If sessionId provided, use session-aware ask
+    if (sessionId && typeof sessionId === 'string') {
+      const result = await sessionService.askWithSession(
+        projectRoot.split(/[\\/]/).pop() || 'project',
+        question as string,
+        sessionId,
+        (mode as string) || 'chatbot-readonly'
+      );
+      sendJson(res, 200, result);
+      return;
+    }
+
+    // Otherwise, use regular ask
+    const result = await askService.ask(
+      projectRoot.split(/[\\/]/).pop() || 'project',
+      question as string,
+      (mode as string) || 'chatbot-readonly'
+    );
+    sendJson(res, 200, result);
+  } catch (error) {
+    console.error('Ask error:', error);
+    sendJson(res, 500, { error: 'Failed to process question', message: error instanceof Error ? error.message : String(error) });
+  }
+}
+
+// Route: POST /sessions - Create a new session
+async function handleCreateSession(res: ServerResponse, body: Record<string, unknown> | null): Promise<void> {
+  const projectRoot = getProjectRoot();
+  const projectName = projectRoot.split(/[\\/]/).pop() || 'project';
+
+  if (!body || !body.projectName) {
+    sendJson(res, 400, { error: 'projectName is required' });
+    return;
+  }
+
+  try {
+    const result = await sessionService.createSession(projectName, body as { projectName?: string });
+    sendJson(res, 201, result);
+  } catch (error) {
+    console.error('Create session error:', error);
+    sendJson(res, 500, { error: 'Failed to create session', message: error instanceof Error ? error.message : String(error) });
+  }
+}
+
+// Route: GET /sessions - List all sessions for current project
+async function handleListSessions(res: ServerResponse): Promise<void> {
+  const projectRoot = getProjectRoot();
+  const projectName = projectRoot.split(/[\\/]/).pop() || 'project';
+
+  try {
+    const result = await sessionService.listSessions(projectName);
+    sendJson(res, 200, result);
+  } catch (error) {
+    console.error('List sessions error:', error);
+    sendJson(res, 500, { error: 'Failed to list sessions', message: error instanceof Error ? error.message : String(error) });
+  }
+}
+
+// Route: GET /sessions/:sessionId - Get a specific session
+async function handleGetSession(res: ServerResponse, sessionId: string): Promise<void> {
+  const projectRoot = getProjectRoot();
+  const projectName = projectRoot.split(/[\\/]/).pop() || 'project';
+
+  try {
+    const result = await sessionService.getSession(projectName, sessionId);
+    sendJson(res, 200, result);
+  } catch (error) {
+    console.error('Get session error:', error);
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes('not found')) {
+      sendJson(res, 404, { error: 'Session not found' });
+    } else {
+      sendJson(res, 500, { error: 'Failed to get session', message });
+    }
+  }
+}
+
+// Route: DELETE /sessions/:sessionId - Delete a session
+async function handleDeleteSession(res: ServerResponse, sessionId: string): Promise<void> {
+  const projectRoot = getProjectRoot();
+  const projectName = projectRoot.split(/[\\/]/).pop() || 'project';
+
+  try {
+    const result = await sessionService.deleteSession(projectName, sessionId);
+    sendJson(res, 200, result);
+  } catch (error) {
+    console.error('Delete session error:', error);
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes('not found')) {
+      sendJson(res, 404, { error: 'Session not found' });
+    } else {
+      sendJson(res, 500, { error: 'Failed to delete session', message });
+    }
+  }
+}
+
+// Route: GET /sessions/:sessionId/context - Get conversation context
+async function handleGetSessionContext(res: ServerResponse, sessionId: string, query: URLSearchParams): Promise<void> {
+  const projectRoot = getProjectRoot();
+  const projectName = projectRoot.split(/[\\/]/).pop() || 'project';
+  const maxTurns = query.get('maxTurns') ? parseInt(query.get('maxTurns')!) : undefined;
+
+  try {
+    const result = await sessionService.getContext(projectName, sessionId, maxTurns);
+    sendJson(res, 200, result);
+  } catch (error) {
+    console.error('Get session context error:', error);
+    const message = error instanceof Error ? error.message : String(error);
+    if (message.includes('not found')) {
+      sendJson(res, 404, { error: 'Session not found' });
+    } else {
+      sendJson(res, 500, { error: 'Failed to get context', message });
+    }
+  }
 }
 
 // Route: GET /graph
@@ -249,6 +361,67 @@ async function handleAudit(res: ServerResponse): Promise<void> {
   sendJson(res, 200, audit);
 }
 
+// Route: POST /dataset/export - Export dataset
+async function handleDatasetExport(res: ServerResponse, body: Record<string, unknown> | null): Promise<void> {
+  const projectRoot = getProjectRoot();
+  const projectName = projectRoot.split(/[\\/]/).pop() || 'project';
+
+  if (!body) {
+    sendJson(res, 400, { error: 'Request body is required' });
+    return;
+  }
+
+  try {
+    const options = {
+      format: (body.format as string) || 'jsonl',
+      minConfidence: body.minConfidence as number | undefined,
+      includeCodeRequests: body.includeCodeRequests as boolean | undefined,
+      apiOnly: body.apiOnly as boolean | undefined,
+      since: body.since as string | undefined,
+      outputPath: body.outputPath as string | undefined,
+    };
+
+    const result = await datasetService.exportDataset(projectName, options);
+    sendJson(res, 200, {
+      success: true,
+      path: result.path,
+      recordCount: result.recordCount,
+      version: result.version,
+    });
+  } catch (error) {
+    console.error('Dataset export error:', error);
+    sendJson(res, 500, { error: 'Failed to export dataset', message: error instanceof Error ? error.message : String(error) });
+  }
+}
+
+// Route: GET /dataset/stats - Get dataset statistics
+async function handleDatasetStats(res: ServerResponse): Promise<void> {
+  const projectRoot = getProjectRoot();
+  const projectName = projectRoot.split(/[\\/]/).pop() || 'project';
+
+  try {
+    const stats = await datasetService.getStats(projectName);
+    sendJson(res, 200, stats);
+  } catch (error) {
+    console.error('Dataset stats error:', error);
+    sendJson(res, 500, { error: 'Failed to get stats', message: error instanceof Error ? error.message : String(error) });
+  }
+}
+
+// Route: GET /dataset/versions - List dataset versions
+async function handleDatasetVersions(res: ServerResponse): Promise<void> {
+  const projectRoot = getProjectRoot();
+  const projectName = projectRoot.split(/[\\/]/).pop() || 'project';
+
+  try {
+    const result = await datasetService.getVersionHistory(projectName);
+    sendJson(res, 200, result);
+  } catch (error) {
+    console.error('Dataset versions error:', error);
+    sendJson(res, 500, { error: 'Failed to list versions', message: error instanceof Error ? error.message : String(error) });
+  }
+}
+
 // Main request handler
 async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise<void> {
   const startTime = Date.now();
@@ -273,6 +446,10 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise
   // Route handling
   let status = 200;
 
+  // Extract path segments for session routes
+  const pathParts = pathname.split('/').filter(Boolean);
+  const basePath = pathParts[0] || '';
+
   try {
     if (pathname === '/health' && method === 'GET') {
       await handleHealth(res);
@@ -280,6 +457,19 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise
       await handleStatus(res);
     } else if (pathname === '/ask' && method === 'POST') {
       await handleAsk(res, body);
+    } else if (pathname === '/sessions' && method === 'POST') {
+      await handleCreateSession(res, body);
+    } else if (pathname === '/sessions' && method === 'GET') {
+      await handleListSessions(res);
+    } else if (pathParts[0] === 'sessions' && pathParts.length === 2 && method === 'GET') {
+      // GET /sessions/:sessionId
+      await handleGetSession(res, pathParts[1]);
+    } else if (pathParts[0] === 'sessions' && pathParts.length === 2 && method === 'DELETE') {
+      // DELETE /sessions/:sessionId
+      await handleDeleteSession(res, pathParts[1]);
+    } else if (pathParts[0] === 'sessions' && pathParts.length === 3 && pathParts[2] === 'context' && method === 'GET') {
+      // GET /sessions/:sessionId/context
+      await handleGetSessionContext(res, pathParts[1], url.searchParams);
     } else if (pathname === '/graph' && method === 'GET') {
       await handleGraph(res);
     } else if (pathname === '/file-summary' && method === 'GET') {
@@ -290,6 +480,15 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise
       await handleKbBuild(res, body);
     } else if (pathname === '/audit' && method === 'GET') {
       await handleAudit(res);
+    } else if (pathParts[0] === 'dataset' && pathParts.length === 2 && method === 'POST') {
+      // POST /dataset/export
+      await handleDatasetExport(res, body);
+    } else if (pathParts[0] === 'dataset' && pathParts.length === 2 && method === 'GET') {
+      // GET /dataset/stats
+      await handleDatasetStats(res);
+    } else if (pathParts[0] === 'dataset' && pathParts[1] === 'versions' && method === 'GET') {
+      // GET /dataset/versions
+      await handleDatasetVersions(res);
     } else {
       status = 404;
       sendJson(res, 404, { error: 'Not found', path: pathname });

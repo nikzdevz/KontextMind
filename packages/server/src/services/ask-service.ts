@@ -2,10 +2,14 @@
 import { existsSync, readFileSync, appendFileSync } from 'fs';
 import { join } from 'path';
 import { execSync } from 'child_process';
-import { v4 as uuidv4 } from 'uuid';
 import type { AskResponse, Source } from '../types/index.js';
 
 const PROJECTS_DIR = process.env.DATA_DIR || '/kontextmind/projects';
+
+// Generate UUID-like ID without external dependency
+function generateResponseId(): string {
+  return `api_${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 8)}`;
+}
 
 export class AskService {
   private getProjectDir(name: string): string {
@@ -28,10 +32,11 @@ export class AskService {
       throw new Error('Project KB not ready. Please wait for initialization to complete.');
     }
 
-    const qaId = `qa_${uuidv4()}`;
+    // Generate API-level ID
+    const responseId = generateResponseId();
 
     try {
-      // Run ask command via CLI
+      // Run ask command via CLI - API mode tells CLI this is for API clients
       const escapedQuestion = question.replace(/"/g, '\\"');
       const output = execSync(
         `cd "${projectDir}" && kontextmind ask "${escapedQuestion}" --mode ${mode} --json`,
@@ -44,6 +49,9 @@ export class AskService {
 
       const result = JSON.parse(output);
 
+      // Use the CLI's responseId if available, otherwise use our own
+      const qaId = result.response_id || responseId;
+
       // Record to history
       this.recordToHistory(projectDir, {
         id: qaId,
@@ -52,6 +60,7 @@ export class AskService {
         confidence: result.confidence,
         sources: result.sources,
         timestamp: new Date().toISOString(),
+        feedback_supported: result.feedback_supported !== false, // API supports feedback
       });
 
       return {
@@ -60,7 +69,8 @@ export class AskService {
         confidence: result.confidence,
         sources: result.sources || [],
         tier: this.detectTier(result),
-        cached: false, // Will be updated by CLI with actual cache status
+        cached: false,
+        feedback_supported: true, // API clients can provide feedback
       };
     } catch (error) {
       if (error instanceof Error && error.message.includes('ENOENT')) {
@@ -91,6 +101,7 @@ export class AskService {
     confidence: number;
     sources: Source[];
     timestamp: string;
+    feedback_supported?: boolean;
   }): void {
     const historyPath = join(projectDir, '.kontextmind', 'chatbot', 'qa-history.jsonl');
     const line = JSON.stringify(record) + '\n';

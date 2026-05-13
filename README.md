@@ -1,126 +1,257 @@
 # KontextMind
 
-**KontextMind — the shared project brain for AI coding agents.**
+**The Shared Project Brain for AI Coding Agents**
 
-KontextMind is a local-first project memory, knowledge graph, chatbot Q&A, and agent-continuity layer for AI coding agents like Claude Code, Codex, Cursor, Continue, GitHub Copilot, VS Code agents, and MCP-compatible clients.
+KontextMind is a CLI tool and HTTP API server that provides AI coding agents with a centralized knowledge base about your project. It indexes code, generates summaries, builds knowledge graphs, and enables Q&A functionality—all designed to help AI assistants understand and work with your codebase more effectively.
 
-## What is KontextMind?
+## Features
 
-KontextMind stores project context, handoff notes, summaries, knowledge graph data, and policy rules directly in your project repository. This helps AI coding agents understand your codebase structure, conventions, ongoing work, and technical decisions without requiring external databases or services.
+### Core Capabilities
 
-### Key Features
+- **Code Indexing** — Scans project files and builds a comprehensive file index with change detection
+- **Symbol Extraction** — Parses code to extract functions, classes, interfaces, and their relationships
+- **AI Summaries** — Generates natural language summaries for files, functions, and modules using LLM providers
+- **Knowledge Graph** — Builds a graph of project entities and their dependencies
+- **Chatbot KB** — A knowledge base that answers questions about your project without revealing code
+- **Session Management** — Multi-turn conversations with persistent context
+- **Dataset Preparation** — Export training-ready datasets from Q&A interactions
 
-- **Local-first**: All data stays in your project repository
-- **Agent-agnostic**: Works with Claude Code, Codex, Cursor, Continue, Copilot, and more
-- **Privacy-preserving**: No external services required
-- **MCP-ready**: Full Model Context Protocol support
-- **Chatbot mode**: Natural language Q&A about your codebase
-- **Security-focused**: Secret scanning, redaction, and audit logging
-- **Obsidian export**: Export project brain to Obsidian-compatible notes
+### Security & Privacy
 
-## MVP Status
+- **No Code Exposure** — The chatbot never reveals source code, file paths, or directory structures
+- **Secret Scanning** — Detects secrets and credentials committed to the repository
+- **Privacy-First** — Designed to protect sensitive project information
 
-**All phases 1-10 are complete.** KontextMind is production-ready for evaluation.
+### Integration Points
+
+- **CLI** — Full-featured command-line interface
+- **HTTP API** — REST API server for frontend applications
+- **MCP Server** — Model Context Protocol server for AI agent integration
+
+---
+
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/your-org/kontextmind.git
+cd kontextmind
+
+# Install dependencies
+pnpm install
+
+# Build all packages
+pnpm build
+
+# Link CLI globally (optional)
+pnpm link -g
+```
+
+### Requirements
+
+- Node.js 18+
+- pnpm 8+
+- For AI features: An LLM provider (OpenAI, Anthropic, Ollama, or custom)
+
+---
 
 ## Quick Start
 
-```bash
-# Initialize KontextMind
-kontextmind init --yes
+### 1. Initialize a Project
 
-# Scan and index project
+```bash
+cd your-project
+kontextmind init
+```
+
+This creates:
+- `.kontextmind/config.json` — Project configuration
+- `CLAUDE.md` — Context for AI assistants
+- `AGENTS.md` — Agent-specific instructions
+- Policy and instruction files
+
+### 2. Index Your Project
+
+```bash
+# Scan files and build index
 kontextmind scan
+
+# Extract symbols and build knowledge graph
 kontextmind index
 
-# Generate summaries (mock mode for testing)
-kontextmind summarize --mock
+# Generate AI summaries (requires LLM provider)
+kontextmind summarize --mock    # Use mock provider
+kontextmind summarize           # Use configured provider
+```
 
+### 3. Build the Knowledge Base
+
+```bash
 # Build chatbot knowledge base
-kontextmind kb build --mock
+kontextmind kb build
+```
 
-# Ask questions about your project
+### 4. Ask Questions
+
+```bash
+# Simple Q&A
 kontextmind ask "What is this project about?"
 
-# Start API server
-kontextmind serve --mode chatbot-readonly
+# With JSON output
+kontextmind ask "How does authentication work?" --json
 
-# Start MCP server
-kontextmind mcp
-
-# Scan for secrets
-kontextmind secrets scan
-
-# Export to Obsidian
-kontextmind obsidian export
-
-# View audit summary
-kontextmind audit
-
-# Check status
-kontextmind status
-kontextmind doctor
+# Session-based chat
+kontextmind session create
+kontextmind session chat <session-id> "What files handle user authentication?"
 ```
 
-## Features by Phase
-
-| Phase | Features |
-|-------|----------|
-| 1 | Foundation, CLI, init, agent instruction files |
-| 2 | Scanner, file index, hash tracking, improved status/doctor |
-| 3 | Parser, symbol index, basic knowledge graph |
-| 4 | Summary engine, stale detection |
-| 5 | Chatbot knowledge base, ask command |
-| 6 | HTTP API server |
-| 7 | MCP server (Model Context Protocol) |
-| 8 | Audit, security scanning, cost logs, secret detection |
-| 9 | Obsidian export |
-| 10 | Polish, docs, examples, release readiness |
-
-## CLI Commands
-
-### Core Commands
+### 5. Start API Server
 
 ```bash
-kontextmind init           # Initialize project
-kontextmind status         # Show project status
-kontextmind doctor         # Verify configuration health
+# Start HTTP API server
+kontextmind serve --port 7331
+
+# Or with custom settings
+kontextmind serve --port 8080 --host 0.0.0.0
 ```
 
-### Indexing Commands
+---
 
-```bash
-kontextmind scan           # Scan project files
-kontextmind index          # Extract symbols and build knowledge graph
-kontextmind summarize      # Generate AI summaries for files
-kontextmind kb build       # Build chatbot knowledge base
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│                        User Interface Layer                          │
+│  ┌─────────┐  ┌──────────┐  ┌─────────┐  ┌─────────────────────────┐  │
+│  │   CLI  │  │ HTTP API │  │ MCP CLI │  │  Frontend / AI Agent   │  │
+│  └────┬────┘  └────┬─────┘  └────┬────┘  └───────────┬───────────┘  │
+└───────┼───────────┼─────────────┼─────────────────────┼─────────────┘
+        │           │            │                   │
+        ▼           ▼            ▼                   ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Core Package (@kontextmind/core)             │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌─────────┐  │
+│  │   Scanner    │  │   Parser    │  │  Summaries  │  │ Chatbot │  │
+│  │   Index      │  │  Symbols    │  │  Knowledge  │  │   KB    │  │
+│  └──────────────┘  └──────────────┘  └──────────────┘  └────────┘  │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  ┌─────────┐  │
+│  │   Session    │  │   Dataset    │  │   Security   │  │   Init  │  │
+│  │   Manager    │  │   Pipeline   │  │   Audit     │  │  Config │  │
+│  └──────────────┘  └──────────────┘  └──────────────┘  └─────────┘  │
+└─────────────────────────────────────────────────────────────────────┘
 ```
 
-### Query Commands
+### Key Packages
 
-```bash
-kontextmind ask "<question>"   # Ask about the project
-kontextmind serve                # Start HTTP API server
-kontextmind mcp                  # Start MCP server
+| Package | Description |
+|---------|-------------|
+| `@kontextmind/core` | Core functionality: scanner, parser, summaries, chatbot KB |
+| `@kontextmind/cli` | Command-line interface |
+| `@kontextmind/server` | HTTP API server |
+| `@kontextmind/mcp` | MCP (Model Context Protocol) server |
+| `@kontextmind/client` | JavaScript client library |
+
+---
+
+## Project Structure
+
+```
+kontextmind/
+├── apps/
+│   └── cli/                    # Command-line interface
+├── packages/
+│   ├── core/                   # Core functionality
+│   │   └── src/
+│   │       ├── chatbot/        # Chatbot knowledge base
+│   │       │   ├── session-manager.ts   # Session management
+│   │       │   ├── context-builder.ts  # Context building
+│   │       │   └── kb-builder.ts       # Knowledge base builder
+│   │       ├── dataset/        # Dataset preparation
+│   │       │   ├── collector.ts        # Data collection
+│   │       │   ├── quality-filter.ts  # Quality filtering
+│   │       │   ├── versioning.ts       # Version control
+│   │       │   └── formats/           # Export formats
+│   │       ├── config/         # Configuration schemas
+│   │       ├── filesystem/     # File utilities
+│   │       ├── init/          # Project initialization
+│   │       ├── obsidian/      # Obsidian export
+│   │       ├── parser/        # Code parsing
+│   │       ├── providers/     # LLM providers
+│   │       ├── scanner/       # File scanning
+│   │       ├── security/      # Security audit
+│   │       ├── summaries/     # AI summaries
+│   │       └── templates/     # Template rendering
+│   ├── server/               # HTTP API server
+│   │   └── src/
+│   │       ├── routes/       # API routes
+│   │       │   ├── ask.ts           # Ask endpoints
+│   │       │   ├── sessions.ts      # Session endpoints
+│   │       │   ├── feedback.ts      # Feedback endpoints
+│   │       │   └── dataset.ts       # Dataset endpoints
+│   │       └── services/     # Business logic
+│   │           ├── ask-service.ts
+│   │           ├── session-service.ts
+│   │           ├── feedback-service.ts
+│   │           └── dataset-service.ts
+│   ├── mcp/                  # MCP server
+│   ├── adapters/             # Provider adapters
+│   └── client/               # Client library
+├── docs/                    # Documentation
+│   ├── cli-reference.md     # CLI commands reference
+│   └── api-reference.md     # API endpoints reference
+└── templates/               # Project templates
 ```
 
-### Utility Commands
+---
 
-```bash
-kontextmind secrets scan       # Scan for secrets
-kontextmind audit               # Show audit summary
-kontextmind obsidian export    # Export to Obsidian notes
+## Configuration
+
+### Project Configuration (.kontextmind/config.json)
+
+```json
+{
+  "project": {
+    "name": "my-project",
+    "description": "Description of what this project does"
+  },
+  "mode": "readonly",
+  "phase": 1,
+  "agents": ["claude", "cursor", "copilot"],
+  "git": {
+    "enabled": true,
+    "mode": "auto"
+  }
+}
 ```
 
-## Options for `kontextmind init`
+### Providers Configuration (.kontextmind/providers.json)
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `--yes` | Skip prompts and use defaults | false |
-| `--force` | Overwrite existing files | false |
-| `--agents` | Comma-separated agent list | claude,codex,generic |
-| `--mode` | Mode: readonly, suggest, edit-with-approval, full-agent | readonly |
-| `--git` | Git integration: auto, enabled, disabled | auto |
-| `--provider` | LLM provider: none, openai, anthropic, ollama, bedrock | none |
+```json
+{
+  "selected_provider": "openai",
+  "providers": {
+    "openai": {
+      "type": "openai",
+      "api_key_env": "OPENAI_API_KEY",
+      "model": "gpt-4"
+    },
+    "ollama": {
+      "type": "ollama",
+      "base_url": "http://localhost:11434",
+      "model": "llama3"
+    }
+  }
+}
+```
+
+### Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `DATA_DIR` | Directory for project data | `/kontextmind/projects` |
+| `LOG_LEVEL` | Logging level | `info` |
+
+---
 
 ## Modes
 
@@ -133,238 +264,181 @@ KontextMind operates in four modes:
 | `edit-with-approval` | Requires approval | Implement with explicit approval |
 | `full-agent` | Allowed | Act autonomously within policy |
 
-## Security Features
+---
 
-- **Secret Scanning**: Detects AWS keys, private keys, JWT tokens, database URLs, API keys, passwords
-- **Redaction**: Automatically redacts secrets from logs
-- **Prompt Injection Protection**: Classifies content as trusted/untrusted
-- **Audit Logging**: All actions logged for security review
-- **Cost Tracking**: Tracks LLM usage and costs
+## Session-Based Chat
+
+KontextMind supports multi-turn conversations with persistent context.
+
+### How It Works
+
+1. **Create a Session** — Each conversation gets a unique ID
+2. **Build Context** — The system tracks topics, entities, and conversation history
+3. **Enhanced Responses** — Questions are answered with conversation context
+4. **Link to Dataset** — Session data enriches the training dataset
+
+### Benefits
+
+- **No Context Repeating** — Users don't need to re-explain the project
+- **Better Answers** — The LLM has conversation history
+- **Rich Dataset** — Follow-up questions show engagement patterns
+- **Topic Tracking** — Sessions track what topics were discussed
+
+### Example Flow
+
+```bash
+# Create session
+kontextmind session create
+# Session created: abc-123-xyz
+
+# Ask first question
+kontextmind session chat abc-123-xyz "How does auth work?"
+# Returns answer with conversationTurn: 1
+
+# Ask follow-up
+kontextmind session chat abc-123-xyz "Show me the relevant files"
+# Returns answer with conversationTurn: 2
+
+# List all sessions
+kontextmind session list
+
+# View session details
+kontextmind session show abc-123-xyz
+```
+
+---
+
+## Dataset Preparation
+
+KontextMind collects Q&A interactions for training AI models.
+
+### Data Collection
+
+The system automatically collects:
+
+1. **Q&A Events** — Questions and answers with metadata
+2. **Feedback** — Like/dislike signals from users
+3. **Session Data** — Multi-turn conversation context
+4. **Quality Scores** — Computed from confidence and feedback
+
+### Quality Filtering
+
+Records are filtered by:
+
+- **Confidence Threshold** — Minimum confidence score (default: 0.5)
+- **Source Priority** — API > MCP > CLI (better feedback quality)
+- **Code Request Detection** — Auto-negative for code requests
+- **Deduplication** — Remove duplicate questions
+- **Age Filter** — Records older than 90 days excluded by default
+
+### Export Formats
+
+| Format | Use Case |
+|--------|----------|
+| `jsonl` | Line-oriented training (Llama, Mistral) |
+| `json` | Batch processing |
+| `chatml` | Chat-based models |
+| `sharegpt` | ShareGPT compatible |
+
+### Version Control
+
+Datasets are versioned for tracking changes:
+
+```bash
+# Export dataset
+kontextmind dataset export --format jsonl --output dataset.jsonl
+
+# View statistics
+kontextmind dataset stats
+
+# Validate quality
+kontextmind dataset validate --min-quality 0.6
+
+# List versions
+kontextmind dataset version list
+```
+
+---
+
+## Security
+
+### No Code Exposure
+
+The chatbot is configured with strict policies:
+
+- **No source code** in responses
+- **No file paths** or directory structures
+- **No code formatting** in output
+
+### Secret Scanning
 
 ```bash
 # Scan for secrets
-kontextmind secrets scan --json
-kontextmind secrets scan --fail-on-critical
+kontextmind secrets --fail-on-critical
 
+# Output as JSON
+kontextmind secrets --json
+```
+
+### Audit Logging
+
+```bash
 # View audit summary
 kontextmind audit --since 24h
+
+# Export audit log
 kontextmind audit --json
 ```
 
-## LLM Providers
-
-KontextMind supports multiple LLM providers for AI-powered features:
-
-| Provider | Description |
-|----------|-------------|
-| `mock` | Built-in mock provider (no API key needed) |
-| `openai-compatible` | Any OpenAI-compatible API (LM Studio, Ollama, LocalAI, Together AI, etc.) |
-| `openai` | OpenAI API (future) |
-| `anthropic` | Anthropic Claude API (future) |
-| `ollama` | Ollama local models (future) |
-
-### Quick Start (No API Key)
-
-```bash
-# Use mock provider for testing
-kontextmind summarize --mock
-kontextmind kb build --mock
-```
-
-### OpenAI-Compatible Setup
-
-Configure `.kontextmind/providers.json`:
-
-```json
-{
-  "providers": {
-    "primary": {
-      "provider": "openai-compatible",
-      "apiKey": "your-api-key",
-      "baseUrl": "https://api.openai.com/v1",
-      "model": "gpt-4"
-    }
-  }
-}
-```
-
-For local models (LM Studio, Ollama):
-
-```json
-{
-  "providers": {
-    "primary": {
-      "provider": "openai-compatible",
-      "apiKey": "not-needed",
-      "baseUrl": "http://localhost:8080/v1",
-      "model": "llama-3"
-    }
-  }
-}
-```
-
-See [docs/providers.md](docs/providers.md) for detailed setup instructions.
+---
 
 ## MCP Server
 
-KontextMind includes a full Model Context Protocol server:
+KontextMind includes an MCP server for AI agent integration.
+
+### Starting MCP Server
 
 ```bash
-# Start in stdio mode (for MCP clients)
+# STDIO transport (default)
 kontextmind mcp
 
-# Start in HTTP mode
+# HTTP transport
 kontextmind mcp --transport http --port 7332
 ```
 
-## HTTP API
+---
 
-Start the HTTP API server:
+## Development
 
-```bash
-kontextmind serve --port 7331 --host 127.0.0.1 --mode chatbot-readonly
-```
-
-Endpoints:
-- `GET /health` - Health check
-- `GET /status` - Project status
-- `POST /ask` - Ask a question
-- `GET /graph` - Knowledge graph
-- `GET /file-summary` - Get file summary
-- `GET /symbol` - Get symbol info
-- `POST /kb/build` - Build knowledge base
-- `GET /audit` - Audit information
-
-## Obsidian Export
-
-Export your project brain to Obsidian-compatible Markdown notes:
+### Building
 
 ```bash
-kontextmind obsidian export
-kontextmind obsidian export --output ./my-notes --clean
-```
-
-This creates backlinks between notes and applies redaction automatically.
-
-## Installation
-
-### Prerequisites
-
-- Node.js 20+
-- pnpm (recommended)
-
-### From Source
-
-```bash
-# Clone the repository
-git clone https://github.com/nikzdevz/KontextMind.git
-cd KontextMind
-
-# Install dependencies
-pnpm install
-
 # Build all packages
 pnpm build
 
+# Build specific package
+pnpm --filter @kontextmind/core build
+```
+
+### Testing
+
+```bash
 # Run tests
 pnpm test
+
+# Run specific package tests
+pnpm --filter @kontextmind/core test
 ```
 
-### Global CLI Installation
-
-```bash
-# From the kontextmind repository
-cd apps/cli
-pnpm link --global
-
-# Then use anywhere
-kontextmind --help
-```
-
-### Mock Mode (No API Key Required)
-
-For testing without an LLM API key:
-
-```bash
-kontextmind summarize --mock
-kontextmind kb build --mock
-```
-
-## Project Structure
-
-After initialization:
-
-```
-project/
-├── CLAUDE.md              # Claude Code instructions
-├── AGENTS.md              # Generic agent instructions
-├── README_AI.md           # AI agent guide
-├── .toolignore            # Files to ignore
-
-├── .context/              # Project memory
-│   ├── handoff.md         # Session handoff
-│   ├── current-state.md   # Project status
-│   └── agent-policy.md    # Agent policy
-
-├── .kontextmind/          # Configuration
-│   ├── config.json       # Project configuration
-│   ├── policy.json       # Security/operational rules
-│   └── providers.json     # LLM providers
-
-├── .kg/                   # Knowledge graph
-├── .summaries/            # AI summaries
-├── .sessions/             # Session tracking
-├── .logs/                 # Audit logs
-│   ├── audit-events.log
-│   ├── security-events.log
-│   ├── cost-events.log
-│   └── ...
-└── .obsidian-export/      # Obsidian export
-```
-
-## Architecture
-
-KontextMind consists of several packages:
-
-- **packages/core**: Core library with all functionality
-- **packages/adapters**: Agent adapters
-- **packages/server**: HTTP API server
-- **packages/mcp**: MCP server implementation
-- **apps/cli**: Command-line interface
-
-## Known Limitations
-
-- MVP parser is basic (TypeScript/JavaScript/Python)
-- Knowledge graph is JSON-based (not production database)
-- Chatbot mode answers from summaries, not raw code
-- Mock provider used by default if no LLM configured
-- No web UI yet
-- MCP support depends on client compatibility
+---
 
 ## Documentation
 
-- [Architecture](docs/architecture.md)
-- [CLI Reference](docs/cli.md)
-- [Security](docs/security.md)
-- [Chatbot Mode](docs/chatbot-mode.md)
-- [MCP Server](docs/mcp.md)
-- [Obsidian Export](docs/obsidian.md)
-- [Roadmap](docs/roadmap.md)
+- [CLI Reference](docs/cli-reference.md) — All CLI commands with examples
+- [API Reference](docs/api-reference.md) — All API endpoints with examples
 
-## Contributing
-
-Contributions welcome! Please read the docs and ensure:
-
-```bash
-pnpm build
-pnpm test
-pnpm typecheck
-```
+---
 
 ## License
 
 MIT
-
----
-
-**KontextMind — helping AI coding agents understand your project, one context at a time.**

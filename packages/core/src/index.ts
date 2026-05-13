@@ -51,11 +51,22 @@ export * from './summaries/index.js';
 
 // Chatbot
 export * from './chatbot/chatbot-types.js';
-export { buildChatbotKB, getKBStatus, getLastAskTime, askQuestion, KB_DIR, LOG_FILE as QNA_LOG_FILE } from './chatbot/kb-builder.js';
-export type { QAResult, KBSearchResult, AskOptions, KBBuildOptions, ChatbotKBStatus } from './chatbot/chatbot-types.js';
+export { buildChatbotKB, getKBStatus, getLastAskTime, askQuestion, recordFeedback, getFeedbackStats, KB_DIR, LOG_FILE as QNA_LOG_FILE } from './chatbot/kb-builder.js';
+export type { QAResult, KBSearchResult, AskOptions, KBBuildOptions, ChatbotKBStatus, ResponseFeedback, QNAEvent } from './chatbot/chatbot-types.js';
+
+// Session Management
+export { SessionManager, getSessionManager } from './chatbot/session-manager.js';
+export type { ChatSession, ChatMessage, SessionOptions, SessionSummary, ConversationContext } from './chatbot/chatbot-types.js';
+
+// Context Building
+export { buildConversationContext, buildEnhancedPrompt, buildSingleTurnContext, getConversationTurns, getCurrentTurn, truncateToTokenBudget, estimateTokens } from './chatbot/context-builder.js';
+export type { ConversationTurn, BuiltContext, ContextOptions } from './chatbot/context-builder.js';
 
 // Security
 export * from './security/index.js';
 
 // Obsidian Export
 export * from './obsidian/index.js';
+
+// Dataset Preparation
+export * from './dataset/index.js';

@@ -16,6 +16,20 @@ import { auditCommand } from './commands/audit.js';
 import { obsidianExportCommand } from './commands/obsidian.js';
 import { placeholderCommand } from './commands/placeholder.js';
 import { configCommand } from './commands/config.js';
+import {
+  sessionCreateCommand,
+  sessionListCommand,
+  sessionShowCommand,
+  sessionDeleteCommand,
+  sessionChatCommand,
+  sessionStatsCommand,
+} from './commands/session.js';
+import {
+  datasetExportCommand,
+  datasetStatsCommand,
+  datasetVersionCommand,
+  datasetValidateCommand,
+} from './commands/dataset.js';
 
 const program = new Command();
 
@@ -140,8 +154,95 @@ program
   .option('--json', 'Output as JSON')
   .action(obsidianExportCommand);
 
+// Session management commands
+program
+  .command('session')
+  .description('Manage chat sessions for multi-turn conversations')
+  .addCommand(
+    new Command('create')
+      .description('Create a new chat session')
+      .option('--json', 'Output as JSON')
+      .action(sessionCreateCommand)
+  )
+  .addCommand(
+    new Command('list')
+      .description('List all sessions for the project')
+      .option('--json', 'Output as JSON')
+      .action(sessionListCommand)
+  )
+  .addCommand(
+    new Command('show')
+      .description('Show session details')
+      .argument('<session-id>', 'Session ID to show')
+      .option('--json', 'Output as JSON')
+      .action((sessionId, options) => sessionShowCommand(sessionId, options))
+  )
+  .addCommand(
+    new Command('delete')
+      .description('Delete a session')
+      .argument('<session-id>', 'Session ID to delete')
+      .action((sessionId) => sessionDeleteCommand(sessionId, {}))
+  )
+  .addCommand(
+    new Command('chat')
+      .description('Ask a question in a session')
+      .argument('<session-id>', 'Session ID')
+      .argument('<question>', 'Question to ask')
+      .option('--mode <mode>', 'Response mode: readonly, chatbot-readonly')
+      .option('--json', 'Output as JSON')
+      .action((sessionId, question, options) => sessionChatCommand(sessionId, question, options))
+  )
+  .addCommand(
+    new Command('stats')
+      .description('Show session statistics')
+      .argument('<session-id>', 'Session ID')
+      .option('--json', 'Output as JSON')
+      .action((sessionId, options) => sessionStatsCommand(sessionId, options))
+  );
+
+// Dataset management commands
+program
+  .command('dataset')
+  .description('Dataset preparation and export')
+  .addCommand(
+    new Command('export')
+      .description('Export training dataset')
+      .option('--format <format>', 'Output format: jsonl, json, chatml, sharegpt', 'jsonl')
+      .option('--output <path>', 'Output file path')
+      .option('--min-confidence <n>', 'Minimum confidence threshold', '0.5')
+      .option('--include-code', 'Include code request responses')
+      .option('--api-only', 'Only include API-sourced data')
+      .option('--json', 'Output as JSON')
+      .action(datasetExportCommand)
+  )
+  .addCommand(
+    new Command('stats')
+      .description('Show dataset statistics')
+      .option('--version <ver>', 'Show stats for specific version')
+      .option('--json', 'Output as JSON')
+      .action(datasetStatsCommand)
+  )
+  .addCommand(
+    new Command('validate')
+      .description('Validate dataset quality')
+      .option('--strict', 'Fail on validation errors')
+      .option('--min-quality <n>', 'Minimum quality score', '0.6')
+      .option('--json', 'Output as JSON')
+      .action(datasetValidateCommand)
+  )
+  .addCommand(
+    new Command('version')
+      .description('Manage dataset versions')
+      .argument('<action>', 'Action: list, export')
+      .option('--version <ver>', 'Version for export')
+      .option('--format <format>', 'Export format: jsonl, json, chatml, sharegpt', 'jsonl')
+      .option('--output <path>', 'Output file path')
+      .option('--json', 'Output as JSON')
+      .action((action, options) => datasetVersionCommand(action, options))
+  );
+
 // Placeholder for future commands
-const futureCommands = ['handoff', 'chat'];
+const futureCommands = ['handoff'];
 for (const cmd of futureCommands) {
   program
     .command(cmd)

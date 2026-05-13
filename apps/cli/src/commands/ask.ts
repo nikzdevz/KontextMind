@@ -1,6 +1,6 @@
 import { OptionValues } from 'commander';
 import chalk from 'chalk';
-import { askQuestion, getKBStatus, getLastAskTime } from '@kontextmind/core';
+import { askQuestion, getKBStatus } from '@kontextmind/core';
 import { detectProject } from '@kontextmind/core';
 
 export async function askCommand(question: string, options: OptionValues): Promise<void> {
@@ -25,14 +25,16 @@ export async function askCommand(question: string, options: OptionValues): Promi
     // Always use chatbot-readonly mode by default - no code, no file structures
     const mode = options.mode || 'chatbot-readonly';
 
+    // CLI mode - no feedback expected
     const result = await askQuestion(question, {
       mode: mode as 'readonly' | 'chatbot-readonly',
-      json: Boolean(options.json),
-      noCode: true, // Always enforce no-code
+      noCode: true,
+      source: 'cli', // CLI doesn't expect feedback
     }, projectRoot);
 
     if (options.json) {
       console.log(JSON.stringify({
+        response_id: result.responseId,
         answer: result.answer,
         confidence: result.confidence,
         sources: result.sources.map(s => ({
@@ -44,6 +46,7 @@ export async function askCommand(question: string, options: OptionValues): Promi
         policy_applied: result.policyApplied,
         llm_enhanced: result.llmEnhanced,
         provider: result.provider,
+        feedback_supported: result.feedbackSupported,
       }, null, 2));
       return;
     }

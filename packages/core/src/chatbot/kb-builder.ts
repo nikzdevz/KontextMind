@@ -612,6 +612,30 @@ export function getLastAskTime(projectRoot: string): string | null {
   }
 }
 
+// Generate unique response ID
+function generateResponseId(): string {
+  const timestamp = Date.now().toString(36);
+  const random = Math.random().toString(36).substring(2, 8);
+  return `${timestamp}-${random}`;
+}
+
+// Detect if question is asking for code (for auto-negative feedback)
+function isCodeRequest(question: string): boolean {
+  const q = question.toLowerCase();
+  const codePatterns = [
+    /show\s+me\s+(the\s+)?code/i,
+    /give\s+me\s+(the\s+)?code/i,
+    /provide\s+(the\s+)?code/i,
+    /print\s+(the\s+)?code/i,
+    /source\s+code\s+of/i,
+    /complete\s+code\s+of/i,
+    /raw\s+code\s+of/i,
+    /what\s+is\s+(written|stored)\s+in/i,
+    /content\s+of\s+(file|code)/i,
+  ];
+  return codePatterns.some(pattern => pattern.test(q));
+}
+
 // Ask a question - Simple flow: search KB, use LLM if needed, filter output
 export async function askQuestion(
   question: string,
@@ -619,6 +643,11 @@ export async function askQuestion(
   projectRoot: string = process.cwd()
 ): Promise<QAResult> {
   const mode = options.mode || 'chatbot-readonly';
+  const source = options.source || 'cli';
+  const responseId = generateResponseId();
+
+  // Detect code request (for quality control)
+  const codeRequest = isCodeRequest(question);
 
   // Search KB for relevant answers
   const searchResult = searchKnowledgeBase(question, projectRoot);
@@ -650,18 +679,25 @@ export async function askQuestion(
   const finalFiltered = applyNoCodeFilter(answer);
   answer = finalFiltered.text;
 
-  // Log Q&A event
+  // Log Q&A event with full metadata
   await logQNAEvent(projectRoot, {
+    responseId,
+    sessionId: options.sessionId,
     question: question.slice(0, 50) + (question.length > 50 ? '...' : ''),
     questionHash: simpleHash(question),
+    answer: answer.slice(0, 100),
     sources: searchResult.sources.map(s => s.type),
     rawCodeAccess,
     mode,
+    source,
+    feedbackSupported: source !== 'cli', // CLI doesn't expect feedback
     confidence: searchResult.confidence,
-    result: answer.slice(0, 100),
+    codeRequestDetected: codeRequest,
+    conversationTurn: options.conversationTurn,
   });
 
   return {
+    responseId,
     answer,
     confidence: searchResult.confidence,
     sources: searchResult.sources,
@@ -670,6 +706,8 @@ export async function askQuestion(
     mode: mode as 'readonly' | 'chatbot-readonly',
     llmEnhanced,
     provider,
+    source,
+    feedbackSupported: source !== 'cli', // CLI doesn't expect feedback
   };
 }
 
@@ -1160,35 +1198,175 @@ function applyNoCodeFilter(text: string): { text: string; hadCode: boolean } {
   return { text: result.trim(), hadCode };
 }
 
-// Log Q&A event
+// Log Q&A event - stores in JSON format for dataset generation
 async function logQNAEvent(
   projectRoot: string,
   event: {
+    responseId: string;
+    sessionId?: string;
     question: string;
     questionHash: string;
+    answer: string;
     sources: string[];
     rawCodeAccess: boolean;
     mode: string;
+    source: 'cli' | 'api' | 'mcp';
+    feedbackSupported: boolean;
     confidence: number;
-    result: string;
+    codeRequestDetected: boolean;
+    conversationTurn?: number;
   }
 ): Promise<void> {
   const timestamp = new Date().toISOString();
-  const logLine = `[${timestamp}] Q&A: ${event.questionHash} | sources: ${event.sources.join(',')} | raw: ${event.rawCodeAccess} | mode: ${event.mode} | conf: ${event.confidence.toFixed(2)} | result: ${event.result}\n`;
   const logPath = join(projectRoot, LOG_FILE);
+
+  // Create JSON event for easier dataset generation
+  const jsonEvent = JSON.stringify({
+    responseId: event.responseId,
+    sessionId: event.sessionId || null,
+    question: event.question,
+    questionHash: event.questionHash,
+    answer: event.answer,
+    confidence: event.confidence,
+    sources: event.sources,
+    rawCodeAccess: event.rawCodeAccess,
+    mode: event.mode,
+    source: event.source,
+    feedbackSupported: event.feedbackSupported,
+    codeRequestDetected: event.codeRequestDetected,
+    conversationTurn: event.conversationTurn || 0,
+    feedbackReceived: null, // Will be updated if user provides feedback
+    feedbackTimestamp: null,
+    timestamp,
+  });
+
+  // Also add text log for human readability
+  const textLog = `[${timestamp}] Q&A: ${event.questionHash} | source: ${event.source} | conf: ${event.confidence.toFixed(2)} | code_req: ${event.codeRequestDetected} | feedback: none\n`;
 
   try {
     const dirPath = join(projectRoot, '.logs');
     ensureDir(dirPath);
 
+    // Write JSON event
+    const jsonPath = join(projectRoot, '.logs', 'qna-events.jsonl');
+    if (existsSync(jsonPath)) {
+      const existing = readFileSync(jsonPath, 'utf-8');
+      writeFileSafe(jsonPath, existing + jsonEvent + '\n');
+    } else {
+      writeFileSafe(jsonPath, jsonEvent + '\n');
+    }
+
+    // Append text log
     if (existsSync(logPath)) {
       const existing = readFileSync(logPath, 'utf-8');
-      writeFileSafe(logPath, existing + logLine);
+      writeFileSafe(logPath, existing + textLog);
     } else {
-      writeFileSafe(logPath, logLine);
+      writeFileSafe(logPath, textLog);
     }
   } catch {
     // Silently ignore logging errors
+  }
+}
+
+// Record feedback for a response
+export async function recordFeedback(
+  responseId: string,
+  feedback: 'like' | 'dislike',
+  projectRoot: string = process.cwd()
+): Promise<boolean> {
+  const jsonPath = join(projectRoot, '.logs', 'qna-events.jsonl');
+
+  if (!existsSync(jsonPath)) {
+    return false;
+  }
+
+  try {
+    const content = readFileSync(jsonPath, 'utf-8');
+    const lines = content.split('\n').filter(l => l.trim());
+    const timestamp = new Date().toISOString();
+
+    // Find and update the matching response
+    let updated = false;
+    const updatedLines: string[] = [];
+
+    for (const line of lines) {
+      try {
+        const event = JSON.parse(line);
+        if (event.responseId === responseId) {
+          event.feedbackReceived = feedback;
+          event.feedbackTimestamp = timestamp;
+          updated = true;
+        }
+        updatedLines.push(JSON.stringify(event));
+      } catch {
+        // Skip invalid JSON lines
+        updatedLines.push(line);
+      }
+    }
+
+    if (updated) {
+      writeFileSafe(jsonPath, updatedLines.join('\n') + '\n');
+
+      // Also log to text file
+      const textLog = `[${timestamp}] FEEDBACK: ${responseId} -> ${feedback}\n`;
+      const logPath = join(projectRoot, LOG_FILE);
+      if (existsSync(logPath)) {
+        const existing = readFileSync(logPath, 'utf-8');
+        writeFileSafe(logPath, existing + textLog);
+      } else {
+        writeFileSafe(logPath, textLog);
+      }
+
+      return true;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
+// Get feedback stats for dataset quality analysis
+export function getFeedbackStats(projectRoot: string = process.cwd()): {
+  total: number;
+  likes: number;
+  dislikes: number;
+  codeRequests: number;
+  codeRequestDislikes: number;
+} {
+  const jsonPath = join(projectRoot, '.logs', 'qna-events.jsonl');
+
+  if (!existsSync(jsonPath)) {
+    return { total: 0, likes: 0, dislikes: 0, codeRequests: 0, codeRequestDislikes: 0 };
+  }
+
+  try {
+    const content = readFileSync(jsonPath, 'utf-8');
+    const lines = content.split('\n').filter(l => l.trim());
+
+    let total = 0;
+    let likes = 0;
+    let dislikes = 0;
+    let codeRequests = 0;
+    let codeRequestDislikes = 0;
+
+    for (const line of lines) {
+      try {
+        const event = JSON.parse(line);
+        total++;
+        if (event.feedbackReceived === 'like') likes++;
+        if (event.feedbackReceived === 'dislike') dislikes++;
+        if (event.codeRequestDetected) codeRequests++;
+        if (event.codeRequestDetected && event.feedbackReceived === 'dislike') {
+          codeRequestDislikes++;
+        }
+      } catch {
+        // Skip invalid lines
+      }
+    }
+
+    return { total, likes, dislikes, codeRequests, codeRequestDislikes };
+  } catch {
+    return { total: 0, likes: 0, dislikes: 0, codeRequests: 0, codeRequestDislikes: 0 };
   }
 }
 
