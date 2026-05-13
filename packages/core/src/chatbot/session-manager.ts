@@ -10,6 +10,12 @@ import type {
   SessionMetadata,
   EntityReference,
 } from './chatbot-types.js';
+import {
+  updateSessionInIndex,
+  loadSessionIndex,
+  deleteSessionFromIndex,
+  type SessionIndexEntry,
+} from '../memory/session-index.js';
 
 const SESSION_DIR = '.kontextmind/sessions';
 const SESSION_FILE_VERSION = '1.0';
@@ -346,6 +352,9 @@ export class SessionManager {
     this.sessions.delete(sessionId);
     this.untrackProjectSession(session.projectName, sessionId);
 
+    // Remove from session index
+    deleteSessionFromIndex(this.projectRoot, sessionId);
+
     // Remove from disk
     const path = this.getSessionPath(sessionId);
     if (existsSync(path)) {
@@ -368,6 +377,78 @@ export class SessionManager {
     } catch (error) {
       console.error(`Failed to persist session ${session.id}:`, error);
     }
+  }
+
+  // End a session - update index and mark completion
+  async endSession(sessionId: string, summary?: string, pendingWork?: string): Promise<void> {
+    const session = this.sessions.get(sessionId);
+    if (!session) return;
+
+    const endTime = new Date().toISOString();
+    session.metadata.lastActivityAt = endTime;
+
+    // Create session index entry
+    const indexEntry: SessionIndexEntry = {
+      sessionId: session.id,
+      projectName: session.projectName,
+      date: session.createdAt.split('T')[0],
+      startTime: session.createdAt,
+      endTime,
+      durationMs: new Date(endTime).getTime() - new Date(session.createdAt).getTime(),
+      messageCount: session.metadata.messageCount,
+      topics: session.context.topics.slice(0, 20),
+      keyEntities: session.context.entities.slice(0, 10).map(e => ({
+        name: e.name,
+        type: e.type,
+        referenceCount: e.referenceCount,
+      })),
+      summary: summary || this.generateSessionSummary(session),
+      pendingWork: pendingWork,
+      filesModified: this.extractFilesFromMessages(session.messages),
+    };
+
+    // Update session index
+    updateSessionInIndex(this.projectRoot, indexEntry);
+
+    // Persist final state
+    await this.persistSession(session);
+  }
+
+  // Generate a summary from session
+  private generateSessionSummary(session: ChatSession): string {
+    const topics = session.context.topics.slice(0, 5).join(', ');
+    const messageCount = session.metadata.messageCount;
+    const firstMessage = session.messages.find(m => m.role === 'user');
+
+    if (firstMessage) {
+      const preview = firstMessage.content.slice(0, 100);
+      return `Session discussing: ${topics || preview}. ${messageCount} messages exchanged.`;
+    }
+
+    return `Session with ${messageCount} messages. Topics: ${topics || 'general'}.`;
+  }
+
+  // Extract files mentioned in messages
+  private extractFilesFromMessages(messages: ChatMessage[]): string[] {
+    const files = new Set<string>();
+    const filePattern = /[\w-]+\.(ts|js|tsx|jsx|py|go|rs|java|cpp|c|h|hpp)/gi;
+
+    for (const message of messages) {
+      let match;
+      while ((match = filePattern.exec(message.content)) !== null) {
+        files.add(match[0]);
+      }
+    }
+
+    return Array.from(files).slice(0, 50);
+  }
+
+  // Get session index for cross-session queries
+  getSessionIndex(): SessionIndexEntry[] {
+    const index = loadSessionIndex(this.projectRoot);
+    return index.sessions.sort((a, b) =>
+      new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+    );
   }
 
   // Get current turn count for a session

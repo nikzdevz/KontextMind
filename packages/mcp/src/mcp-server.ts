@@ -1,6 +1,40 @@
 import { existsSync, readFileSync, writeFileSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 
+// Memory system imports (Phase 1+)
+import {
+  loadSessionIndex,
+  getRecentSessions,
+  getSessionsByTopic,
+  getSessionStats as getSessionIndexStats,
+  searchSessions,
+  getSessionsByFile,
+  type SessionIndexEntry,
+} from '@kontextmind/core';
+import {
+  buildTimeline,
+  getRecentActivity,
+} from '@kontextmind/core';
+import {
+  searchMemory,
+  searchEntities,
+  findRelatedSessions,
+} from '@kontextmind/core';
+import {
+  getCurrentTask,
+  getTaskSessions as getTaskSessionList,
+  getSessionTask,
+  getTaskDependencies,
+  getBlockedTasks as getBlockedTasksList,
+  searchTasks,
+} from '@kontextmind/core';
+import {
+  getContinuitySuggestions,
+  analyzeContinuityNeed,
+  getTaskResumptionContext,
+  shouldContinueFromLastSession,
+} from '@kontextmind/core';
+
 const LOG_FILE = '.logs/mcp-events.log';
 const MCP_VERSION = '0.1.0';
 
@@ -306,6 +340,216 @@ export const MCP_TOOLS: MCPTool[] = [
         handoff: { type: 'string', description: 'Context for next session' },
       },
       required: [],
+    },
+  },
+
+  // ====== PHASE 1: Session Index Tools ======
+  {
+    name: 'project.get_session_index',
+    description: 'Get all sessions with metadata for cross-session search and continuity',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        days: { type: 'number', default: 30, description: 'Number of days to look back' },
+        limit: { type: 'number', default: 20, description: 'Maximum number of sessions to return' },
+        topic: { type: 'string', description: 'Filter by topic keyword' },
+      },
+    },
+  },
+  {
+    name: 'project.get_session_stats',
+    description: 'Get statistics about all sessions - total sessions, messages, activity patterns',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'project.search_sessions',
+    description: 'Search across all historical sessions by keyword',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Search query' },
+        limit: { type: 'number', default: 10, description: 'Maximum results to return' },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'project.get_recent_files',
+    description: 'Get files that were recently touched across all sessions',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        days: { type: 'number', default: 7, description: 'Days to look back' },
+        limit: { type: 'number', default: 20, description: 'Maximum files to return' },
+      },
+    },
+  },
+
+  // ====== PHASE 5: Timeline Tools ======
+  {
+    name: 'project.get_timeline',
+    description: 'Get a timeline of all activity over a period',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        hours: { type: 'number', default: 72, description: 'Hours to look back' },
+        format: { type: 'string', enum: ['summary', 'detailed'], default: 'summary' },
+      },
+    },
+  },
+  {
+    name: 'project.get_recent_activity',
+    description: 'Get a summary of what happened recently across all sessions and tasks',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        days: { type: 'number', default: 3, description: 'Days to look back' },
+      },
+    },
+  },
+
+  // ====== PHASE 2-3: Task Management Tools ======
+  {
+    name: 'project.get_current_task',
+    description: 'Get the current active task based on recent work',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'project.get_task_sessions',
+    description: 'Get all sessions related to a specific task',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        taskId: { type: 'string', description: 'Task ID to get sessions for' },
+      },
+      required: ['taskId'],
+    },
+  },
+  {
+    name: 'project.get_session_task',
+    description: 'Get the task that a session contributed to',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        sessionId: { type: 'string', description: 'Session ID' },
+      },
+      required: ['sessionId'],
+    },
+  },
+
+  // ====== PHASE 4: Cross-Session Search Tools ======
+  {
+    name: 'project.search_memory',
+    description: 'Search across all sessions, tasks, and handoffs for specific content',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        query: { type: 'string', description: 'Search query' },
+        types: { type: 'array', items: { type: 'string', enum: ['task', 'session', 'handoff'] }, description: 'Filter by type' },
+        days: { type: 'number', default: 30, description: 'Days to search back' },
+        limit: { type: 'number', default: 10, description: 'Maximum results' },
+      },
+      required: ['query'],
+    },
+  },
+  {
+    name: 'project.search_entities',
+    description: 'Search for specific files, functions, or components across all sessions',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        entity: { type: 'string', description: 'Entity name to search for' },
+        type: { type: 'string', enum: ['file', 'function', 'component', 'module'], description: 'Entity type filter' },
+      },
+      required: ['entity'],
+    },
+  },
+  {
+    name: 'project.find_related_sessions',
+    description: 'Find sessions related to a specific session based on shared topics or files',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        sessionId: { type: 'string', description: 'Session ID to find related sessions for' },
+        limit: { type: 'number', default: 5, description: 'Maximum related sessions' },
+      },
+      required: ['sessionId'],
+    },
+  },
+
+  // ====== PHASE 6: Task Dependency Tools ======
+  {
+    name: 'project.add_task_dependency',
+    description: 'Mark that a task depends on another task',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        taskId: { type: 'string', description: 'Task that has the dependency' },
+        dependsOn: { type: 'string', description: 'Task ID it depends on' },
+      },
+      required: ['taskId', 'dependsOn'],
+    },
+  },
+  {
+    name: 'project.get_task_dependencies',
+    description: 'Get dependency information for a task',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        taskId: { type: 'string', description: 'Task ID' },
+      },
+      required: ['taskId'],
+    },
+  },
+  {
+    name: 'project.get_blocked_tasks',
+    description: 'Get all tasks that are blocked by incomplete tasks',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+
+  // ====== PHASE 7: Continuity Suggestion Tools ======
+  {
+    name: 'project.get_continuity_suggestions',
+    description: 'Get suggestions for continuing from where you left off - pending tasks, blockers, etc.',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'project.analyze_continuity',
+    description: 'Analyze if there is pending work to continue from previous sessions',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'project.get_task_resumption_context',
+    description: 'Get full context for resuming a specific task',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        taskId: { type: 'string', description: 'Task ID to get context for' },
+      },
+      required: ['taskId'],
+    },
+  },
+  {
+    name: 'project.should_continue',
+    description: 'Check if there is work to continue from the previous session',
+    inputSchema: {
+      type: 'object',
+      properties: {},
     },
   },
 ];
@@ -797,6 +1041,74 @@ export async function handleToolCall(
 
     case 'project.write_session_summary':
       return handleWriteSessionSummary(args as Record<string, unknown>);
+
+    // ====== PHASE 1: Session Index Tools ======
+    case 'project.get_session_index':
+      return handleGetSessionIndex(args.days as number, args.limit as number, args.topic as string | undefined);
+
+    case 'project.get_session_stats':
+      return handleGetSessionStats();
+
+    case 'project.search_sessions':
+      return handleSearchSessions(args.query as string, args.limit as number);
+
+    case 'project.get_recent_files':
+      return handleGetRecentFiles(args.days as number, args.limit as number);
+
+    // ====== PHASE 5: Timeline Tools ======
+    case 'project.get_timeline':
+      return handleGetTimeline(args.hours as number, args.format as 'summary' | 'detailed');
+
+    case 'project.get_recent_activity':
+      return handleGetRecentActivity(args.days as number);
+
+    // ====== PHASE 2-3: Task Management Tools ======
+    case 'project.get_current_task':
+      return handleGetCurrentTask();
+
+    case 'project.get_task_sessions':
+      return handleGetTaskSessions(args.taskId as string);
+
+    case 'project.get_session_task':
+      return handleGetSessionTask(args.sessionId as string);
+
+    // ====== PHASE 4: Cross-Session Search Tools ======
+    case 'project.search_memory':
+      return handleSearchMemory(
+        args.query as string,
+        args.types as ('task' | 'session' | 'handoff')[] | undefined,
+        args.days as number,
+        args.limit as number
+      );
+
+    case 'project.search_entities':
+      return handleSearchEntities(args.entity as string, args.type as string | undefined);
+
+    case 'project.find_related_sessions':
+      return handleFindRelatedSessions(args.sessionId as string, args.limit as number);
+
+    // ====== PHASE 6: Task Dependency Tools ======
+    case 'project.add_task_dependency':
+      return handleAddTaskDependency(args.taskId as string, args.dependsOn as string);
+
+    case 'project.get_task_dependencies':
+      return handleGetTaskDependencies(args.taskId as string);
+
+    case 'project.get_blocked_tasks':
+      return handleGetBlockedTasks();
+
+    // ====== PHASE 7: Continuity Suggestion Tools ======
+    case 'project.get_continuity_suggestions':
+      return handleGetContinuitySuggestions();
+
+    case 'project.analyze_continuity':
+      return handleAnalyzeContinuity();
+
+    case 'project.get_task_resumption_context':
+      return handleGetTaskResumptionContext(args.taskId as string);
+
+    case 'project.should_continue':
+      return handleShouldContinue();
 
     default:
       return {
@@ -1670,6 +1982,524 @@ _Last updated: ${timestamp}_
   } catch (error) {
     return { content: [{ type: 'text', text: `Failed to write session summary: ${error instanceof Error ? error.message : String(error)}` }] };
   }
+}
+
+// ====== PHASE 1: Session Index Handlers ======
+
+async function handleGetSessionIndex(
+  days: number = 30,
+  limit: number = 20,
+  topic?: string
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+
+  let sessions: SessionIndexEntry[];
+  if (topic) {
+    sessions = getSessionsByTopic(projectRoot, topic, limit);
+  } else {
+    sessions = getRecentSessions(projectRoot, days, limit);
+  }
+
+  if (sessions.length === 0) {
+    return { content: [{ type: 'text', text: 'No sessions found in this period.' }] };
+  }
+
+  let output = `## Session Index (Last ${days} Days)\n\n`;
+  output += `Total: ${sessions.length} sessions\n\n`;
+
+  for (const session of sessions) {
+    const duration = session.durationMs
+      ? `${Math.round(session.durationMs / 60000)}min`
+      : 'unknown';
+    const topics = session.topics.slice(0, 3).join(', ') || 'general';
+    const entities = session.keyEntities.slice(0, 3).map((e: { name: string }) => e.name).join(', ') || 'none';
+
+    output += `### Session ${session.sessionId}\n`;
+    output += `**Date:** ${session.date}\n`;
+    output += `**Duration:** ${duration}\n`;
+    output += `**Topics:** ${topics}\n`;
+    output += `**Key Entities:** ${entities}\n`;
+    output += `**Messages:** ${session.messageCount}\n`;
+    if (session.summary) {
+      output += `**Summary:** ${session.summary}\n`;
+    }
+    if (session.pendingWork) {
+      output += `**Pending:** ${session.pendingWork}\n`;
+    }
+    output += '\n---\n\n';
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleGetSessionStats(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const stats = getSessionIndexStats(projectRoot);
+
+  const avgDurationMin = Math.round(stats.averageSessionDuration / 60000);
+  const totalDurationHours = Math.round(stats.totalDurationMs / 3600000 * 10) / 10;
+
+  let output = `## Session Statistics\n\n`;
+  output += `**Total Sessions:** ${stats.totalSessions}\n`;
+  output += `**Total Messages:** ${stats.totalMessages}\n`;
+  output += `**Average Session Duration:** ${avgDurationMin} minutes\n`;
+  output += `**Total Active Time:** ${totalDurationHours} hours\n`;
+  output += `**Sessions Last Week:** ${stats.sessionsLastWeek}\n`;
+  output += `**Sessions Last Month:** ${stats.sessionsLastMonth}\n\n`;
+
+  if (stats.mostActiveTopics.length > 0) {
+    output += `### Most Active Topics\n`;
+    for (const { topic, count } of stats.mostActiveTopics.slice(0, 5)) {
+      output += `- ${topic}: ${count} sessions\n`;
+    }
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleSearchSessions(
+  query: string,
+  limit: number = 10
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const results = searchSessions(projectRoot, query, limit);
+
+  if (results.length === 0) {
+    return { content: [{ type: 'text', text: `No sessions found matching "${query}"` }] };
+  }
+
+  let output = `## Search Results for "${query}"\n\n`;
+
+  for (const session of results) {
+    output += `### Session ${session.sessionId} (${session.date})\n`;
+    output += `**Topics:** ${session.topics.join(', ')}\n`;
+    output += `**Messages:** ${session.messageCount}\n`;
+    if (session.summary) {
+      output += `**Summary:** ${session.summary}\n`;
+    }
+    output += '\n---\n\n';
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleGetRecentFiles(
+  days: number = 7,
+  limit: number = 20
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const sessions = getRecentSessions(projectRoot, days, 100);
+
+  // Aggregate all files across sessions
+  const fileCounts: Record<string, number> = {};
+  const fileSessions: Record<string, string[]> = {};
+
+  for (const session of sessions) {
+    for (const file of session.filesModified || []) {
+      fileCounts[file] = (fileCounts[file] || 0) + 1;
+      if (!fileSessions[file]) fileSessions[file] = [];
+      fileSessions[file].push(session.sessionId);
+    }
+  }
+
+  // Sort by count
+  const sortedFiles = Object.entries(fileCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, limit);
+
+  if (sortedFiles.length === 0) {
+    return { content: [{ type: 'text', text: 'No files found in recent sessions.' }] };
+  }
+
+  let output = `## Recently Modified Files (Last ${days} Days)\n\n`;
+  output += `Total unique files: ${sortedFiles.length}\n\n`;
+
+  for (const [file, count] of sortedFiles) {
+    output += `- ${file} (${count} sessions)\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+// ====== PHASE 5: Timeline Handlers ======
+
+async function handleGetTimeline(
+  hours: number = 72,
+  format: 'summary' | 'detailed' = 'summary'
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const entries = buildTimeline(projectRoot, hours);
+
+  if (entries.length === 0) {
+    return { content: [{ type: 'text', text: `No activity in the last ${hours} hours.` }] };
+  }
+
+  let output = `## Activity Timeline (Last ${hours} Hours)\n\n`;
+
+  if (format === 'summary') {
+    // Group by day
+    const byDay: Record<string, typeof entries> = {};
+    for (const entry of entries) {
+      const day = entry.timestamp.split('T')[0];
+      if (!byDay[day]) byDay[day] = [];
+      byDay[day].push(entry);
+    }
+
+    for (const [day, dayEntries] of Object.entries(byDay)) {
+      output += `### ${day}\n`;
+      for (const entry of dayEntries) {
+        const time = entry.timestamp.split('T')[1].slice(0, 5);
+        output += `- [${time}] ${entry.type}: ${entry.title}\n`;
+      }
+      output += '\n';
+    }
+  } else {
+    // Detailed format
+    for (const entry of entries) {
+      const time = entry.timestamp.replace('T', ' ').slice(0, 19);
+      output += `### ${entry.type} - ${time}\n`;
+      output += `**Title:** ${entry.title}\n`;
+      output += `**Summary:** ${entry.summary}\n`;
+      if (entry.relatedTaskId) output += `**Task:** ${entry.relatedTaskId}\n`;
+      if (entry.relatedSessionId) output += `**Session:** ${entry.relatedSessionId}\n`;
+      output += '\n---\n\n';
+    }
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleGetRecentActivity(days: number = 3): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const report = getRecentActivity(projectRoot, days);
+
+  let output = `## Recent Activity (Last ${days} Days)\n\n`;
+
+  output += `### Summary\n`;
+  output += `- Sessions: ${report.sessions.count}\n`;
+  output += `- Tasks created: ${report.tasks.count}\n`;
+  output += `- Files modified: ${report.filesModified}\n`;
+  output += `- Total messages: ${report.totalMessages}\n\n`;
+
+  if (report.topTopics.length > 0) {
+    output += `### Active Topics\n`;
+    for (const topic of report.topTopics.slice(0, 5)) {
+      output += `- ${topic}\n`;
+    }
+    output += '\n';
+  }
+
+  if (report.incompleteTasks.length > 0) {
+    output += `### Pending Tasks\n`;
+    for (const task of report.incompleteTasks.slice(0, 5)) {
+      output += `- ${task}\n`;
+    }
+    output += '\n';
+  }
+
+  if (report.recentSessions.length > 0) {
+    output += `### Recent Sessions\n`;
+    for (const session of report.recentSessions.slice(0, 3)) {
+      output += `- ${session.date}: ${session.topics.join(', ') || 'general'}\n`;
+    }
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+// ====== PHASE 2-3: Task Management Handlers ======
+
+async function handleGetCurrentTask(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const task = getCurrentTask(projectRoot);
+
+  if (!task) {
+    return { content: [{ type: 'text', text: 'No active task found. Start working on something to create a task.' }] };
+  }
+
+  let output = `## Current Task\n\n`;
+  output += `**ID:** ${task.id}\n`;
+  output += `**Title:** ${task.title}\n`;
+  output += `**Goal:** ${task.goal}\n`;
+  output += `**Status:** ${task.status}\n`;
+  output += `**Started:** ${task.startDate}\n`;
+  output += `**Sessions:** ${task.sessionIds.length}\n`;
+
+  if (task.pending) {
+    output += `\n### Pending Work\n${task.pending}\n`;
+  }
+
+  if (task.nextSteps.length > 0) {
+    output += `\n### Next Steps\n`;
+    for (const step of task.nextSteps) {
+      output += `- ${step}\n`;
+    }
+  }
+
+  if (task.filesTouched.length > 0) {
+    output += `\n### Files Modified\n${task.filesTouched.slice(0, 10).join('\n')}\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleGetTaskSessions(taskId: string): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const sessionIds = getTaskSessionList(projectRoot, taskId);
+
+  if (sessionIds.length === 0) {
+    return { content: [{ type: 'text', text: `No sessions found for task ${taskId}` }] };
+  }
+
+  const index = loadSessionIndex(projectRoot);
+  const sessions = index.sessions.filter((s: { sessionId: string }) => sessionIds.includes(s.sessionId));
+
+  let output = `## Sessions for Task ${taskId}\n\n`;
+  output += `Total: ${sessions.length} sessions\n\n`;
+
+  for (const session of sessions.sort((a: { startTime: string }, b: { startTime: string }) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())) {
+    output += `### Session ${session.sessionId} (${session.date})\n`;
+    output += `**Topics:** ${session.topics.join(', ')}\n`;
+    output += `**Messages:** ${session.messageCount}\n`;
+    output += `**Duration:** ${session.durationMs ? Math.round(session.durationMs / 60000) + 'min' : 'unknown'}\n\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleGetSessionTask(sessionId: string): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const task = getSessionTask(projectRoot, sessionId);
+
+  if (!task) {
+    return { content: [{ type: 'text', text: `No task found for session ${sessionId}` }] };
+  }
+
+  let output = `## Task for Session ${sessionId}\n\n`;
+  output += `**ID:** ${task.id}\n`;
+  output += `**Title:** ${task.title}\n`;
+  output += `**Status:** ${task.status}\n`;
+
+  if (task.pending) {
+    output += `\n**Pending:** ${task.pending}\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+// ====== PHASE 4: Cross-Session Search Handlers ======
+
+async function handleSearchMemory(
+  query: string,
+  types?: ('task' | 'session' | 'handoff')[],
+  days: number = 30,
+  limit: number = 10
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const results = searchMemory(projectRoot, query, { types, days, limit });
+
+  if (results.length === 0) {
+    return { content: [{ type: 'text', text: `No results found for "${query}"` }] };
+  }
+
+  let output = `## Search Results for "${query}"\n\n`;
+  output += `Found ${results.length} results\n\n`;
+
+  for (const result of results) {
+    output += `### [${result.type}] ${result.title}\n`;
+    output += `**Date:** ${result.date}\n`;
+    output += `**Match:** ${result.matchedOn.join(', ')}\n`;
+    output += `**Snippet:** ${result.snippet}\n\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleSearchEntities(
+  entity: string,
+  type?: string
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const results = searchEntities(projectRoot, entity, type as any);
+
+  if (results.length === 0) {
+    return { content: [{ type: 'text', text: `No sessions found mentioning "${entity}"` }] };
+  }
+
+  let output = `## Entity Search: ${entity}\n\n`;
+  output += `Found in ${results.length} sessions\n\n`;
+
+  for (const result of results.slice(0, 10)) {
+    output += `- ${result.snippet}\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleFindRelatedSessions(
+  sessionId: string,
+  limit: number = 5
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const results = findRelatedSessions(projectRoot, sessionId, limit);
+
+  if (results.length === 0) {
+    return { content: [{ type: 'text', text: `No related sessions found for ${sessionId}` }] };
+  }
+
+  let output = `## Related Sessions\n\n`;
+
+  for (const result of results) {
+    output += `### Session ${result.id}\n`;
+    output += `**Date:** ${result.date}\n`;
+    output += `**Relevance:** ${result.relevanceScore?.toFixed(2)}\n`;
+    output += `**Topics:** ${result.topics.join(', ')}\n\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+// ====== PHASE 6: Task Dependency Handlers ======
+
+async function handleAddTaskDependency(
+  taskId: string,
+  dependsOn: string
+): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const { addTaskDependency } = await import('@kontextmind/core');
+  const success = addTaskDependency(projectRoot, taskId, dependsOn);
+
+  if (success) {
+    return { content: [{ type: 'text', text: `Added dependency: ${taskId} depends on ${dependsOn}` }] };
+  } else {
+    return { content: [{ type: 'text', text: `Failed to add dependency. Task ${taskId} not found.` }] };
+  }
+}
+
+async function handleGetTaskDependencies(taskId: string): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const deps = getTaskDependencies(projectRoot, taskId);
+
+  let output = `## Dependencies for ${taskId}\n\n`;
+
+  if (deps.dependsOn.length > 0) {
+    output += `### Depends On\n`;
+    for (const dep of deps.dependsOn) {
+      output += `- ${dep.title} (${dep.status})\n`;
+    }
+    output += '\n';
+  }
+
+  if (deps.blockedBy.length > 0) {
+    output += `### Blocked By (incomplete)\n`;
+    for (const dep of deps.blockedBy) {
+      output += `- ${dep.title} (${dep.status})\n`;
+    }
+    output += '\n';
+  }
+
+  if (deps.dependsOn.length === 0 && deps.blockedBy.length === 0) {
+    output += 'No dependencies.\n';
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleGetBlockedTasks(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const tasks = getBlockedTasksList(projectRoot);
+
+  if (tasks.length === 0) {
+    return { content: [{ type: 'text', text: 'No blocked tasks found. All tasks are ready to proceed.' }] };
+  }
+
+  let output = `## Blocked Tasks\n\n`;
+  output += `Total: ${tasks.length} tasks are blocked\n\n`;
+
+  for (const task of tasks) {
+    output += `### ${task.title}\n`;
+    output += `**ID:** ${task.id}\n`;
+    output += `**Waiting on:** ${task.dependsOn.join(', ')}\n\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+// ====== PHASE 7: Continuity Suggestion Handlers ======
+
+async function handleGetContinuitySuggestions(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const suggestions = getContinuitySuggestions(projectRoot);
+
+  if (suggestions.length === 0) {
+    return { content: [{ type: 'text', text: 'No continuity suggestions. All work appears to be up to date.' }] };
+  }
+
+  let output = `## Continuity Suggestions\n\n`;
+
+  for (const suggestion of suggestions) {
+    const priorityIcon = suggestion.priority === 'high' ? '[HIGH]' : suggestion.priority === 'medium' ? '[MED]' : '[LOW]';
+    output += `### ${priorityIcon} ${suggestion.title}\n`;
+    output += `**Type:** ${suggestion.type}\n`;
+    output += `**Reason:** ${suggestion.reason}\n`;
+    output += `**Action:** ${suggestion.action}\n`;
+    if (suggestion.relatedIds.taskId) output += `**Task ID:** ${suggestion.relatedIds.taskId}\n`;
+    output += `\n${suggestion.description}\n\n`;
+    output += `---\n\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleAnalyzeContinuity(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const analysis = analyzeContinuityNeed(projectRoot);
+
+  let output = `## Continuity Analysis\n\n`;
+  output += `${analysis.summary}\n\n`;
+
+  if (analysis.currentTask) {
+    output += `### Current Task\n`;
+    output += `**${analysis.currentTask.title}**\n`;
+    if (analysis.currentTask.pending) {
+      output += `Pending: ${analysis.currentTask.pending}\n`;
+    }
+    output += '\n';
+  }
+
+  if (analysis.suggestion) {
+    output += `### Suggested Action\n`;
+    output += `**${analysis.suggestion.title}**\n`;
+    output += `${analysis.suggestion.description}\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleGetTaskResumptionContext(taskId: string): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const context = getTaskResumptionContext(projectRoot, taskId);
+
+  if (!context) {
+    return { content: [{ type: 'text', text: `Task ${taskId} not found` }] };
+  }
+
+  return { content: [{ type: 'text', text: context.summary }] };
+}
+
+async function handleShouldContinue(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const result = shouldContinueFromLastSession(projectRoot);
+
+  let output = `## Continue from Last Session?\n\n`;
+  output += `**Should Continue:** ${result.shouldContinue ? 'Yes' : 'No'}\n`;
+  output += `**Reason:** ${result.reason}\n`;
+
+  if (result.suggestion) {
+    output += `\n### Suggestion\n${result.suggestion}\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
 }
 
 // Handle MCP resource call

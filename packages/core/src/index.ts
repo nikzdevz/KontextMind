@@ -91,3 +91,6 @@ export * from './obsidian/index.js';
 
 // Dataset Preparation
 export * from './dataset/index.js';
+
+// ====== Cross-Session Memory System (Phase 1-7) ======
+export * from './memory/index.js';
