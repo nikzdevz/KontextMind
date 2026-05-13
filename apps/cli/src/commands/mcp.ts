@@ -21,60 +21,23 @@ function setupShutdownHandlers(): void {
     process.on(signal, () => {
       if (!isShuttingDown) {
         isShuttingDown = true;
-        // Send final notification if needed
-        try {
-          process.stdout.write(JSON.stringify({
-            jsonrpc: '2.0',
-            method: 'notifications/mcp/connection_closed',
-            params: { reason: 'Server shutdown' },
-          }) + '\n');
-        } catch {
-          // Ignore
-        }
+        safeWrite(JSON.stringify({
+          jsonrpc: '2.0',
+          method: 'notifications/mcp/connection_closed',
+          params: { reason: 'Server shutdown' },
+        }) + '\n');
         process.exit(0);
       }
     });
   }
 }
 
-// Send response helper
-function sendResponse(id: string | number | null, result: unknown): void {
-  if (id === null || id === undefined) return;
+// Safe write to stdout - wraps all stdout operations
+function safeWrite(data: string): void {
   try {
-    process.stdout.write(JSON.stringify({
-      jsonrpc: '2.0',
-      result,
-      id,
-    }) + '\n');
+    process.stdout.write(data);
   } catch {
-    // stdout might be closed
-  }
-}
-
-// Send error helper
-function sendError(id: string | number | null, code: number, message: string): void {
-  if (id === null || id === undefined) return;
-  try {
-    process.stdout.write(JSON.stringify({
-      jsonrpc: '2.0',
-      error: { code, message },
-      id,
-    }) + '\n');
-  } catch {
-    // stdout might be closed
-  }
-}
-
-// Send notification helper
-function sendNotification(method: string, params?: unknown): void {
-  try {
-    process.stdout.write(JSON.stringify({
-      jsonrpc: '2.0',
-      method,
-      params: params || {},
-    }) + '\n');
-  } catch {
-    // Ignore
+    // stdout closed - server shutting down
   }
 }
 
@@ -100,7 +63,7 @@ export async function mcpCommand(options: OptionValues): Promise<void> {
   if (transport === 'stdio') {
     // Initialize MCP protocol
     // Send protocol version response immediately
-    process.stdout.write(JSON.stringify({
+    safeWrite(JSON.stringify({
       jsonrpc: '2.0',
       result: {
         protocolVersion: '2024-11-05',
@@ -135,113 +98,138 @@ export async function mcpCommand(options: OptionValues): Promise<void> {
         const trimmed = line.trim();
         if (!trimmed) continue;
 
+        let message: Record<string, unknown> = {};
         try {
-          const message = JSON.parse(trimmed);
+          message = JSON.parse(trimmed);
+        } catch {
+          // Skip malformed JSON
+          continue;
+        }
 
-          // Check if project is initialized before handling most methods
-          const needsInitCheck = !['initialize', 'ping'].includes(message.method);
+        const method = message.method as string;
+        if (!method) continue;
 
-          if (needsInitCheck && !project.initialized) {
-            sendError(message.id, -32000, 'KontextMind is not initialized. Run: kontextmind init');
-            continue;
-          }
+        // Check if project is initialized before handling most methods
+        const needsInitCheck = !['initialize', 'ping'].includes(method);
 
-          // Handle different MCP methods
-          switch (message.method) {
+        if (needsInitCheck && !project.initialized) {
+          safeWrite(JSON.stringify({
+            jsonrpc: '2.0',
+            error: { code: -32000, message: 'KontextMind is not initialized. Run: kontextmind init' },
+            id: message.id,
+          }) + '\n');
+          continue;
+        }
+
+        // Handle different MCP methods
+        try {
+          switch (method) {
             case 'initialize':
-              // Respond to initialize request
-              sendResponse(message.id, {
-                protocolVersion: '2024-11-05',
-                capabilities: {
-                  tools: {},
-                  resources: {},
-                  prompts: {},
+              safeWrite(JSON.stringify({
+                jsonrpc: '2.0',
+                result: {
+                  protocolVersion: '2024-11-05',
+                  capabilities: { tools: {}, resources: {}, prompts: {} },
+                  serverInfo: { name: 'kontextmind', version: MCP_VERSION },
                 },
-                serverInfo: {
-                  name: 'kontextmind',
-                  version: MCP_VERSION,
-                },
-              });
-              // Send initialized notification
-              sendNotification('notifications/initialized');
+                id: message.id,
+              }) + '\n');
+              safeWrite(JSON.stringify({
+                jsonrpc: '2.0',
+                method: 'notifications/initialized',
+                params: {},
+              }) + '\n');
               break;
 
             case 'tools/list':
-              sendResponse(message.id, { tools: MCP_TOOLS });
+              safeWrite(JSON.stringify({
+                jsonrpc: '2.0',
+                result: { tools: MCP_TOOLS },
+                id: message.id,
+              }) + '\n');
               break;
 
-            case 'tools/call':
-              try {
-                const { name, arguments: args } = message.params || {};
-                const result = await handleToolCall(name, args || {}, projectRoot);
-                sendResponse(message.id, result);
-              } catch (error) {
-                sendError(message.id, -32603, `Tool execution failed: ${error instanceof Error ? error.message : String(error)}`);
-              }
+            case 'tools/call': {
+              const params = message.params as Record<string, unknown> || {};
+              const { name, arguments: args } = params;
+              const result = await handleToolCall(name as string, (args || {}) as Record<string, unknown>, projectRoot);
+              safeWrite(JSON.stringify({
+                jsonrpc: '2.0',
+                result,
+                id: message.id,
+              }) + '\n');
               break;
+            }
 
-            case 'resources/list':
-              try {
-                const result = await handleResourceCall('list', {}, projectRoot);
-                sendResponse(message.id, result);
-              } catch (error) {
-                sendError(message.id, -32603, `Resource listing failed: ${error instanceof Error ? error.message : String(error)}`);
-              }
+            case 'resources/list': {
+              const result = await handleResourceCall('list', {}, projectRoot);
+              safeWrite(JSON.stringify({
+                jsonrpc: '2.0',
+                result,
+                id: message.id,
+              }) + '\n');
               break;
+            }
 
-            case 'resources/read':
-              try {
-                const { uri } = message.params || {};
-                const result = await handleResourceCall('read', { uri }, projectRoot);
-                sendResponse(message.id, result);
-              } catch (error) {
-                sendError(message.id, -32603, `Resource read failed: ${error instanceof Error ? error.message : String(error)}`);
-              }
+            case 'resources/read': {
+              const params = message.params as Record<string, unknown> || {};
+              const result = await handleResourceCall('read', { uri: params.uri }, projectRoot);
+              safeWrite(JSON.stringify({
+                jsonrpc: '2.0',
+                result,
+                id: message.id,
+              }) + '\n');
               break;
+            }
 
             case 'prompts/list':
-              sendResponse(message.id, { prompts: MCP_PROMPTS });
+              safeWrite(JSON.stringify({
+                jsonrpc: '2.0',
+                result: { prompts: MCP_PROMPTS },
+                id: message.id,
+              }) + '\n');
               break;
 
-            case 'prompts/get':
-              try {
-                const { name, arguments: args } = message.params || {};
-                const result = await handlePromptCall(name, args || {}, projectRoot);
-                sendResponse(message.id, result);
-              } catch (error) {
-                sendError(message.id, -32603, `Prompt retrieval failed: ${error instanceof Error ? error.message : String(error)}`);
-              }
+            case 'prompts/get': {
+              const params = message.params as Record<string, unknown> || {};
+              const { name, arguments: args } = params;
+              const result = await handlePromptCall(name as string, (args || {}) as Record<string, unknown>, projectRoot);
+              safeWrite(JSON.stringify({
+                jsonrpc: '2.0',
+                result,
+                id: message.id,
+              }) + '\n');
               break;
+            }
 
             case 'ping':
-              // Respond to ping with empty result
-              sendResponse(message.id, {});
+              safeWrite(JSON.stringify({
+                jsonrpc: '2.0',
+                result: {},
+                id: message.id,
+              }) + '\n');
               break;
 
             default:
-              // Unknown method - send error
-              sendError(message.id, -32601, `Method not found: ${message.method}`);
+              safeWrite(JSON.stringify({
+                jsonrpc: '2.0',
+                error: { code: -32601, message: `Method not found: ${method}` },
+                id: message.id,
+              }) + '\n');
           }
         } catch (error) {
-          // Failed to parse JSON or handle message
-          if (message && message.id !== undefined) {
-            sendError(message.id, -32700, `Parse error: ${error instanceof Error ? error.message : String(error)}`);
-          }
+          // Log error but don't crash - send error response
+          safeWrite(JSON.stringify({
+            jsonrpc: '2.0',
+            error: { code: -32603, message: `Internal error: ${error instanceof Error ? error.message : String(error)}` },
+            id: message.id,
+          }) + '\n');
         }
       }
     });
 
-    // Handle stdin errors
-    process.stdin.on('error', (error) => {
-      // Connection closed - this is expected during normal operation
-      if (!isShuttingDown) {
-        isShuttingDown = true;
-        process.exit(0);
-      }
-    });
-
-    // Handle stdout errors (connection closed by client)
-    process.stdout.on('error', () => {
+    // Handle stdin errors - connection closed gracefully
+    process.stdin.on('error', () => {
       isShuttingDown = true;
       process.exit(0);
     });
