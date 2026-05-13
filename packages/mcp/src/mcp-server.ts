@@ -955,11 +955,12 @@ async function logMCPEvent(
 export async function handleToolCall(
   toolName: string,
   args: Record<string, unknown>,
-  mode: string
+  projectRoot?: string
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
-  const projectRoot = getProjectRoot();
+  const root = projectRoot || getProjectRoot();
+  const mode = 'readonly';
 
-  await logMCPEvent(projectRoot, {
+  await logMCPEvent(root, {
     timestamp: new Date().toISOString(),
     tool: toolName,
     arguments_summary: JSON.stringify(args).slice(0, 100),

@@ -16,6 +16,7 @@ import { auditCommand } from './commands/audit.js';
 import { obsidianExportCommand } from './commands/obsidian.js';
 import { placeholderCommand } from './commands/placeholder.js';
 import { configCommand } from './commands/config.js';
+import { daemonCommand } from './commands/daemon.js';
 import {
   sessionCreateCommand,
   sessionListCommand,
@@ -131,6 +132,15 @@ program
   .option('--transport <transport>', 'Transport: stdio, http', 'stdio')
   .option('--port <port>', 'Port for HTTP transport', '7332')
   .action(mcpCommand);
+
+program
+  .command('daemon')
+  .description('Start KontextMind as a background daemon')
+  .option('--port <port>', 'MCP server port', '7332')
+  .option('--api-port <port>', 'API server port', '7331')
+  .option('--autostart', 'Register with system autostart')
+  .option('--remove-autostart', 'Remove from system autostart')
+  .action(daemonCommand);
 
 program
   .command('secrets')
