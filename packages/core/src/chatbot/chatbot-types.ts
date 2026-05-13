@@ -25,7 +25,7 @@ export interface QAResult {
 }
 
 export interface SourceReference {
-  type: 'qa' | 'file_summary' | 'function_summary' | 'graph' | 'project' | 'llm-synthesis' | 'code-reading' | 'task_summary' | 'session_summary';
+  type: 'qa' | 'file_summary' | 'function_summary' | 'graph' | 'project' | 'llm-synthesis' | 'llm-intuition' | 'llm-code-synthesis' | 'code-context' | 'code-reading' | 'task_summary' | 'session_summary';
   id?: string;
   name?: string;
   relevanceScore?: number;
@@ -227,4 +227,125 @@ export interface ContextOptions {
   maxTokens?: number;       // Token budget for context
   includeSystemPrompt?: boolean;
   includeTopics?: boolean;
+}
+
+// ====== PHASE 1: Production-Grade Types ======
+
+// Question Intent Classification
+export type QuestionIntent =
+  | 'overview'          // "what is this project?"
+  | 'architecture'     // "how does it work?"
+  | 'implementation'    // "how is X implemented?"
+  | 'usage'             // "how do I use X?"
+  | 'troubleshooting'  // "why is X broken?"
+  | 'status'            // "what's the status of X?"
+  | 'decision'          // "why was X done this way?"
+  | 'exploration';       // open-ended exploration
+
+export interface ClassifiedQuestion {
+  intent: QuestionIntent;
+  entities: string[];           // Files/modules mentioned
+  keywords: string[];
+  isFollowUp: boolean;
+  previousContext?: string[];    // Topics from prior turns
+}
+
+// Semantic Search Chunks
+export interface SemanticChunk {
+  id: string;
+  type: 'file_summary' | 'function_summary' | 'module_summary' | 'api_summary' | 'decision_summary' | 'raw_code';
+  content: string;              // The actual content (summary or code)
+  sourcePath: string;
+  filePath?: string;
+  relevance: number;
+  conversationRelevance?: number; // How relevant to conversation flow
+  freshness: 'fresh' | 'stale' | 'unknown';
+  metadata?: Record<string, unknown>; // Additional context
+}
+
+// Hierarchical Context Layers
+export interface ContextLayer {
+  layer: 1 | 2 | 3 | 4;
+  name: string;
+  tokens: number;
+  content: string;
+  sources: string[];
+}
+
+export interface HierarchicalContext {
+  layers: ContextLayer[];
+  totalTokens: number;
+  maxTokens: number;
+  truncated: boolean;
+}
+
+// Response Provenance
+export interface ResponseProvenance {
+  retrievalPath: string[];      // KB files consulted
+  semanticChunks: SemanticChunk[];
+  conversationContext?: {
+    priorTurns: number;
+    topicsPreserved: string[];
+  };
+  confidenceFactors: {
+    summaryFreshness: number;
+    retrievalRelevance: number;
+    conversationContinuity: number;
+  };
+}
+
+// Production QA Result
+export interface ProductionQAResult extends QAResult {
+  provenance: ResponseProvenance;
+  intent: QuestionIntent;
+  contextLayers: ContextLayer[];
+  qualityScore: number;         // Internal quality metric
+}
+
+// Search Options
+export interface SearchOptions {
+  maxChunks?: number;
+  minRelevance?: number;
+  intent?: QuestionIntent;
+  includeStale?: boolean;
+  conversationTurn?: number;
+  allowRawCode?: boolean;
+}
+
+// Token Limits for Context
+export const TOKEN_LIMITS = {
+  layer1: 200,      // Session context
+  layer2: 800,      // AI-generated summaries (file, function)
+  layer3: 500,      // Module/Decision summaries
+  layer4: 1000,     // Raw file chunks (ONLY when necessary)
+  total: 2500,      // Total budget
+} as const;
+
+// Quality Metrics
+export interface QualityMetrics {
+  totalRequests: number;
+  successfulRequests: number;
+  failedRequests: number;
+  averageConfidence: number;
+  averageQualityScore: number;
+  intentDistribution: Partial<Record<QuestionIntent, number>>;
+  averageResponseTime: number;
+  tokenUsage: {
+    total: number;
+    average: number;
+  };
+  contextHitRate: number;       // % of requests with semantic hits
+  followUpRate: number;         // % of follow-up questions
+  llmFallbackRate: number;      // % falling back to KB-only
+}
+
+export interface QualityMetricsEvent {
+  responseId: string;
+  intent: QuestionIntent;
+  qualityScore: number;
+  contextLayers: number;
+  totalTokens: number;
+  responseTimeMs: number;
+  conversationTurn: number;
+  timestamp: string;
 }

@@ -1,9 +1,7 @@
 // Session Service - API layer for session management
 import { existsSync } from 'fs';
 import { join } from 'path';
-import { SessionManager, getSessionManager } from '@kontextmind/core';
-import { buildEnhancedPrompt, getCurrentTurn } from '@kontextmind/core';
-import { askQuestion } from '@kontextmind/core';
+import { SessionManager, getSessionManager, askQuestion } from '@kontextmind/core';
 import type { ChatSession, ChatMessage, SessionOptions, SessionSummary } from '@kontextmind/core';
 import type { AskResponse } from '../types/index.js';
 
@@ -87,7 +85,7 @@ export class SessionService {
     question: string,
     sessionId?: string,
     mode: string = 'chatbot-readonly'
-  ): Promise<AskResponse & { sessionId: string; conversationTurn: number }> {
+  ): Promise<AskResponse & { sessionId: string; conversationTurn: number; intent?: string }> {
     const projectDir = this.getProjectDir(projectName);
 
     if (!existsSync(join(projectDir, '.kontextmind'))) {
@@ -111,20 +109,14 @@ export class SessionService {
       sessionId = session.id;
     }
 
-    // Build enhanced prompt with conversation context
-    const enhancedQuestion = buildEnhancedPrompt(question, session, {
-      maxTurns: 5,
-      includeSystemPrompt: true,
-    });
-
-    // Call askQuestion with enhanced context
+    // Use askQuestion directly - it now always uses LLM provider
     const result = await askQuestion(
-      session.metadata.totalTokens > 0 ? enhancedQuestion : question,
+      question,
       {
         mode: mode as 'readonly' | 'chatbot-readonly',
         noCode: true,
         source: 'api',
-        sessionId, // Pass session ID for logging
+        sessionId,
         conversationTurn,
       },
       projectDir
@@ -146,7 +138,7 @@ export class SessionService {
       source: result.sources[0]?.type || 'unknown',
     });
 
-    // Increment turn count
+    // Get updated turn count
     conversationTurn = await manager.getTurnCount(sessionId!);
 
     return {

@@ -55,13 +55,33 @@ export * from './chatbot/chatbot-types.js';
 export { buildChatbotKB, getKBStatus, getLastAskTime, askQuestion, recordFeedback, getFeedbackStats, KB_DIR, LOG_FILE as QNA_LOG_FILE } from './chatbot/kb-builder.js';
 export type { QAResult, KBSearchResult, AskOptions, KBBuildOptions, ChatbotKBStatus, ResponseFeedback, QNAEvent } from './chatbot/chatbot-types.js';
 
+// Production Ask Pipeline
+export { classifyQuestion, getIntentPrefix, getIntentLabel, isCodeRequest, isFilePathRequest } from './chatbot/intent-classifier.js';
+export { semanticSearch, findRawFileContent, buildFileSummaryContent, buildFunctionSummaryContent } from './chatbot/semantic-search.js';
+export { buildHierarchicalContext, buildConversationSummary, mergeContextForPrompt, calculateFreshnessScore, calculateRelevanceScore, estimateTokens as estimateContextTokens } from './chatbot/context-builder.js';
+export { calculateQualityMetrics, getQualityTrends, getIntentDistribution, getPerformanceStats, generateQualityReport, recordQualityEvent, checkQualityThreshold } from './chatbot/quality-metrics.js';
+
 // Session Management
 export { SessionManager, getSessionManager } from './chatbot/session-manager.js';
 export type { ChatSession, ChatMessage, SessionOptions, SessionSummary, ConversationContext } from './chatbot/chatbot-types.js';
 
-// Context Building
-export { buildConversationContext, buildEnhancedPrompt, buildSingleTurnContext, getConversationTurns, getCurrentTurn, truncateToTokenBudget, estimateTokens } from './chatbot/context-builder.js';
+// Context Building (legacy + new)
+export { buildConversationContext, buildEnhancedPrompt, buildSingleTurnContext, getCurrentTurn, truncateToTokenBudget, estimateTokens, formatTurnsForDisplay, getConversationTurns } from './chatbot/context-builder.js';
 export type { ConversationTurn, BuiltContext, ContextOptions } from './chatbot/context-builder.js';
+
+// Production Types
+export type {
+  QuestionIntent,
+  ClassifiedQuestion,
+  SemanticChunk,
+  HierarchicalContext,
+  ContextLayer,
+  ResponseProvenance,
+  ProductionQAResult,
+  SearchOptions,
+  QualityMetrics,
+  QualityMetricsEvent,
+} from './chatbot/chatbot-types.js';
 
 // Security
 export * from './security/index.js';

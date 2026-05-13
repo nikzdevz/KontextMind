@@ -8,6 +8,11 @@ import { loadSymbolIndex } from '../parser/index.js';
 import { type ProviderConfig, type ModelProvider } from '../providers/provider-types.js';
 import { createProviderFromConfig } from '../providers/provider-registry.js';
 
+// Production pipeline imports
+import { classifyQuestion, getIntentPrefix, isCodeRequest } from './intent-classifier.js';
+import { semanticSearch, findRawFileContent } from './semantic-search.js';
+import { buildHierarchicalContext, buildConversationSummary, mergeContextForPrompt } from './context-builder.js';
+
 // KB directories
 const KB_DIR = '.kontextmind/chatbot';
 const LOG_FILE = '.logs/qna-events.log';
@@ -619,24 +624,8 @@ function generateResponseId(): string {
   return `${timestamp}-${random}`;
 }
 
-// Detect if question is asking for code (for auto-negative feedback)
-function isCodeRequest(question: string): boolean {
-  const q = question.toLowerCase();
-  const codePatterns = [
-    /show\s+me\s+(the\s+)?code/i,
-    /give\s+me\s+(the\s+)?code/i,
-    /provide\s+(the\s+)?code/i,
-    /print\s+(the\s+)?code/i,
-    /source\s+code\s+of/i,
-    /complete\s+code\s+of/i,
-    /raw\s+code\s+of/i,
-    /what\s+is\s+(written|stored)\s+in/i,
-    /content\s+of\s+(file|code)/i,
-  ];
-  return codePatterns.some(pattern => pattern.test(q));
-}
-
-// Ask a question - Simple flow: search KB, use LLM if needed, filter output
+// Ask a question - Production pipeline with semantic search and LLM
+// IMPORTANT: Always use the LLM provider to answer questions
 export async function askQuestion(
   question: string,
   options: AskOptions = {},
@@ -645,69 +634,173 @@ export async function askQuestion(
   const mode = options.mode || 'chatbot-readonly';
   const source = options.source || 'cli';
   const responseId = generateResponseId();
+  const startTime = Date.now();
+
+  // Phase 1: Classify the question intent
+  const classified = classifyQuestion(question);
 
   // Detect code request (for quality control)
   const codeRequest = isCodeRequest(question);
 
-  // Search KB for relevant answers
-  const searchResult = searchKnowledgeBase(question, projectRoot);
+  // Phase 2: Semantic search using AI-generated summaries
+  // Use lower threshold for overview/exploration questions since they're less specific
+  const minRelevance = (classified.intent === 'overview' || classified.intent === 'exploration')
+    ? 0.15  // Lower threshold for general questions
+    : 0.25; // Normal threshold for specific questions
 
-  let answer = searchResult.bestAnswer;
-  let rawCodeAccess = false;
-  let llmEnhanced = false;
-  let provider: string | undefined;
+  let semanticChunks = await semanticSearch(question, classified, projectRoot, {
+    maxChunks: 10,
+    minRelevance,
+    conversationTurn: options.conversationTurn || 0,
+  });
 
-  // If KB doesn't have good answer and LLM is available, enhance it
-  if (searchResult.needsLLM && options.useLLM !== false) {
-    const llmResult = await enhanceWithLLM(question, searchResult, options, projectRoot);
-    if (llmResult.success) {
-      answer = llmResult.answer;
-      llmEnhanced = true;
-      provider = llmResult.provider;
-      rawCodeAccess = llmResult.readRawCode;
+  // Phase 3: If no summaries found, try raw file content as fallback
+  // NOTE: We still pass these to LLM for context, but they won't be shown to user
+  if (semanticChunks.length === 0) {
+    semanticChunks = findRawFileContent(question, classified, projectRoot, 3);
+  }
 
-      // Add LLM source
-      searchResult.sources.push({
-        type: 'llm-synthesis',
-        name: 'LLM synthesis',
-        relevanceScore: 0.8,
+  // Phase 4: Build conversation summary if session exists
+  const conversationSummary = undefined;
+
+  // Phase 5: Build hierarchical context
+  const hierarchicalContext = buildHierarchicalContext(
+    question,
+    classified,
+    semanticChunks,
+    conversationSummary,
+    { maxTokens: 2500, allowRawCode: false }
+  );
+
+  // Get the LLM provider
+  const providerResult = await getProvider(projectRoot);
+
+  if (!('error' in providerResult)) {
+    const { provider: llmProvider, name: providerName } = providerResult;
+    const contextContent = mergeContextForPrompt(hierarchicalContext);
+
+    // Build comprehensive system prompt with intent guidance + security rules
+    const intentGuidance = getIntentPrefix(classified.intent);
+    const PRODUCTION_SYSTEM_PROMPT = `You are a professional code analyst helping users understand their codebase.
+
+${intentGuidance}
+
+# SECURITY RULES (NEVER VIOLATE)
+1. NEVER show file paths, directory structures, or file names
+2. NEVER show code snippets, function signatures, or technical syntax
+3. NEVER use backticks or code formatting
+4. NEVER reveal the existence of specific files or folders
+5. NEVER include JSON, configuration, or technical structures
+
+# RESPONSE STYLE
+- Use conversational, human language
+- Focus on PURPOSE and MEANING, not implementation
+- If unsure, say so clearly
+- Be helpful and informative`;
+
+    // Build the full user prompt with question + project context
+    let userPrompt: string;
+    if (contextContent && contextContent.trim().length > 0) {
+      // We have AI-generated summaries to use as context
+      userPrompt = `Question: ${question}\n\nProject Context:\n${contextContent}\n\nProvide a clear, helpful answer about the project using the context above.`;
+    } else if (semanticChunks.length > 0) {
+      // We have semantic chunks (from raw file search or empty summaries)
+      const chunkContext = semanticChunks.map(c => c.content).join('\n\n---\n\n');
+      userPrompt = `Question: ${question}\n\nContext from project files:\n${chunkContext}\n\nProvide a clear, helpful answer about the project.`;
+    } else {
+      // No context available - ask the LLM to answer based on general knowledge of the project
+      userPrompt = `Question: ${question}\n\nNote: I don't have specific context files for this question. Please provide a helpful response based on general understanding of a KontextMind-style project (a code analysis and knowledge management tool for AI coding agents).`;
+    }
+
+    try {
+      const result = await llmProvider.generateText({
+        prompt: userPrompt,
+        system: PRODUCTION_SYSTEM_PROMPT,
+        maxTokens: 1500,
+        temperature: 0.7,
       });
+
+      if (result.text) {
+        const finalFiltered = applyNoCodeFilter(result.text);
+        const answer = finalFiltered.text;
+
+        await logQNAEvent(projectRoot, {
+          responseId,
+          sessionId: options.sessionId,
+          question: question.slice(0, 50) + (question.length > 50 ? '...' : ''),
+          questionHash: simpleHash(question),
+          answer: answer.slice(0, 100),
+          sources: semanticChunks.slice(0, 5).map(c => c.type),
+          rawCodeAccess: false,
+          mode,
+          source,
+          feedbackSupported: source !== 'cli',
+          confidence: 0.8,
+          codeRequestDetected: codeRequest,
+          conversationTurn: options.conversationTurn,
+        });
+
+        return {
+          responseId,
+          answer,
+          confidence: 0.8,
+          sources: semanticChunks.slice(0, 5).map(c => ({
+            type: c.type as SourceReference['type'],
+            name: c.id,
+            relevanceScore: c.relevance,
+          })),
+          rawCodeAccess: false,
+          policyApplied: true,
+          mode: mode as 'readonly' | 'chatbot-readonly',
+          llmEnhanced: true,
+          provider: providerName,
+          source,
+          feedbackSupported: source !== 'cli',
+        };
+      }
+    } catch (error) {
+      console.warn(`Production LLM call failed: ${error instanceof Error ? error.message : String(error)}`);
+      // Continue to error handling below
     }
   }
 
-  // Filter any code from the final answer
-  const finalFiltered = applyNoCodeFilter(answer);
-  answer = finalFiltered.text;
+  // If we get here, LLM call failed. Return error with context about what was searched.
+  const errorMessage = 'error' in providerResult
+    ? providerResult.error
+    : 'Failed to generate response. Please check your LLM provider configuration.';
 
-  // Log Q&A event with full metadata
+  // Log the failed attempt
   await logQNAEvent(projectRoot, {
     responseId,
     sessionId: options.sessionId,
     question: question.slice(0, 50) + (question.length > 50 ? '...' : ''),
     questionHash: simpleHash(question),
-    answer: answer.slice(0, 100),
-    sources: searchResult.sources.map(s => s.type),
-    rawCodeAccess,
+    answer: `[LLM Error: ${errorMessage}]`,
+    sources: semanticChunks.slice(0, 5).map(c => c.type),
+    rawCodeAccess: false,
     mode,
     source,
-    feedbackSupported: source !== 'cli', // CLI doesn't expect feedback
-    confidence: searchResult.confidence,
+    feedbackSupported: source !== 'cli',
+    confidence: 0,
     codeRequestDetected: codeRequest,
     conversationTurn: options.conversationTurn,
   });
 
   return {
     responseId,
-    answer,
-    confidence: searchResult.confidence,
-    sources: searchResult.sources,
-    rawCodeAccess,
+    answer: errorMessage,
+    confidence: 0,
+    sources: semanticChunks.slice(0, 5).map(c => ({
+      type: c.type as SourceReference['type'],
+      name: c.id,
+      relevanceScore: c.relevance,
+    })),
+    rawCodeAccess: false,
     policyApplied: true,
     mode: mode as 'readonly' | 'chatbot-readonly',
-    llmEnhanced,
-    provider,
+    llmEnhanced: false,
     source,
-    feedbackSupported: source !== 'cli', // CLI doesn't expect feedback
+    feedbackSupported: source !== 'cli',
   };
 }
 

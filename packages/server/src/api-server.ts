@@ -372,8 +372,15 @@ async function handleDatasetExport(res: ServerResponse, body: Record<string, unk
   }
 
   try {
-    const options = {
-      format: (body.format as string) || 'jsonl',
+    const options: {
+      format?: string;
+      minConfidence?: number;
+      includeCodeRequests?: boolean;
+      apiOnly?: boolean;
+      since?: string;
+      outputPath?: string;
+    } = {
+      format: body.format as string || 'jsonl',
       minConfidence: body.minConfidence as number | undefined,
       includeCodeRequests: body.includeCodeRequests as boolean | undefined,
       apiOnly: body.apiOnly as boolean | undefined,
@@ -381,7 +388,7 @@ async function handleDatasetExport(res: ServerResponse, body: Record<string, unk
       outputPath: body.outputPath as string | undefined,
     };
 
-    const result = await datasetService.exportDataset(projectName, options);
+    const result = await datasetService.exportDataset(projectName, options as any);
     sendJson(res, 200, {
       success: true,
       path: result.path,
@@ -452,6 +459,12 @@ async function handleRequest(req: IncomingMessage, res: ServerResponse): Promise
 
   try {
     if (pathname === '/health' && method === 'GET') {
+      await handleHealth(res);
+    } else if (pathname === '/health/live' && method === 'GET') {
+      // Health check for liveness - same as /health
+      await handleHealth(res);
+    } else if (pathname === '/health/ready' && method === 'GET') {
+      // Health check for readiness - same as /health
       await handleHealth(res);
     } else if (pathname === '/status' && method === 'GET') {
       await handleStatus(res);
