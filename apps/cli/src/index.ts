@@ -17,6 +17,7 @@ import { obsidianExportCommand } from './commands/obsidian.js';
 import { placeholderCommand } from './commands/placeholder.js';
 import { configCommand } from './commands/config.js';
 import { daemonCommand } from './commands/daemon.js';
+import { setupCommand } from './commands/setup.js';
 import {
   sessionCreateCommand,
   sessionListCommand,
@@ -50,6 +51,21 @@ program
   .option('--git <mode>', 'Git integration: auto, enabled, disabled')
   .option('--provider <provider>', 'LLM provider: none, openai, anthropic, ollama, bedrock, openai-compatible')
   .action(initCommand);
+
+program
+  .command('setup')
+  .description('Interactive setup wizard for KontextMind')
+  .option('--provider <provider>', 'LLM provider (openai/anthropic/openrouter/custom/opusmax/ollama)')
+  .option('--api-key <key>', 'API key for the provider')
+  .option('--mode <mode>', 'KontextMind mode (readonly/chatbot-readonly/suggest/edit-with-approval/full-agent)')
+  .option('--auto-sync', 'Enable automatic sync', true)
+  .option('--no-auto-sync', 'Disable automatic sync')
+  .option('--configure-mcp', 'Configure MCP server', true)
+  .option('--no-configure-mcp', 'Skip MCP configuration')
+  .option('--run-scan', 'Run initial scan', true)
+  .option('--no-run-scan', 'Skip initial scan')
+  .option('--skip-summarize', 'Skip summary generation')
+  .action(setupCommand);
 
 program
   .command('deinit')

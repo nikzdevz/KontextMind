@@ -98,3 +98,39 @@ export * from './dataset/index.js';
 
 // ====== Cross-Session Memory System (Phase 1-7) ======
 export * from './memory/index.js';
+
+// ====== Phase 1 - Core Brain: Self-Awareness ======
+export * from './awareness/index.js';
+
+// ====== Phase 1 - Core Brain: Dynamic Context ======
+export * from './context/index.js';
+
+// ====== Phase 2 - Learning & Adaptation ======
+export * from './learning/index.js';
+export * from './prediction/index.js';
+export * from './personalization/index.js';
+
+// ====== Hooks (for event-based sync) ======
+export * from './hooks/index.js';
+
+// ====== Phase 3 - Memory & Context Optimization ======
+export * from './handoff/index.js';
+export * from './compression/index.js';
+
+// ====== Phase 4 - Project Mental Model & Budget ======
+export * from './mental-model/index.js';
+export * from './budget/index.js';
+export * from './skills/index.js';
+
+// ====== Phase 5 - Real-Time & Multi-Agent ======
+export * from './realtime/index.js';
+export * from './multiagent/index.js';
+export * from './eventbus/index.js';
+
+// ====== Phase 6 - Codebase Health & Tools ======
+export * from './health/index.js';
+export * from './tools/index.js';
+
+// ====== Brain Ask (Learning → Answer) ======
+export * from './brain-ask/index.js';
+// Placeholder exports for upcoming phases
