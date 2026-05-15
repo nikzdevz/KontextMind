@@ -377,7 +377,7 @@ async function listProviders(): Promise<void> {
 
 async function testProvider(options: OptionValues): Promise<void> {
   const name = options.name as string;
-  const prompt = (options.prompt as string) || (options.args?.find(a => !a.startsWith('--')) as string) || 'Say hello and confirm you are working.';
+  const prompt = (options.prompt as string) || (options.args?.find((a: string) => !a.startsWith('--')) as string) || 'Say hello and confirm you are working.';
   const global = Boolean(options.global);
 
   if (!name) {

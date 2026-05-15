@@ -23,6 +23,7 @@ export interface KBBuildOptions {
   mock?: boolean;
   maxQuestions?: number;
   projectRoot?: string;
+  projectName?: string;
   providerConfig?: ProviderConfig;
 }
 
@@ -549,6 +550,7 @@ export function getKBStatus(projectRoot: string): {
   hasArchitecture: boolean;
   questionCount: number;
   lastBuildTime: string | null;
+  lastAskTime: string | null;
   files: string[];
 } {
   const kbDir = join(projectRoot, KB_DIR);
@@ -579,7 +581,7 @@ export function getKBStatus(projectRoot: string): {
   let lastBuildTime: string | null = null;
   for (const file of files) {
     try {
-      const stats = require('fs').statSync(join(kbDir, file));
+      const stats = statSync(join(kbDir, file));
       if (!lastBuildTime || stats.mtime > new Date(lastBuildTime)) {
         lastBuildTime = stats.mtime.toISOString();
       }
@@ -592,6 +594,7 @@ export function getKBStatus(projectRoot: string): {
     hasArchitecture,
     questionCount,
     lastBuildTime,
+    lastAskTime: getLastAskTime(projectRoot),
     files,
   };
 }

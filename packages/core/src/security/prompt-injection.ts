@@ -186,7 +186,7 @@ export function analyzeForInjection(content: string): InjectionAnalysis {
     { phrase: 'new system instructions', weight: 3 },
     { phrase: 'eval(', weight: 1 },
     { phrase: 'exec(', weight: 1 },
-    { phrase: 'os\.system', weight: 1 },
+    { phrase: 'os.system', weight: 1 },
     { phrase: 'subprocess', weight: 1 },
     { phrase: '<script', weight: 2 },
     { phrase: 'javascript:', weight: 2 },

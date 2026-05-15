@@ -68,6 +68,7 @@ This creates:
 - `.kontextmind/config.json` — Project configuration
 - `CLAUDE.md` — Context for AI assistants
 - `AGENTS.md` — Agent-specific instructions
+- `.roo/mcp.json`, `.mcp.json`, `.codex/config.toml`, `.cursor/mcp.json` — Agent IDE MCP configs
 - Policy and instruction files
 
 ### 2. Index Your Project
@@ -216,7 +217,7 @@ kontextmind/
   },
   "mode": "readonly",
   "phase": 1,
-  "agents": ["claude", "cursor", "copilot"],
+  "agents": ["claude", "codex", "roo", "cursor"],
   "git": {
     "enabled": true,
     "mode": "auto"

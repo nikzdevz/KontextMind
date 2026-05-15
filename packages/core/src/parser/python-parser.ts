@@ -76,7 +76,7 @@ export class PythonParser implements CodeParser {
   private extractSymbols(content: string, file: IndexedFile): SymbolRecord[] {
     const symbols: SymbolRecord[] = [];
     const lines = content.split('\n');
-    let indentStack: number[] = [0];
+    const indentStack: number[] = [0];
 
     lines.forEach((line, idx) => {
       const lineNum = idx + 1;

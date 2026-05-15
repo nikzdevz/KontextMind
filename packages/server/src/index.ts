@@ -26,6 +26,7 @@ export interface ApiServerStatus {
 }
 
 export { startApiServer, stopApiServer, getApiServerStatus, isServerRunning } from './api-server.js';
+export { sessionService } from './services/session-service.js';
 
 export const PHASE = 6;
 export const SERVER_VERSION = '0.1.0';

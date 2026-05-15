@@ -28,14 +28,41 @@ const MCP_CONFIG_FILES = {
   ClaudeCode: '.mcp.json',
   // Roo Code MCP settings
   RooCode: '.roo/mcp.json',
+  // Cursor project MCP settings
+  Cursor: '.cursor/mcp.json',
+  // Codex project-scoped MCP settings
+  Codex: '.codex/config.toml',
   // VS Code MCP extension settings
   VSCode: 'mcp_settings.json',
 };
+
+const SAFE_AUTO_APPROVE_TOOLS = [
+  'project.status',
+  'project.search',
+  'project.get_file_summary',
+  'project.get_symbol_summary',
+  'project.find_dependencies',
+  'project.find_callers',
+  'project.find_related_files',
+  'project.ask_readonly',
+  'project.get_recent_tasks',
+  'project.get_last_session',
+  'project.get_session_index',
+  'project.get_session_stats',
+  'project.search_sessions',
+  'project.get_recent_activity',
+  'project.get_continuity_suggestions',
+  'project.analyze_continuity',
+] as const;
 
 export interface MCPServerConfig {
   command: string;
   args?: string[];
   env?: Record<string, string>;
+  cwd?: string;
+  timeout?: number;
+  alwaysAllow?: readonly string[];
+  disabled?: boolean;
   url?: string;
 }
 
@@ -52,59 +79,79 @@ export interface MCPConfigResult {
 /**
  * Creates MCP configuration files for external MCP clients
  */
-function createMCPConfigFiles(
+async function createMCPConfigFiles(
   projectRoot: string,
   options: {
     transport?: 'stdio' | 'http';
     port?: number;
     serverCommand?: string;
   } = {}
-): MCPConfigResult {
+): Promise<MCPConfigResult> {
   const result: MCPConfigResult = { created: [], skipped: [], errors: [] };
   const { transport = 'stdio', port = 7332, serverCommand = 'kontextmind' } = options;
 
   // Prepare server configurations
   const stdioServerConfig: MCPServerConfig = {
     command: serverCommand,
-    args: ['mcp'],
+    args: ['mcp', '--mode', 'full-agent'],
+    cwd: projectRoot,
     env: {
-      DATA_DIR: '${DATA_DIR}',
+      DATA_DIR: '.kontextmind',
     },
   };
 
   const httpServerConfig: MCPServerConfig = {
     command: serverCommand,
-    args: ['mcp', '--transport', 'http', '--port', String(port)],
+    args: ['mcp', '--mode', 'full-agent', '--transport', 'http', '--port', String(port)],
+    cwd: projectRoot,
     env: {
-      DATA_DIR: '${DATA_DIR}',
+      DATA_DIR: '.kontextmind',
     },
   };
 
   const serverConfig = transport === 'http' ? httpServerConfig : stdioServerConfig;
+  const rooServerConfig: MCPServerConfig = {
+    ...serverConfig,
+    alwaysAllow: SAFE_AUTO_APPROVE_TOOLS,
+    timeout: 60,
+    disabled: false,
+  };
+  const cursorServerConfig: MCPServerConfig = {
+    ...serverConfig,
+    disabled: false,
+  };
+  const vscodeServerConfig: MCPServerConfig = {
+    ...serverConfig,
+    alwaysAllow: SAFE_AUTO_APPROVE_TOOLS,
+    timeout: 60,
+    disabled: false,
+  };
+
+  const readExistingMCPConfig = (filePath: string): MCPConfig => {
+    if (!existsSync(filePath)) {
+      return { mcpServers: {} };
+    }
+    const existing = JSON.parse(readFileSync(filePath, 'utf-8')) as Partial<MCPConfig>;
+    return {
+      mcpServers: existing.mcpServers ?? {},
+    };
+  };
+
+  const writeMergedMCPConfig = async (filePath: string, config: MCPServerConfig): Promise<void> => {
+    const existing = readExistingMCPConfig(filePath);
+    const merged: MCPConfig = {
+      mcpServers: {
+        ...existing.mcpServers,
+        kontextmind: config,
+      },
+    };
+    await writeFileSafe(filePath, JSON.stringify(merged, null, 2) + '\n');
+  };
 
   // 1. Create .mcp.json (Claude Code, Continue.dev, and generic MCP clients)
   try {
-    const mcpConfig: MCPConfig = {
-      mcpServers: {
-        kontextmind: serverConfig,
-      },
-    };
-
-    // Check if file exists
     const mcpJsonPath = path.join(projectRoot, MCP_CONFIG_FILES.ClaudeCode);
-    if (existsSync(mcpJsonPath)) {
-      // Merge with existing config
-      const existing = JSON.parse(readFileSync(mcpJsonPath, 'utf-8'));
-      const merged: MCPConfig = {
-        mcpServers: {
-          ...existing.mcpServers,
-          kontextmind: serverConfig,
-        },
-      };
-      writeFileSafe(mcpJsonPath, JSON.stringify(merged, null, 2));
-    } else {
-      writeFileSafe(mcpJsonPath, JSON.stringify(mcpConfig, null, 2));
-    }
+    await writeMergedMCPConfig(mcpJsonPath, serverConfig);
     result.created.push(MCP_CONFIG_FILES.ClaudeCode);
   } catch (error) {
     result.errors.push(`Failed to create ${MCP_CONFIG_FILES.ClaudeCode}: ${error}`);
@@ -112,58 +159,47 @@ function createMCPConfigFiles(
 
   // 2. Create .roo/mcp.json (Roo Code)
   try {
-    const rooDir = path.join(projectRoot, '.roo');
-    const rooMcpPath = path.join(rooDir, 'mcp.json');
-
-    // Ensure .roo directory exists
-    if (!existsSync(rooDir)) {
-      // Directory creation would be handled by createDirectories
-    }
-
-    const rooConfig: MCPConfig = {
-      mcpServers: {
-        kontextmind: serverConfig,
-      },
-    };
-
-    if (existsSync(rooMcpPath)) {
-      const existing = JSON.parse(readFileSync(rooMcpPath, 'utf-8'));
-      const merged: MCPConfig = {
-        mcpServers: {
-          ...existing.mcpServers,
-          kontextmind: serverConfig,
-        },
-      };
-      writeFileSafe(rooMcpPath, JSON.stringify(merged, null, 2));
-    } else {
-      writeFileSafe(rooMcpPath, JSON.stringify(rooConfig, null, 2));
-    }
+    const rooMcpPath = path.join(projectRoot, MCP_CONFIG_FILES.RooCode);
+    await writeMergedMCPConfig(rooMcpPath, rooServerConfig);
     result.created.push(MCP_CONFIG_FILES.RooCode);
   } catch (error) {
     result.errors.push(`Failed to create ${MCP_CONFIG_FILES.RooCode}: ${error}`);
   }
 
-  // 3. Create mcp_settings.json (VS Code MCP extensions)
+  // 3. Create .cursor/mcp.json (Cursor)
   try {
-    const vscodeConfig: MCPConfig = {
-      mcpServers: {
-        kontextmind: serverConfig,
-      },
-    };
+    const cursorPath = path.join(projectRoot, MCP_CONFIG_FILES.Cursor);
+    await writeMergedMCPConfig(cursorPath, cursorServerConfig);
+    result.created.push(MCP_CONFIG_FILES.Cursor);
+  } catch (error) {
+    result.errors.push(`Failed to create ${MCP_CONFIG_FILES.Cursor}: ${error}`);
+  }
 
+  // 4. Create .codex/config.toml (Codex)
+  try {
+    const codexPath = path.join(projectRoot, MCP_CONFIG_FILES.Codex);
+    const codexToml = [
+      '# KontextMind MCP server for Codex CLI/IDE extension.',
+      '# Project-scoped Codex config is loaded only for trusted projects.',
+      '[mcp_servers.kontextmind]',
+      `command = "${serverCommand.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`,
+      `args = ["mcp", "--mode", "full-agent"${transport === 'http' ? `, "--transport", "http", "--port", "${port}"` : ''}]`,
+      `cwd = "${projectRoot.replace(/\\/g, '/').replace(/"/g, '\\"')}"`,
+      'startup_timeout_sec = 20',
+      'tool_timeout_sec = 60',
+      'enabled = true',
+      '',
+    ].join('\n');
+    await writeFileSafe(codexPath, codexToml);
+    result.created.push(MCP_CONFIG_FILES.Codex);
+  } catch (error) {
+    result.errors.push(`Failed to create ${MCP_CONFIG_FILES.Codex}: ${error}`);
+  }
+
+  // 5. Create mcp_settings.json (VS Code MCP extensions)
+  try {
     const vscodePath = path.join(projectRoot, MCP_CONFIG_FILES.VSCode);
-    if (existsSync(vscodePath)) {
-      const existing = JSON.parse(readFileSync(vscodePath, 'utf-8'));
-      const merged: MCPConfig = {
-        mcpServers: {
-          ...existing.mcpServers,
-          kontextmind: serverConfig,
-        },
-      };
-      writeFileSafe(vscodePath, JSON.stringify(merged, null, 2));
-    } else {
-      writeFileSafe(vscodePath, JSON.stringify(vscodeConfig, null, 2));
-    }
+    await writeMergedMCPConfig(vscodePath, vscodeServerConfig);
     result.created.push(MCP_CONFIG_FILES.VSCode);
   } catch (error) {
     result.errors.push(`Failed to create ${MCP_CONFIG_FILES.VSCode}: ${error}`);
@@ -232,7 +268,7 @@ const KONTEXTMIND_GITIGNORE_PATTERNS = `
 .toolignore
 `;
 
-function updateGitignore(projectRoot: string, warnings: string[]): void {
+async function updateGitignore(projectRoot: string, warnings: string[]): Promise<void> {
   const gitignorePath = path.join(projectRoot, '.gitignore');
 
   try {
@@ -248,7 +284,7 @@ function updateGitignore(projectRoot: string, warnings: string[]): void {
 
     // Append KontextMind patterns
     const newContent = existingContent.trimEnd() + KONTEXTMIND_GITIGNORE_PATTERNS;
-    writeFileSafe(gitignorePath, newContent);
+    await writeFileSafe(gitignorePath, newContent);
   } catch (error) {
     warnings.push(`Failed to update .gitignore: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -317,6 +353,10 @@ export async function initProject(options: InitOptions = {}): Promise<InitResult
     '.context',
     '.mcp',
     '.roo',
+    '.roo/rules-kontextmind',
+    '.cursor',
+    '.cursor/rules',
+    '.codex',
     '.kg',
     '.kg/nodes',
     '.kg/edges',
@@ -435,10 +475,10 @@ export async function initProject(options: InitOptions = {}): Promise<InitResult
   const result = await createFiles(allFiles, resolved.force);
 
   // Update .gitignore with KontextMind patterns
-  updateGitignore(projectRoot, result.warnings);
+  await updateGitignore(projectRoot, result.warnings);
 
   // Create MCP configuration files for external clients
-  const mcpResult = createMCPConfigFiles(projectRoot, {
+  const mcpResult = await createMCPConfigFiles(projectRoot, {
     transport: 'stdio',
     port: 7332,
     serverCommand: 'kontextmind',

@@ -1,8 +1,8 @@
 import { OptionValues } from 'commander';
 import chalk from 'chalk';
-import { existsSync, readFileSync, writeFileSync, mkdirSync } from 'fs';
+import { existsSync, readFileSync, writeFileSync, mkdirSync, unlinkSync } from 'fs';
 import { join, dirname } from 'path';
-import { spawn, ChildProcess } from 'child_process';
+import { execSync, spawn, ChildProcess } from 'child_process';
 import { detectProject } from '@kontextmind/core';
 
 // Platform-specific autostart paths
@@ -45,7 +45,6 @@ function writeAutostartConfig(scriptPath: string): void {
     writeFileSync(scriptPath, shellContent, 'utf-8');
     try {
       // Make executable on Unix
-      const { execSync } = require('child_process');
       execSync(`chmod +x "${scriptPath}"`);
     } catch {
       // Ignore chmod errors
@@ -94,7 +93,6 @@ function removeAutostartEntry(): boolean {
     const autostartFile = join(autostartDir, getAutostartFileName());
 
     if (existsSync(autostartFile)) {
-      const { unlinkSync } = require('fs');
       unlinkSync(autostartFile);
     }
 
@@ -133,7 +131,6 @@ function writePidFile(pid: number): void {
 function deletePidFile(): void {
   const pidFile = getPidFile();
   if (existsSync(pidFile)) {
-    const { unlinkSync } = require('fs');
     try {
       unlinkSync(pidFile);
     } catch {
@@ -157,7 +154,6 @@ function isProcessRunning(pid: number): boolean {
   try {
     if (process.platform === 'win32') {
       // On Windows, use tasklist to check
-      const { execSync } = require('child_process');
       execSync(`tasklist /FI "PID eq ${pid}" /NH`, { stdio: 'pipe' });
       return true;
     } else {

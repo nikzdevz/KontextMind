@@ -49,6 +49,7 @@ export interface AskResponse {
   sources: Source[];
   tier: number;
   cached: boolean;
+  feedback_supported?: boolean;
 }
 
 export interface Source {
@@ -87,6 +88,7 @@ export interface FeedbackRecord {
     sources: string[];
     llm_model?: string;
     kb_version?: string;
+    code_request?: boolean;
   };
 }
 

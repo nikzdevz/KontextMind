@@ -1,7 +1,7 @@
 // Prompt Instructions Service
 // Manages custom system prompts and instructions per project
 
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
 const PROJECTS_DIR = process.env.DATA_DIR || '/kontextmind/projects';
@@ -37,7 +37,7 @@ export class PromptInstructionsService {
     return join(this.getProjectDir(name), '.kontextmind', 'chatbot', 'prompt-instructions.json');
   }
 
-  getInstructions(projectName: string): PromptInstructions | null {
+  getInstructions(projectName: string): PromptInstructions {
     const configPath = this.getPromptConfigPath(projectName);
 
     if (!existsSync(configPath)) {
@@ -59,7 +59,7 @@ export class PromptInstructionsService {
     const chatbotDir = join(projectDir, '.kontextmind', 'chatbot');
 
     // Load existing or start with defaults
-    let current = this.getInstructions(projectName);
+    const current = this.getInstructions(projectName);
 
     // Merge updates
     const updated: PromptInstructions = {
@@ -74,7 +74,7 @@ export class PromptInstructionsService {
 
     // Ensure directory exists
     if (!existsSync(chatbotDir)) {
-      require('fs').mkdirSync(chatbotDir, { recursive: true });
+      mkdirSync(chatbotDir, { recursive: true });
     }
 
     writeFileSync(configPath, JSON.stringify(updated, null, 2));
@@ -90,7 +90,7 @@ export class PromptInstructionsService {
     }
 
     try {
-      require('fs').unlinkSync(configPath);
+      unlinkSync(configPath);
       return true;
     } catch {
       return false;

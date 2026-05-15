@@ -244,6 +244,13 @@ export async function generateContent(options: GenerationOptions): Promise<Gener
     model: providerConfig.model,
   });
 
+  if (!provider) {
+    return {
+      projectMd: buildProjectMdFallback(projectInfo.name, projectInfo),
+      conventionsMd: buildConventionsMdFallback(projectInfo.structure, projectInfo.detectedConventions),
+    };
+  }
+
   const isMock = provider.getName() === 'mock';
   const model = providerConfig.model || 'gpt-3.5-turbo';
 

@@ -3,7 +3,7 @@ import type { ProjectConfig, PolicyConfig, ProvidersConfig, ModelsConfig, ToolLi
 export const KONTEXTMIND_VERSION = '0.1.0';
 
 export function getDefaultAgents(): AgentType[] {
-  return ['claude', 'codex', 'generic'];
+  return ['claude', 'codex', 'roo', 'generic'];
 }
 
 export function getDefaultMode(): Mode {

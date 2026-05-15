@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { computeFileHash, getFileStats, isLargeFile, DEFAULT_HASH_ALGORITHM, MAX_FILE_SIZE_DEFAULT, verifyHash } from '../../packages/core/src/scanner/hash-file.js';
-import { writeFileSync, unlinkSync, mkdirSync, existsSync } from 'fs';
+import { writeFileSync, unlinkSync, mkdirSync, existsSync, rmSync } from 'fs';
 import { join } from 'path';
 
 describe('File Hashing', () => {
@@ -76,7 +76,6 @@ describe('File Hashing', () => {
     try {
       if (existsSync(testFile)) unlinkSync(testFile);
       if (existsSync(testDir)) {
-        const { rmSync } = require('fs');
         rmSync(testDir, { recursive: true, force: true });
       }
     } catch {

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-export const AgentTypeSchema = z.enum(['claude', 'codex', 'cursor', 'continue', 'copilot', 'generic']);
+export const AgentTypeSchema = z.enum(['claude', 'codex', 'roo', 'cursor', 'antigravity', 'continue', 'copilot', 'generic']);
 export const ModeSchema = z.enum(['readonly', 'suggest', 'edit-with-approval', 'full-agent']);
 export const GitModeSchema = z.enum(['auto', 'enabled', 'disabled']);
 export const ProviderSchema = z.enum(['none', 'openai', 'anthropic', 'ollama', 'bedrock', 'openai-compatible']);

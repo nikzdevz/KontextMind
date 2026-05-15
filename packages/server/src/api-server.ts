@@ -1,7 +1,7 @@
 // HTTP API Server using built-in Node.js http module
 import { createServer, IncomingMessage, ServerResponse, Server } from 'http';
 import { URL } from 'url';
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { join } from 'path';
 import { sessionService } from './services/session-service.js';
 import { askService } from './services/ask-service.js';
@@ -51,7 +51,7 @@ async function logApiEvent(
   try {
     const dirPath = join(projectRoot, '.logs');
     if (!existsSync(dirPath)) {
-      require('fs').mkdirSync(dirPath, { recursive: true });
+      mkdirSync(dirPath, { recursive: true });
     }
 
     const logPath = join(projectRoot, LOG_FILE);

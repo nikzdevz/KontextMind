@@ -1,5 +1,5 @@
 // Dataset Versioning - Version control for datasets
-import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync } from 'fs';
 import { join } from 'path';
 import type {
   DatasetVersion,
@@ -351,15 +351,13 @@ export function deleteVersion(projectRoot: string, version: string): boolean {
   const versionFile = join(projectRoot, VERSIONS_DIR, `${version}.json`);
 
   try {
-    // Use rmSync directly
-    const fs = require('fs');
     if (existsSync(versionDir)) {
-      fs.rmSync(versionDir, { recursive: true });
+      rmSync(versionDir, { recursive: true });
     }
 
     // Delete metadata file
     if (existsSync(versionFile)) {
-      fs.rmSync(versionFile);
+      rmSync(versionFile);
     }
 
     return true;

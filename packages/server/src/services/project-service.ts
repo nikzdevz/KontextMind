@@ -1,12 +1,22 @@
 // Project Management Service
-import { existsSync, readFileSync, writeFileSync, readdirSync, rmSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync, rmSync } from 'fs';
 import { join, basename } from 'path';
 import { execSync, spawn } from 'child_process';
-import { v4 as uuidv4 } from 'uuid';
+import { randomUUID } from 'crypto';
 import type { Project, ProjectStatus, Job, SetupProjectResponse } from '../types/index.js';
 
 const PROJECTS_DIR = process.env.DATA_DIR || '/kontextmind/projects';
 const JOBS_FILE = join(PROJECTS_DIR, '.jobs.json');
+
+interface ProjectMetadata {
+  created_at?: string;
+  project?: {
+    git_url?: string;
+  };
+  git?: {
+    branch?: string;
+  };
+}
 
 export class ProjectService {
   private jobs: Map<string, Job> = new Map();
@@ -32,7 +42,7 @@ export class ProjectService {
     const data = { jobs: Array.from(this.jobs.values()) };
     const dir = join(PROJECTS_DIR);
     if (!existsSync(dir)) {
-      require('fs').mkdirSync(dir, { recursive: true });
+      mkdirSync(dir, { recursive: true });
     }
     writeFileSync(JOBS_FILE, JSON.stringify(data, null, 2));
   }
@@ -41,11 +51,11 @@ export class ProjectService {
     return join(PROJECTS_DIR, name);
   }
 
-  private getProjectMetadata(name: string): Record<string, unknown> | null {
+  private getProjectMetadata(name: string): ProjectMetadata | null {
     const configPath = join(this.getProjectDir(name), '.kontextmind', 'config.json');
     if (existsSync(configPath)) {
       try {
-        return JSON.parse(readFileSync(configPath, 'utf-8'));
+        return JSON.parse(readFileSync(configPath, 'utf-8')) as ProjectMetadata;
       } catch {
         return null;
       }
@@ -94,7 +104,7 @@ export class ProjectService {
     callbackUrl?: string
   ): Promise<SetupProjectResponse> {
     const projectDir = this.getProjectDir(name);
-    const jobId = `job_${uuidv4()}`;
+    const jobId = `job_${randomUUID()}`;
 
     // Create initial job
     const job: Job = {
@@ -182,7 +192,7 @@ export class ProjectService {
     // Create parent directory if needed
     const parentDir = join(projectDir, '..');
     if (!existsSync(parentDir)) {
-      require('fs').mkdirSync(parentDir, { recursive: true });
+      mkdirSync(parentDir, { recursive: true });
     }
 
     // Clone if directory doesn't exist
@@ -230,7 +240,11 @@ export class ProjectService {
       proc.on('close', (code) => {
         clearTimeout(timer);
         console.log(`[ProjectService] Command exited with code: ${code}`);
-        code === 0 ? resolve() : reject(new Error(`Exit ${code}`));
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`Exit ${code}`));
+        }
       });
       proc.on('error', (err) => {
         clearTimeout(timer);
@@ -324,7 +338,11 @@ export class ProjectService {
       proc.on('close', (code) => {
         clearTimeout(timer);
         console.log(`[ProjectService] Command exited with code: ${code}`);
-        code === 0 ? resolve() : reject(new Error(`Exit ${code}`));
+        if (code === 0) {
+          resolve();
+        } else {
+          reject(new Error(`Exit ${code}`));
+        }
       });
       proc.on('error', (err) => {
         clearTimeout(timer);
@@ -482,7 +500,7 @@ export class ProjectService {
       throw new Error('Project not initialized');
     }
 
-    const jobId = `job_${uuidv4()}`;
+    const jobId = `job_${randomUUID()}`;
     const job: Job = {
       job_id: jobId,
       project_name: name,

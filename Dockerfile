@@ -35,31 +35,30 @@ RUN pnpm install --no-frozen-lockfile
 # Copy source code
 COPY . .
 
+# Copy workspace packages into server's node_modules for resolution during build
+RUN mkdir -p /app/packages/server/node_modules/@kontextmind && \
+    ln -sf /app/packages/core /app/packages/server/node_modules/@kontextmind/core
+
 # Build all packages (in correct order)
-# First build MCP (dependency of CLI), then server, core, and CLI
+# 1. Build core first (no dependencies)
+# 2. Build server (depends on core) - symlink to built core
+# 3. Build mcp (depends on core) - symlink to built core
+# 4. Build adapters (no dependencies)
+# 5. Build CLI (depends on core and mcp)
 ENV SHELL=/bin/bash
-RUN cd packages/mcp && pnpm run build
-RUN cd packages/server && pnpm run build
 RUN cd packages/core && pnpm run build
 
-# Link dependencies globally for CLI to use
-RUN npm install -g /app/packages/mcp && npm install -g /app/packages/core
+# After core is built, set up proper symlinks for workspace packages
+RUN rm -rf /app/node_modules/@kontextmind && mkdir -p /app/node_modules/@kontextmind && \
+    ln -sf /app/packages/core /app/node_modules/@kontextmind/core && \
+    ln -sf /app/packages/mcp /app/node_modules/@kontextmind/mcp && \
+    ln -sf /app/packages/server /app/node_modules/@kontextmind/server 2>/dev/null || true
 
-# Build CLI - replace workspace protocol with local paths for npm compatibility
-RUN cd apps/cli && \
-    sed -i 's|"@kontextmind/mcp": "workspace:\*"|"@kontextmind/mcp": "file:../packages/mcp"|' package.json && \
-    sed -i 's|"@kontextmind/core": "workspace:\*"|"@kontextmind/core": "file:../packages/core"|' package.json && \
-    npm install && npm run build
-
-# Copy workspace packages into CLI's node_modules for runtime resolution
-RUN mkdir -p /app/apps/cli/node_modules/@kontextmind && \
-    rm -rf /app/apps/cli/node_modules/@kontextmind/core /app/apps/cli/node_modules/@kontextmind/mcp && \
-    cp -r /app/packages/core /app/apps/cli/node_modules/@kontextmind/core && \
-    cp -r /app/packages/mcp /app/apps/cli/node_modules/@kontextmind/mcp && \
-    # Create symlinks to workspace node_modules for transitive deps
-    for pkg in zod ignore glob; do \
-      cp -r /app/node_modules/.pnpm/${pkg}*/node_modules/${pkg} /app/apps/cli/node_modules/ 2>/dev/null || true; \
-    done
+# Now build remaining packages - they'll find @kontextmind/* in node_modules
+RUN cd packages/server && pnpm run build
+RUN cd packages/mcp && pnpm run build
+RUN cd packages/adapters && pnpm run build
+RUN cd apps/cli && pnpm run build
 
 # Install CLI globally using npm link
 WORKDIR /app/apps/cli
@@ -68,9 +67,11 @@ RUN npm link
 # Switch back to app directory
 WORKDIR /app
 
-# Create non-root user for security
+# Create non-root user for security with home directory
 RUN addgroup -g 1001 -S kontextmind && \
-    adduser -S kontextmind -u 1001
+    adduser -S kontextmind -u 1001 -h /home/kontextmind && \
+    mkdir -p /home/kontextmind && \
+    chown -R kontextmind:kontextmind /home/kontextmind
 
 # Create projects directory
 RUN mkdir -p /kontextmind/projects && \
@@ -84,9 +85,9 @@ ENV PORT=7331
 ENV HOST=0.0.0.0
 ENV DATA_DIR=/kontextmind/projects
 
-# Copy entrypoint script
-COPY scripts/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+# Copy entrypoint script and fix Windows line endings
+COPY scripts/entrypoint.sh /tmp/entrypoint.sh
+RUN sed -i 's/\r$//' /tmp/entrypoint.sh && mv /tmp/entrypoint.sh /entrypoint.sh && chmod +x /entrypoint.sh
 
 # Switch to non-root user
 USER kontextmind

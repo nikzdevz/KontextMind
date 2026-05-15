@@ -54,6 +54,10 @@ export * from './summaries/index.js';
 export * from './chatbot/chatbot-types.js';
 export { buildChatbotKB, getKBStatus, getLastAskTime, askQuestion, recordFeedback, getFeedbackStats, KB_DIR, LOG_FILE as QNA_LOG_FILE } from './chatbot/kb-builder.js';
 export type { QAResult, KBSearchResult, AskOptions, KBBuildOptions, ChatbotKBStatus, ResponseFeedback, QNAEvent } from './chatbot/chatbot-types.js';
+export { getAnalyticsReport, getTopQuestions, getCacheCoverage } from './chatbot/analytics.js';
+export { getCacheStatus, invalidateCache, clearCacheMetadata } from './chatbot/cache-invalidation.js';
+export { clearEmbeddingIndex } from './chatbot/embedding-cache.js';
+export { clearQualityScores } from './chatbot/quality-scoring.js';
 
 // Production Ask Pipeline
 export { classifyQuestion, getIntentPrefix, getIntentLabel, isCodeRequest, isFilePathRequest } from './chatbot/intent-classifier.js';

@@ -100,7 +100,7 @@ kontextmind init --force --yes
 |--------|-------------|---------|
 | `--yes` | Skip prompts and use defaults | false |
 | `--force` | Overwrite existing files | false |
-| `--agents` | Comma-separated agent list | claude,codex,generic |
+| `--agents` | Comma-separated agent list | claude,codex,roo,generic |
 | `--mode` | Mode: readonly, suggest, edit-with-approval, full-agent | readonly |
 | `--git` | Git integration: auto, enabled, disabled | auto |
 | `--provider` | LLM provider: none, openai, anthropic, ollama, openai-compatible | none |
@@ -120,14 +120,16 @@ kontextmind init --force --yes
 |-------|--------------|----------|
 | Claude Code | `claude` | Claude users |
 | Codex | `codex` | OpenAI's Codex |
+| Roo Code | `roo` | Roo Code users |
 | Cursor | `cursor` | Cursor IDE users |
+| Google Antigravity | `antigravity` | Generic agentic IDE workflows |
 | Continue | `continue` | Continue.dev users |
 | GitHub Copilot | `copilot` | VS Code Copilot |
 | Generic | `generic` | Any AI coding agent |
 
 **Example for multiple agents:**
 ```bash
-kontextmind init --agents claude,codex,cursor --yes
+kontextmind init --agents claude,codex,roo,cursor --yes
 ```
 
 ---
@@ -316,6 +318,11 @@ project/
 ├── CLAUDE.md              # Claude Code instructions
 ├── AGENTS.md              # Generic agent instructions
 ├── README_AI.md           # AI agent guide
+├── .mcp.json              # Claude/generic MCP project config
+├── .roo/mcp.json          # Roo Code MCP project config
+├── .roomodes              # Roo Code project modes
+├── .codex/config.toml     # Codex project MCP config
+├── .cursor/mcp.json       # Cursor MCP project config
 ├── .toolignore            # Files to ignore
 
 ├── .context/               # Project memory

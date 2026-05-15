@@ -1,13 +1,12 @@
 # KontextMind Docker Compose Configuration
 # For quick local development and testing
 
-version: '3.8'
-
 services:
   kontextmind:
     build:
       context: .
       dockerfile: Dockerfile
+    image: kontextmind/api:latest
     container_name: kontextmind-api
     restart: unless-stopped
     ports:
@@ -25,11 +24,11 @@ services:
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
 
       # LLM configuration
-      - LLM_PROVIDER_NAME=${LLM_PROVIDER_NAME:-opusmax}
+      - LLM_PROVIDER_NAME=${LLM_PROVIDER_NAME:-}
       - LLM_API_KEY=${LLM_API_KEY:-}
-      - LLM_PROVIDER=${LLM_PROVIDER:-openai-compatible}
-      - LLM_MODEL=${LLM_MODEL:-claude-opus-4-7}
-      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.anthropic.com}
+      - LLM_PROVIDER=${LLM_PROVIDER:-none}
+      - LLM_MODEL=${LLM_MODEL:-}
+      - LLM_BASE_URL=${LLM_BASE_URL:-}
     volumes:
       # Persist projects data across container restarts
       - kontextmind-data:/kontextmind/projects

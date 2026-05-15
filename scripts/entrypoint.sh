@@ -38,4 +38,32 @@ else
 fi
 
 echo "[ENTRYPOINT] Starting KontextMind server..."
-exec node packages/server/dist/index.js "$@"
+
+# Start server using a inline Node.js script that imports and starts the API server
+cd /app
+node --input-type=module <<'ENDSCRIPT'
+import { startApiServer } from './packages/server/dist/index.js';
+
+const host = process.env.HOST || '0.0.0.0';
+const port = parseInt(process.env.PORT || '7331', 10);
+const mode = process.env.SERVER_MODE || 'full-agent';
+
+console.log(`Starting KontextMind API server on ${host}:${port} in ${mode} mode...`);
+
+startApiServer({ host, port, mode }).then((server) => {
+  console.log(`KontextMind API server running at http://${host}:${port}`);
+  
+  // Keep the process running
+  process.on('SIGINT', () => {
+    console.log('Shutting down server...');
+    server.close(() => process.exit(0));
+  });
+  process.on('SIGTERM', () => {
+    console.log('Shutting down server...');
+    server.close(() => process.exit(0));
+  });
+}).catch((err) => {
+  console.error('Failed to start server:', err);
+  process.exit(1);
+});
+ENDSCRIPT

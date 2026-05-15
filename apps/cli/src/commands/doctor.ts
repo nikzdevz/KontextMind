@@ -1,6 +1,6 @@
 import { OptionValues } from 'commander';
 import { existsSync, readFileSync } from 'fs';
-import { resolveInProject, FILES } from '../utils/paths.js';
+import { resolveInProject, FILES, LOGS_DIR, KG_DIR, SUMMARIES_DIR } from '../utils/paths.js';
 import { printSection, printPass, printFail, printWarn } from '../utils/print.js';
 import { getFileIndexStatus, validateFileIndex, getIndexStatus, getSummaryStatus, getKBStatus } from '@kontextmind/core';
 
@@ -37,9 +37,9 @@ export async function doctorCommand(options: OptionValues): Promise<void> {
   ];
 
   const checkDirs = [
-    { path: FILES.LOGS_DIR || '.logs', name: '.logs folder' },
-    { path: FILES.KG_DIR || '.kg', name: '.kg folder' },
-    { path: FILES.SUMMARIES_DIR || '.summaries', name: '.summaries folder' },
+    { path: LOGS_DIR, name: '.logs folder' },
+    { path: KG_DIR, name: '.kg folder' },
+    { path: SUMMARIES_DIR, name: '.summaries folder' },
   ];
 
   // Check required files

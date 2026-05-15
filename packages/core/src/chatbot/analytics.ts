@@ -43,7 +43,7 @@ export function getTodayStats(projectRoot: string): DailyStats {
 
 export function updateTodayStats(projectRoot: string, tier: number, responseTimeMs: number, confidence: number, cached: boolean): void {
   const today = new Date().toISOString().split('T')[0];
-  let stats = getTodayStats(projectRoot);
+  const stats = getTodayStats(projectRoot);
 
   // Update counters
   stats.totalQuestions++;

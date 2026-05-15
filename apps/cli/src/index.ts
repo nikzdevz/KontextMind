@@ -45,7 +45,7 @@ program
   .option('-y, --yes', 'Skip prompts and use defaults')
   .option('-f, --force', 'Overwrite existing KontextMind-generated files')
   .option('-r, --reset', 'Delete existing KontextMind data and reinitialize from scratch')
-  .option('--agents <list>', 'Comma-separated agent list (claude,codex,cursor,continue,copilot,generic)')
+  .option('--agents <list>', 'Comma-separated agent list (claude,codex,roo,cursor,antigravity,continue,copilot,generic)')
   .option('--mode <mode>', 'Mode: readonly, suggest, edit-with-approval, full-agent')
   .option('--git <mode>', 'Git integration: auto, enabled, disabled')
   .option('--provider <provider>', 'LLM provider: none, openai, anthropic, ollama, bedrock, openai-compatible')
@@ -128,7 +128,7 @@ program
 program
   .command('mcp')
   .description('Start MCP server for AI agent integration')
-  .option('--mode <mode>', 'Server mode: readonly, chatbot-readonly, suggest, edit-with-approval')
+  .option('--mode <mode>', 'Server mode: readonly, chatbot-readonly, suggest, edit-with-approval, full-agent')
   .option('--transport <transport>', 'Transport: stdio, http', 'stdio')
   .option('--port <port>', 'Port for HTTP transport', '7332')
   .action(mcpCommand);

@@ -1,4 +1,4 @@
-export type AgentType = 'claude' | 'codex' | 'cursor' | 'continue' | 'copilot' | 'generic';
+export type AgentType = 'claude' | 'codex' | 'roo' | 'cursor' | 'antigravity' | 'continue' | 'copilot' | 'generic';
 export type Mode = 'readonly' | 'suggest' | 'edit-with-approval' | 'full-agent';
 export type GitMode = 'auto' | 'enabled' | 'disabled';
 export type Provider = 'none' | 'openai' | 'anthropic' | 'ollama' | 'bedrock' | 'openai-compatible';

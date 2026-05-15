@@ -15,11 +15,11 @@ services:
       - HOST=0.0.0.0
       - DATA_DIR=/kontextmind/projects
       - GITHUB_TOKEN=${GITHUB_TOKEN}
-      - LLM_PROVIDER_NAME=${LLM_PROVIDER_NAME:-opusmax}
+      - LLM_PROVIDER_NAME=${LLM_PROVIDER_NAME:-}
       - LLM_API_KEY=${LLM_API_KEY}
-      - LLM_PROVIDER=${LLM_PROVIDER:-openai-compatible}
-      - LLM_MODEL=${LLM_MODEL:-claude-opus-4-7}
-      - LLM_BASE_URL=${LLM_BASE_URL:-https://api.anthropic.com}
+      - LLM_PROVIDER=${LLM_PROVIDER:-none}
+      - LLM_MODEL=${LLM_MODEL:-}
+      - LLM_BASE_URL=${LLM_BASE_URL:-}
     volumes:
       - kontextmind-data:/kontextmind/projects
     healthcheck:

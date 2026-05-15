@@ -153,11 +153,12 @@ export class FeedbackService {
     for (const [qaId, fb] of Object.entries(feedbackRecords)) {
       const qa = qaData[qaId];
       const qnaEvent = qnaEvents[qaId];
+      const sources = Array.isArray(qa?.sources) ? qa.sources : [];
 
       data.push({
         qa_id: qaId,
-        question: qa?.question || 'Unknown',
-        answer: qa?.answer || 'Unknown',
+        question: typeof qa?.question === 'string' ? qa.question : 'Unknown',
+        answer: typeof qa?.answer === 'string' ? qa.answer : 'Unknown',
         feedback: {
           signal: fb.signal,
           reason: fb.reason || undefined,
@@ -165,9 +166,15 @@ export class FeedbackService {
           user_id: fb.metadata?.user_id,
         },
         qa_metadata: {
-          confidence: qa?.confidence || 0,
-          tier: (qa as Record<string, unknown>)?.tier || 0,
-          sources: (qa?.sources as string[])?.map((s: { type: string }) => s.type) || [],
+          confidence: typeof qa?.confidence === 'number' ? qa.confidence : 0,
+          tier: typeof qa?.tier === 'number' ? qa.tier : 0,
+          sources: sources.map((source) => {
+            if (typeof source === 'string') return source;
+            if (source && typeof source === 'object' && 'type' in source && typeof source.type === 'string') {
+              return source.type;
+            }
+            return 'unknown';
+          }),
           llm_model: fb.metadata?.llm_model,
           kb_version: '1.0.0',
           code_request: qnaEvent?.codeRequestDetected || false,

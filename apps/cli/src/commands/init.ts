@@ -1,7 +1,7 @@
 import path from 'path';
 import { existsSync, rm } from 'fs';
 import { OptionValues } from 'commander';
-import { initProject } from '@kontextmind/core';
+import { initProject, type AgentType } from '@kontextmind/core';
 import { printInfo, printSuccess, printWarning, printSection } from '../utils/print.js';
 import { handleError } from '../utils/errors.js';
 
@@ -51,7 +51,7 @@ export async function initCommand(options: OptionValues): Promise<void> {
   const cliOptions = {
     yes: Boolean(options.yes),
     force: reset ? true : Boolean(options.force), // Force on reset to overwrite
-    agents: options.agents ? String(options.agents).split(',').map(a => a.trim()) : undefined,
+    agents: options.agents ? String(options.agents).split(',').map((a) => a.trim()).filter(Boolean) as AgentType[] : undefined,
     mode: options.mode as 'readonly' | 'suggest' | 'edit-with-approval' | 'full-agent' | undefined,
     git: options.git as 'auto' | 'enabled' | 'disabled' | undefined,
     provider: options.provider as 'none' | 'openai' | 'anthropic' | 'ollama' | 'bedrock' | 'openai-compatible' | undefined,

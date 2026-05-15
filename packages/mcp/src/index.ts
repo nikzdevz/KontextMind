@@ -18,6 +18,7 @@ export {
   type MCPTool,
   type MCPResource,
   type MCPPrompt,
+  type MCPMode,
   type MCPServerConfig,
   type MCPServerStatus,
 } from './mcp-server.js';

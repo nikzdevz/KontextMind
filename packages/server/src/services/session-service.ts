@@ -146,8 +146,8 @@ export class SessionService {
       answer: result.answer,
       confidence: result.confidence,
       sources: result.sources,
-      tier: result.tier || 0,
-      cached: result.cached || false,
+      tier: 5,
+      cached: false,
       feedback_supported: true,
       sessionId: sessionId!,
       conversationTurn,
@@ -168,9 +168,9 @@ export class SessionService {
     }
 
     return {
-      turns: contextResult.turns.map(t => ({
-        userMessage: t.userMessage,
-        assistantMessage: t.assistantMessage,
+      turns: contextResult.turns.map((t: ChatMessage) => ({
+        userMessage: t.role === 'user' ? t.content : '',
+        assistantMessage: t.role === 'assistant' ? t.content : '',
         responseId: t.responseId,
         timestamp: t.timestamp,
       })),

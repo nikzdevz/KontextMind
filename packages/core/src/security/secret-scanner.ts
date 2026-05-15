@@ -117,7 +117,7 @@ const SECRET_PATTERNS: Pattern[] = [
   {
     type: 'generic_secret',
     severity: 'low',
-    pattern: /(?:token|secret|credential|auth)[_\-]?(?:string|text|value)?\s*[=:]\s*["'][A-Za-z0-9_-]{16,}["']/gi,
+    pattern: /(?:token|secret|credential|auth)[_-]?(?:string|text|value)?\s*[=:]\s*["'][A-Za-z0-9_-]{16,}["']/gi,
     preview: () => 'token=...',
   },
 ];

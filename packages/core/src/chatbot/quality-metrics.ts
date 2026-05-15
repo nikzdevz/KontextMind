@@ -1,5 +1,5 @@
 // Quality Metrics - Observability and performance tracking for Ask tool
-import { existsSync, readFileSync } from 'fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync } from 'fs';
 import { join } from 'path';
 import type { QuestionIntent, QualityMetrics, QualityMetricsEvent } from './chatbot-types.js';
 
@@ -302,8 +302,7 @@ export function recordQualityEvent(
 ): void {
   try {
     const logsDir = join(projectRoot, '.logs');
-    const { ensureDir } = require('../filesystem/ensure-dir.js');
-    ensureDir(logsDir);
+    mkdirSync(logsDir, { recursive: true });
 
     const metricsPath = join(logsDir, 'quality-metrics.jsonl');
     const entry = JSON.stringify({
@@ -311,12 +310,7 @@ export function recordQualityEvent(
       timestamp: new Date().toISOString(),
     });
 
-    if (existsSync(metricsPath)) {
-      const existing = readFileSync(metricsPath, 'utf-8');
-      require('../filesystem/write-file-safe.js').writeFileSafe(metricsPath, existing + entry + '\n');
-    } else {
-      require('../filesystem/write-file-safe.js').writeFileSafe(metricsPath, entry + '\n');
-    }
+    appendFileSync(metricsPath, entry + '\n', 'utf-8');
   } catch {
     // Silently ignore logging errors
   }

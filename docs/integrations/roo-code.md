@@ -1,207 +1,115 @@
-# Roo Code (Cline) Integration
+# Roo Code Integration
 
-Guide for configuring KontextMind MCP server with [Roo Code](https://github.com/RooCodeInc/Roo-Code) (formerly Roo Code for VS Code).
+KontextMind supports Roo Code through the Model Context Protocol (MCP). Roo Code can load a project-level MCP config from `.roo/mcp.json`, so this repo ships a ready-to-use project config plus optional Roo custom modes in `.roomodes`.
 
-## What is Roo Code?
+> Note: the checked-in source-tree config assumes you have run `pnpm build` so `apps/cli/dist/index.js` exists. If KontextMind is later published as an npm package, you can switch the command to `npx -y kontextmind mcp --mode full-agent`.
 
-Roo Code is an AI coding agent for VS Code that utilizes MCP servers for enhanced capabilities. It was previously known as "Roo Code for VS Code" or "roo-cline".
+## Recommended project config
 
-## Configuration
-
-### Option 1: Via VS Code Settings UI
-
-1. Open VS Code Settings (Ctrl+, or Cmd+,)
-2. Search for "Roo Code" or "MCP"
-3. Find "Roo: Mpc Servers" or "MCP Settings"
-4. Click "Edit in settings.json"
-
-### Option 2: Direct File Edit
-
-The configuration file is located at:
-```
-c:\Users\<username>\AppData\Roaming\Code\User\globalStorage\rooveterinaryinc.roo-cline\settings\mcp_settings.json
-```
-
-Add this configuration:
+File: `.roo/mcp.json`
 
 ```json
 {
-	"mcpServers": {
-		"kontextmind": {
-			"command": "npx",
-			"args": [
-				"kontextmind",
-				"mcp",
-				"--mode",
-				"full-agent"
-			],
-			"alwaysAllow": [
-				"project.status",
-				"project.search",
-				"project.get_file_summary",
-				"project.get_symbol_summary",
-				"project.find_dependencies",
-				"project.find_callers",
-				"project.find_related_files",
-				"project.ask_readonly",
-				"project.create_handoff",
-				"project.refresh_summary",
-				"project.security_scan"
-			]
-		}
-	}
+  "mcpServers": {
+    "kontextmind": {
+      "command": "node",
+      "args": ["apps/cli/dist/index.js", "mcp", "--mode", "full-agent"],
+      "env": {
+        "DATA_DIR": ".kontextmind"
+      },
+      "alwaysAllow": [
+        "project.status",
+        "project.search",
+        "project.get_file_summary",
+        "project.get_symbol_summary",
+        "project.find_dependencies",
+        "project.find_callers",
+        "project.find_related_files",
+        "project.ask_readonly",
+        "project.get_recent_tasks",
+        "project.get_last_session",
+        "project.get_session_index",
+        "project.get_session_stats",
+        "project.search_sessions",
+        "project.get_recent_activity",
+        "project.get_continuity_suggestions",
+        "project.analyze_continuity"
+      ],
+      "timeout": 60,
+      "disabled": false
+    }
+  }
 }
 ```
 
-## Mode Options
-
-| Mode | Description | Use Case |
-|------|-------------|----------|
-| `readonly` | No file modifications | Exploration, documentation |
-| `chatbot-readonly` | Q&A only, no code | Learning, code review |
-| `suggest` | Suggestions without implementation | Code review |
-| `edit-with-approval` | Requires explicit approval | Controlled development |
-| `full-agent` | Full autonomy | Experienced users, trusted projects |
-
-## Available MCP Tools
-
-When connected, Roo Code can use these KontextMind tools:
-
-| Tool | Description | Always Allowed |
-|------|-------------|----------------|
-| `project.status` | Get project status | Yes |
-| `project.search` | Search files/symbols | Yes |
-| `project.get_file_summary` | Get file summary | Yes |
-| `project.get_symbol_summary` | Get symbol info | Yes |
-| `project.find_dependencies` | Find dependencies | Yes |
-| `project.find_callers` | Find function callers | Yes |
-| `project.find_related_files` | Find related files | Yes |
-| `project.ask_readonly` | Ask questions (no code) | Yes |
-| `project.create_handoff` | Create handoff doc | Yes |
-| `project.refresh_summary` | Refresh stale summaries | Yes |
-| `project.security_scan` | Scan for security issues | Yes |
-
-## Setup Commands
-
-After configuring, run these commands in Roo Code:
+## Setup
 
 ```bash
-# Initialize project (if not already)
-kontextmind init --mode full-agent --yes
-
-# Index the project
+pnpm install
+pnpm build
+kontextmind init --mode full-agent --agents claude,codex,roo,cursor --yes
 kontextmind scan
 kontextmind index
-
-# Build knowledge base
-kontextmind kb build --mock
-
-# Learn the project
-kontextmind summarize --mock
+kontextmind kb --mock
 ```
+
+Then open Roo Code MCP settings and verify the `kontextmind` server is connected. If Roo cannot find `node` or the relative CLI path, replace `command`/`args` with an absolute local path.
+
+## Custom modes
+
+This repo also provides `.roomodes` with two project modes:
+
+- `kontextmind-research` — read-only architecture, impact, and debugging research with MCP access.
+- `kontextmind-implementation` — focused implementation mode with edit, command, and MCP access for validation.
+
+Project-specific rules live in `.roo/rules-kontextmind/rules.md`.
+
+## Safe auto-approved tools
+
+The default `alwaysAllow` list intentionally contains read/continuity tools. Write tools such as `project.create_handoff`, `project.write_task_summary`, and `project.write_session_summary` are available from the MCP server in `full-agent` mode, but are not auto-approved by default. Add them only for trusted workspaces.
 
 ## Troubleshooting
 
-### "Command not found" Error
+### Server starts but tools do not appear
 
-If you get `npx: command not found` or similar:
+Run:
 
-**Solution 1:** Use full path to node/pnpm
-```json
-{
-	"mcpServers": {
-		"kontextmind": {
-			"command": "node",
-			"args": [
-				"C:/Users/nikzdevz/AppData/Local/pnpm/global/5/node_modules/@kontextmind/cli/dist/index.js",
-				"mcp",
-				"--mode",
-				"full-agent"
-			]
-		}
-	}
-}
-```
-
-**Solution 2:** Use pnpm dlx
-```json
-{
-	"mcpServers": {
-		"kontextmind": {
-			"command": "pnpm",
-			"args": [
-				"dlx",
-				"kontextmind",
-				"mcp",
-				"--mode",
-				"full-agent"
-			]
-		}
-	}
-}
-```
-
-### Timeout Error (-32001)
-
-Ensure you rebuilt the CLI after recent fixes:
 ```bash
-cd d:\Projects\KontextMind
 pnpm build
-cd apps/cli
-pnpm link --global
+node apps/cli/dist/index.js mcp --mode full-agent
 ```
 
-### NPM Config Warnings
+If the command fails, fix the local build before reconnecting Roo.
 
-If you see `auto-install-peers` warnings, rename `.npmrc` to `.pnpmrc`:
+### Project not initialized
+
+Run:
+
 ```bash
-cd d:\Projects\KontextMind
-mv .npmrc .pnpmrc
+kontextmind init --mode full-agent --agents claude,codex,roo,cursor --yes
 ```
 
-## Recommended Workflow with Roo Code
+### Use globally installed CLI instead
 
-### New Project Setup
-```
-1. Open project folder in VS Code
-2. Tell Roo Code:
-   "Initialize KontextMind: run kontextmind init --mode full-agent --yes"
-3. Tell Roo Code:
-   "Run: kontextmind scan && kontextmind index && kontextmind kb build --mock"
-4. Ask Roo Code:
-   "What is this project about? Analyze the architecture."
-```
+If `kontextmind` is installed globally, this shorter config also works:
 
-### Daily Development
-```
-1. Start session with:
-   "Read .context/handoff.md for project status"
-2. Work on your task
-3. End session with:
-   "Update .context/handoff.md with what we accomplished"
+```json
+{
+  "mcpServers": {
+    "kontextmind": {
+      "command": "kontextmind",
+      "args": ["mcp", "--mode", "full-agent"],
+      "env": { "DATA_DIR": ".kontextmind" },
+      "timeout": 60,
+      "disabled": false
+    }
+  }
+}
 ```
 
-### Project Learning
-```
-1. Tell Roo Code:
-   "Read .context/boot-prompt.md and follow the instructions to learn this project"
-2. This will:
-   - Scan all files
-   - Index symbols
-   - Build knowledge base
-   - Create project documentation
-   - Provide comprehensive project overview
-```
+## Security notes
 
-## Security Considerations
-
-- **full-agent mode** allows file modifications - use only in trusted projects
-- **readonly mode** is recommended for exploring new/unfamiliar codebases
-- Review the `alwaysAllow` list and adjust based on your security needs
-- All actions are logged in `.logs/` directory
-
-## Getting Help
-
-- [SETUP_GUIDE.md](../SETUP_GUIDE.md) - General setup guide
-- [.context/boot-prompt.md](../.context/boot-prompt.md) - Project learning guide
-- [docs/mcp.md](../mcp.md) - MCP server documentation
+- Use `readonly` mode for unfamiliar projects.
+- Keep `DATA_DIR` project-local unless you intentionally want shared state.
+- Do not commit `.env` or provider secrets.
+- Review `alwaysAllow` before enabling write tools.

@@ -55,6 +55,7 @@ interface StatusOutput {
     hasArchitecture: boolean;
     questionCount: number;
     lastBuildTime: string | null;
+    lastAskTime: string | null;
     files: string[];
   };
   lastAskTime?: string | null;

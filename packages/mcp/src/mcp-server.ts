@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, writeFileSync, readdirSync } from 'fs';
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync, readdirSync } from 'fs';
 import { join, dirname } from 'path';
 
 // Memory system imports (Phase 1+)
@@ -37,6 +37,31 @@ import {
 
 const LOG_FILE = '.logs/mcp-events.log';
 const MCP_VERSION = '0.1.0';
+
+export type MCPMode = 'readonly' | 'chatbot-readonly' | 'suggest' | 'edit-with-approval' | 'full-agent';
+
+const WRITE_TOOL_NAMES = new Set([
+  'project.create_handoff',
+  'project.write_task_summary',
+  'project.write_session_summary',
+  'project.add_task_dependency',
+]);
+
+function canRunToolInMode(toolName: string, mode: MCPMode): boolean {
+  if (!WRITE_TOOL_NAMES.has(toolName)) {
+    return true;
+  }
+  return mode === 'edit-with-approval' || mode === 'full-agent';
+}
+
+function modeDeniedResult(toolName: string, mode: MCPMode): { content: Array<{ type: string; text: string }> } {
+  return {
+    content: [{
+      type: 'text',
+      text: `Tool '${toolName}' is disabled in '${mode}' mode. Restart KontextMind MCP with --mode edit-with-approval or --mode full-agent for write tools.`,
+    }],
+  };
+}
 
 // MCP tool definitions
 export interface MCPTool {
@@ -794,10 +819,10 @@ function loadAllFileSummaries(): any[] {
         try {
           const content = readFileSync(join(summaryDir, file), 'utf-8');
           summaries.push(JSON.parse(content));
-        } catch {}
+        } catch { /* ignore malformed summary */ }
       }
     }
-  } catch {}
+  } catch { /* ignore malformed summary */ }
 
   return summaries;
 }
@@ -816,10 +841,10 @@ function loadAllFunctionSummaries(): any[] {
         try {
           const content = readFileSync(join(summaryDir, file), 'utf-8');
           summaries.push(JSON.parse(content));
-        } catch {}
+        } catch { /* ignore malformed summary */ }
       }
     }
-  } catch {}
+  } catch { /* ignore malformed summary */ }
 
   return summaries;
 }
@@ -838,10 +863,10 @@ function loadAllModuleSummaries(): any[] {
         try {
           const content = readFileSync(join(summaryDir, file), 'utf-8');
           summaries.push(JSON.parse(content));
-        } catch {}
+        } catch { /* ignore malformed summary */ }
       }
     }
-  } catch {}
+  } catch { /* ignore malformed summary */ }
 
   return summaries;
 }
@@ -860,10 +885,10 @@ function loadAllAPISummaries(): any[] {
         try {
           const content = readFileSync(join(summaryDir, file), 'utf-8');
           summaries.push(JSON.parse(content));
-        } catch {}
+        } catch { /* ignore malformed summary */ }
       }
     }
-  } catch {}
+  } catch { /* ignore malformed summary */ }
 
   return summaries;
 }
@@ -882,10 +907,10 @@ function loadAllDecisionSummaries(): any[] {
         try {
           const content = readFileSync(join(summaryDir, file), 'utf-8');
           summaries.push(JSON.parse(content));
-        } catch {}
+        } catch { /* ignore malformed summary */ }
       }
     }
-  } catch {}
+  } catch { /* ignore malformed summary */ }
 
   return summaries;
 }
@@ -904,10 +929,10 @@ function loadAllBlockerSummaries(): any[] {
         try {
           const content = readFileSync(join(summaryDir, file), 'utf-8');
           summaries.push(JSON.parse(content));
-        } catch {}
+        } catch { /* ignore malformed summary */ }
       }
     }
-  } catch {}
+  } catch { /* ignore malformed summary */ }
 
   return summaries;
 }
@@ -936,16 +961,11 @@ async function logMCPEvent(
   try {
     const dirPath = join(projectRoot, '.logs');
     if (!existsSync(dirPath)) {
-      require('fs').mkdirSync(dirPath, { recursive: true });
+      mkdirSync(dirPath, { recursive: true });
     }
 
     const logPath = join(projectRoot, LOG_FILE);
-    if (existsSync(logPath)) {
-      const existing = readFileSync(logPath, 'utf-8');
-      writeFileSync(logPath, existing + logLine, 'utf-8');
-    } else {
-      writeFileSync(logPath, logLine, 'utf-8');
-    }
+    appendFileSync(logPath, logLine, 'utf-8');
   } catch {
     // Silently ignore logging errors
   }
@@ -955,10 +975,10 @@ async function logMCPEvent(
 export async function handleToolCall(
   toolName: string,
   args: Record<string, unknown>,
-  projectRoot?: string
+  projectRoot?: string,
+  mode: MCPMode = (serverStatus?.mode as MCPMode | undefined) || 'readonly'
 ): Promise<{ content: Array<{ type: string; text: string }> }> {
   const root = projectRoot || getProjectRoot();
-  const mode = 'readonly';
 
   await logMCPEvent(root, {
     timestamp: new Date().toISOString(),
@@ -966,6 +986,10 @@ export async function handleToolCall(
     arguments_summary: JSON.stringify(args).slice(0, 100),
     mode,
   });
+
+  if (!canRunToolInMode(toolName, mode)) {
+    return modeDeniedResult(toolName, mode);
+  }
 
   switch (toolName) {
     case 'project.status':
@@ -1667,6 +1691,7 @@ async function handleCreateHandoff(summary: string, nextSteps?: string): Promise
   const content = existingContent + `\n\n---\n\n## Handoff (${new Date().toISOString()})\n\n### Summary\n${summary}\n\n### Next Steps\n${nextSteps || 'None specified'}\n`;
 
   try {
+    mkdirSync(dirname(handoffPath), { recursive: true });
     writeFileSync(handoffPath, content, 'utf-8');
     return { content: [{ type: 'text', text: `Handoff created at ${handoffPath}` }] };
   } catch {
@@ -1881,7 +1906,7 @@ async function handleWriteTaskSummary(args: Record<string, unknown>): Promise<{ 
 
   if (!existsSync(tasksDir)) {
     try {
-      require('fs').mkdirSync(tasksDir, { recursive: true });
+      mkdirSync(tasksDir, { recursive: true });
     } catch { /* ignore */ }
   }
 
@@ -1937,7 +1962,7 @@ async function handleWriteSessionSummary(args: Record<string, unknown>): Promise
 
   if (!existsSync(sessionsDir)) {
     try {
-      require('fs').mkdirSync(sessionsDir, { recursive: true });
+      mkdirSync(sessionsDir, { recursive: true });
     } catch { /* ignore */ }
   }
 
@@ -2566,7 +2591,7 @@ export async function handleResourceCall(
     }
 
     case 'kontextmind://handoff/latest': {
-      const handoffPath = join(projectRoot, '.context', 'handoff.md');
+      const handoffPath = join(root, '.context', 'handoff.md');
       if (existsSync(handoffPath)) {
         content = readFileSync(handoffPath, 'utf-8');
         mimeType = 'text/markdown';
@@ -2725,7 +2750,7 @@ export async function handlePromptCall(
       }
       break;
 
-    case 'summarize_module':
+    case 'summarize_module': {
       text = `Module: ${args.path || 'no path provided'}\n\n`;
       const mod = modules.find(m => m.directoryPath === args.path);
       if (mod) {
@@ -2735,6 +2760,7 @@ export async function handlePromptCall(
         text += `Module summary not found.`;
       }
       break;
+    }
 
     case 'prepare_handoff':
       text = `## Handoff Preparation\n\nCompleted: ${args.completed_work || 'none'}\n\nPending: ${args.pending_work || 'none'}\n\n`;
@@ -2753,7 +2779,7 @@ export async function handlePromptCall(
       }
       break;
 
-    case 'analyze_dependencies':
+    case 'analyze_dependencies': {
       text = `## Dependency Analysis for ${args.path || 'unknown'}\n\n`;
       const file = files.find(f => f.filePath === args.path);
       if (file) {
@@ -2761,6 +2787,7 @@ export async function handlePromptCall(
         text += `Blocked by: ${file.blockedBy?.map((b: any) => b.name).join(', ') || 'none'}\n`;
       }
       break;
+    }
 
     default:
       text = `Prompt ${promptName} not implemented`;
@@ -2776,7 +2803,7 @@ export async function handlePromptCall(
 
 // MCP Server interface
 export interface MCPServerConfig {
-  mode: 'readonly' | 'chatbot-readonly' | 'suggest' | 'edit-with-approval';
+  mode: MCPMode;
   transport: 'stdio' | 'http';
 }
 
