@@ -1,0 +1,36 @@
+{
+  "mcpServers": {
+    "kontextmind": {
+      "command": "node",
+      "args": [
+        "apps/cli/dist/index.js",
+        "mcp",
+        "--mode",
+        "full-agent"
+      ],
+      "env": {
+        "DATA_DIR": ".kontextmind"
+      },
+      "alwaysAllow": [
+        "project.status",
+        "project.search",
+        "project.get_file_summary",
+        "project.get_symbol_summary",
+        "project.find_dependencies",
+        "project.find_callers",
+        "project.find_related_files",
+        "project.ask_readonly",
+        "project.get_recent_tasks",
+        "project.get_last_session",
+        "project.get_session_index",
+        "project.get_session_stats",
+        "project.search_sessions",
+        "project.get_recent_activity",
+        "project.get_continuity_suggestions",
+        "project.analyze_continuity"
+      ],
+      "timeout": 60,
+      "disabled": false
+    }
+  }
+}

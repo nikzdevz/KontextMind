@@ -1,0 +1,91 @@
+# KontextMind Production Docker Compose
+# For production deployments with persistent storage
+
+version: '3.8'
+
+services:
+  kontextmind:
+    image: kontextmind/api:latest
+    container_name: kontextmind-api
+    restart: always
+    ports:
+      - "${PORT:-7331}:7331"
+    environment:
+      - PORT=7331
+      - HOST=0.0.0.0
+      - DATA_DIR=/kontextmind/projects
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - LLM_PROVIDER_NAME=${LLM_PROVIDER_NAME:-}
+      - LLM_API_KEY=${LLM_API_KEY}
+      - LLM_PROVIDER=${LLM_PROVIDER:-none}
+      - LLM_MODEL=${LLM_MODEL:-}
+      - LLM_BASE_URL=${LLM_BASE_URL:-}
+    volumes:
+      - kontextmind-data:/kontextmind/projects
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:7331/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Optional: Nginx reverse proxy for HTTPS
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: kontextmind-proxy
+  #   restart: always
+  #   ports:
+  #     - "443:443"
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - nginx-certs:/etc/nginx/certs:ro
+  #   depends_on:
+  #     - kontextmind
+  #   networks:
+  #     - kontextmind-network
+
+volumes:
+  kontextmind-data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${DATA_PATH:-./data}
+
+# networks:
+#   kontextmind-network:
+#     driver: bridge
+
+# ============================================
+# Usage:
+#
+# 1. Create data directory:
+#    mkdir -p data
+#
+# 2. Create .env file:
+#    cp .env.example .env
+#    # Edit .env with your actual values
+#
+# 3. Start services:
+#    docker compose -f docker-compose.prod.yml up -d
+#
+# 4. Check health:
+#    curl http://localhost:7331/health
+#
+# 5. View logs:
+#    docker compose -f docker-compose.prod.yml logs -f
+# ============================================

@@ -1,0 +1,64 @@
+# KontextMind Docker Compose Configuration
+# For quick local development and testing
+
+services:
+  kontextmind:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: kontextmind/api:latest
+    container_name: kontextmind-api
+    restart: unless-stopped
+    ports:
+      - "7331:7331"
+    environment:
+      # Server configuration
+      - PORT=7331
+      - HOST=0.0.0.0
+      - DATA_DIR=/kontextmind/projects
+
+      # Authentication
+      - API_KEY=${API_KEY:-dev-api-key}
+
+      # GitHub token (required for cloning repos)
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+
+      # LLM configuration
+      - LLM_PROVIDER_NAME=${LLM_PROVIDER_NAME:-}
+      - LLM_API_KEY=${LLM_API_KEY:-}
+      - LLM_PROVIDER=${LLM_PROVIDER:-none}
+      - LLM_MODEL=${LLM_MODEL:-}
+      - LLM_BASE_URL=${LLM_BASE_URL:-}
+    volumes:
+      # Persist projects data across container restarts
+      - kontextmind-data:/kontextmind/projects
+      # Optional: mount local projects for development
+      # - ./my-projects:/kontextmind/projects:ro
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:7331/health/live"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - kontextmind-network
+
+volumes:
+  kontextmind-data:
+    driver: local
+
+networks:
+  kontextmind-network:
+    driver: bridge
+
+# ============================================
+# Usage:
+#
+# Start: docker compose up -d
+# Stop:  docker compose down
+# Logs:  docker compose logs -f kontextmind
+# Shell: docker compose exec kontextmind sh
+#
+# With local development:
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+# ============================================

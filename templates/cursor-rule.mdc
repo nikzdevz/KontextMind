@@ -1,0 +1,5 @@
+# Cursor Rules Template
+
+This template generates .cursorrules files for Cursor.
+
+See packages/adapters/src/cursor.ts for the implementation.

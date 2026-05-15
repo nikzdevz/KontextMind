@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "../..",
+    "baseUrl": "../..",
+    "paths": {
+      "@kontextmind/core": ["packages/core/src/index.ts"],
+      "@kontextmind/mcp": ["packages/mcp/src/index.ts"],
+      "@kontextmind/server": ["packages/server/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*"]
+}
