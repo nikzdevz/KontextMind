@@ -11,6 +11,8 @@ import {
   getVersionHistory,
   getLatestVersion,
   computeStatistics,
+  exportSummaryDataset,
+  getSummaryDatasetStats,
   jsonl,
   chatml,
   sharegpt,
@@ -366,6 +368,112 @@ export async function datasetValidateCommand(options: OptionValues): Promise<voi
     }
   } catch (error) {
     console.error(chalk.red('Validation failed:'), error);
+    process.exit(1);
+  }
+}
+
+/**
+ * kontextmind dataset export-summaries - Export summaries as training data
+ */
+export async function datasetExportSummariesCommand(options: OptionValues): Promise<void> {
+  try {
+    const projectRoot = process.cwd();
+    const project = detectProject(projectRoot);
+
+    if (!project.initialized) {
+      console.log(chalk.red('KontextMind is not initialized in this directory.'));
+      console.log(`Run: ${chalk.cyan('kontextmind init')}`);
+      process.exit(1);
+    }
+
+    const format = (options.format as string) || 'jsonl';
+    const minConfidence = Number(options.minConfidence) || 0.3;
+    const outputPath = options.output as string | undefined;
+    const types = options.types
+      ? (options.types as string).split(',').map(t => t.trim())
+      : undefined;
+
+    console.log(chalk.cyan('Collecting summary training data...'));
+
+    const result = exportSummaryDataset(projectRoot, {
+      format: format as 'jsonl' | 'json' | 'sharegpt',
+      minConfidence,
+      outputPath,
+      types: types as any,
+    });
+
+    const stats = getSummaryDatasetStats(projectRoot);
+
+    console.log(chalk.green(`\nSummary dataset exported successfully!`));
+    console.log(`Records: ${chalk.cyan(result.recordCount.toString())}`);
+    console.log(`Format: ${format}`);
+    console.log(`Output: ${chalk.cyan(result.outputPath)}`);
+    console.log();
+    console.log(chalk.bold('Breakdown by type:'));
+    for (const [type, count] of Object.entries(stats.byType)) {
+      console.log(`  ${type}: ${count}`);
+    }
+    console.log();
+    console.log(`Average quality: ${stats.averageQuality.toFixed(2)}`);
+
+    if (options.json) {
+      console.log(JSON.stringify({
+        recordCount: result.recordCount,
+        format,
+        outputPath: result.outputPath,
+        statistics: stats,
+      }, null, 2));
+    }
+  } catch (error) {
+    console.error(chalk.red('Export summaries failed:'), error);
+    process.exit(1);
+  }
+}
+
+/**
+ * kontextmind dataset stats-summaries - Get summary dataset statistics
+ */
+export async function datasetStatsSummariesCommand(options: OptionValues): Promise<void> {
+  try {
+    const projectRoot = process.cwd();
+    const project = detectProject(projectRoot);
+
+    if (!project.initialized) {
+      console.log(chalk.red('KontextMind is not initialized in this directory.'));
+      process.exit(1);
+    }
+
+    const stats = getSummaryDatasetStats(projectRoot);
+
+    console.log(chalk.bold('\nSummary Dataset Statistics\n'));
+    console.log(`Total records: ${chalk.cyan(stats.totalRecords.toString())}`);
+    console.log(`Average quality: ${stats.averageQuality.toFixed(2)}`);
+    console.log();
+
+    console.log(chalk.bold('By Type:'));
+    for (const [type, count] of Object.entries(stats.byType)) {
+      const bar = '█'.repeat(Math.round((count / stats.totalRecords) * 20));
+      console.log(`  ${type.padEnd(10)} ${bar} ${count}`);
+    }
+    console.log();
+
+    if (Object.keys(stats.languages).length > 0) {
+      console.log(chalk.bold('By Language:'));
+      for (const [lang, count] of Object.entries(stats.languages)) {
+        console.log(`  ${lang}: ${count}`);
+      }
+      console.log();
+    }
+
+    if (stats.totalRecords === 0) {
+      console.log(chalk.yellow('No summaries found. Run "kontextmind summarize" first.'));
+    }
+
+    if (options.json) {
+      console.log(JSON.stringify(stats, null, 2));
+    }
+  } catch (error) {
+    console.error(chalk.red('Stats summaries failed:'), error);
     process.exit(1);
   }
 }

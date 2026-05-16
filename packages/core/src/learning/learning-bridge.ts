@@ -11,10 +11,12 @@ import { getProjectMentalModel } from '../mental-model/project-mental-model.js';
 import { ensureDir } from '../filesystem/ensure-dir.js';
 
 const LEARNING_SUMMARIES_DIR = '.summaries';
-const QNA_LOG_FILE = '.logs/qna-events.jsonl';
+const QA_HISTORY_FILE = '.kontextmind/chatbot/qa-history.jsonl';
+const QA_LOG_FILE_LEGACY = '.logs/qna-events.jsonl';
 const LEARNING_DIR = '.kontextmind/learning';
 const SYNC_STATE_FILE = 'sync-state.json';
 const IMPORT_HISTORY_FILE = 'import-history.json';
+const MEMORY_DIR = '.kontextmind/memory';
 
 export interface BridgeConfig {
   syncOnStartup: boolean;
@@ -118,6 +120,22 @@ export class LearningBridge {
       } catch (err) {
         result.errors.push(`Q&A: ${err instanceof Error ? err.message : String(err)}`);
       }
+    }
+
+    // Learn from sessions
+    try {
+      const sessionResult = await this.syncFromSessions();
+      result.memoriesCreated += sessionResult;
+    } catch (err) {
+      result.errors.push(`Sessions: ${err instanceof Error ? err.message : String(err)}`);
+    }
+
+    // Learn from tasks
+    try {
+      const taskResult = await this.syncFromTasks();
+      result.memoriesCreated += taskResult;
+    } catch (err) {
+      result.errors.push(`Tasks: ${err instanceof Error ? err.message : String(err)}`);
     }
 
     this.lastSync = result.timestamp;
@@ -278,10 +296,26 @@ export class LearningBridge {
     const semanticMemory = getSemanticMemory(this.projectRoot);
     let processed = 0, memoriesCreated = 0;
 
-    if (!existsSync(QNA_LOG_FILE)) return { processed, memoriesCreated };
+    // Read from qa-history.jsonl (new location)
+    if (!existsSync(QA_HISTORY_FILE)) {
+      // Try legacy location for backward compatibility
+      if (!existsSync(QA_LOG_FILE_LEGACY)) return { processed, memoriesCreated };
+      await this.processQnAFile(semanticMemory, QA_LOG_FILE_LEGACY, processed, memoriesCreated);
+    } else {
+      await this.processQnAFile(semanticMemory, QA_HISTORY_FILE, processed, memoriesCreated);
+    }
 
+    return { processed, memoriesCreated };
+  }
+
+  private async processQnAFile(
+    semanticMemory: any,
+    filePath: string,
+    processed: number,
+    memoriesCreated: number
+  ): Promise<{ processed: number; memoriesCreated: number }> {
     try {
-      const lines = readFileSync(QNA_LOG_FILE, 'utf-8').split('\n').filter(l => l.trim());
+      const lines = readFileSync(filePath, 'utf-8').split('\n').filter(l => l.trim());
       for (const line of lines.slice(-50)) {
         try {
           const event = JSON.parse(line);
@@ -297,8 +331,120 @@ export class LearningBridge {
         } catch { /* skip */ }
       }
     } catch { /* file error */ }
-
     return { processed, memoriesCreated };
+  }
+
+  private async syncFromSessions(): Promise<number> {
+    const semanticMemory = getSemanticMemory(this.projectRoot);
+    const mentalModel = getProjectMentalModel(this.projectRoot);
+    let memoriesCreated = 0;
+
+    // Check both session index and sessions directory
+    const sessionIndexPath = join(this.projectRoot, MEMORY_DIR, 'session-index.json');
+    const sessionsDir = join(this.projectRoot, '.kontextmind', 'sessions');
+
+    // Read from session index
+    if (existsSync(sessionIndexPath)) {
+      try {
+        const index = JSON.parse(readFileSync(sessionIndexPath, 'utf-8'));
+        const sessions = index.sessions || [];
+
+        for (const session of sessions.slice(-10)) {
+          if (session.summary) {
+            await semanticMemory.store(`session-${session.sessionId}`, session.summary, {
+              source: 'session',
+              tags: ['session', 'context'],
+              importance: 0.7,
+            });
+            memoriesCreated++;
+          }
+
+          if (session.goals || session.pendingWork) {
+            const content = `Goals: ${session.goals || ''}\nPending: ${session.pendingWork || ''}`;
+            await semanticMemory.store(`session-goals-${session.sessionId}`, content, {
+              source: 'session',
+              tags: ['goals', 'pending'],
+              importance: 0.6,
+            });
+            memoriesCreated++;
+          }
+        }
+      } catch { /* skip */ }
+    }
+
+    // Also check sessions directory for session markdown files
+    if (existsSync(sessionsDir)) {
+      const sessionFiles = readdirSync(sessionsDir).filter(f => f.endsWith('.md'));
+      for (const file of sessionFiles.slice(-5)) {
+        try {
+          const content = readFileSync(join(sessionsDir, file), 'utf-8');
+          const sessionId = file.replace('.md', '');
+          await semanticMemory.store(`session-file-${sessionId}`, content, {
+            source: 'session_file',
+            tags: ['session', 'history'],
+            importance: 0.5,
+          });
+          memoriesCreated++;
+        } catch { /* skip */ }
+      }
+    }
+
+    return memoriesCreated;
+  }
+
+  private async syncFromTasks(): Promise<number> {
+    const semanticMemory = getSemanticMemory(this.projectRoot);
+    const mentalModel = getProjectMentalModel(this.projectRoot);
+    let memoriesCreated = 0;
+
+    const taskIndexPath = join(this.projectRoot, MEMORY_DIR, 'task-index.json');
+    const tasksDir = join(this.projectRoot, '.kontextmind', 'tasks');
+
+    // Read from task index
+    if (existsSync(taskIndexPath)) {
+      try {
+        const index = JSON.parse(readFileSync(taskIndexPath, 'utf-8'));
+        const tasks = index.tasks || [];
+
+        for (const task of tasks.slice(-10)) {
+          const content = `Task: ${task.title}\nGoal: ${task.goal}\nStatus: ${task.status}`;
+          await semanticMemory.store(`task-${task.id}`, content, {
+            source: 'task',
+            tags: ['task', task.status],
+            importance: task.status === 'in_progress' ? 0.8 : 0.5,
+          });
+          memoriesCreated++;
+
+          if (task.pending) {
+            await semanticMemory.store(`task-pending-${task.id}`, task.pending, {
+              source: 'task',
+              tags: ['pending', 'work'],
+              importance: 0.6,
+            });
+            memoriesCreated++;
+          }
+        }
+      } catch { /* skip */ }
+    }
+
+    // Also check tasks directory for task markdown files
+    if (existsSync(tasksDir)) {
+      const taskFiles = readdirSync(tasksDir).filter(f => f.endsWith('.md'));
+      for (const file of taskFiles.slice(-5)) {
+        try {
+          const content = readFileSync(join(tasksDir, file), 'utf-8');
+          const taskId = file.replace('.md', '');
+          await semanticMemory.store(`task-file-${taskId}`, content, {
+            source: 'task_file',
+            tags: ['task', 'history'],
+            importance: 0.5,
+          });
+          memoriesCreated++;
+        } catch { /* skip */ }
+      }
+    }
+
+    return memoriesCreated;
   }
 
   private saveState(): void {
@@ -357,4 +503,4 @@ export function createLearningBridge(
   return new LearningBridge(projectRoot, config);
 }
 
-export { LEARNING_SUMMARIES_DIR, QNA_LOG_FILE, LEARNING_DIR };
+export { LEARNING_SUMMARIES_DIR, QA_HISTORY_FILE, QA_LOG_FILE_LEGACY, LEARNING_DIR };

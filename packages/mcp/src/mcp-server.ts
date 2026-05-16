@@ -34,6 +34,34 @@ import {
   getTaskResumptionContext,
   shouldContinueFromLastSession,
 } from '@kontextmind/core';
+import {
+  getOutcomeTracker,
+  getLearningBridge,
+  type LearningStats,
+  type OutcomePattern,
+  type Improvement,
+} from '@kontextmind/core';
+import {
+  getSelfAwareness,
+  type AgentState,
+  type CapabilityProfile,
+  type AntiPattern,
+  type SelfAssessment,
+} from '@kontextmind/core';
+import {
+  getAnalyticsReport,
+  getTopQuestions,
+  getCacheCoverage,
+} from '@kontextmind/core';
+import {
+  calculateQualityMetrics,
+  getQualityTrends,
+  getPerformanceStats,
+  generateQualityReport,
+} from '@kontextmind/core';
+import {
+  getDynamicContextEngine,
+} from '@kontextmind/core';
 
 const LOG_FILE = '.logs/mcp-events.log';
 const MCP_VERSION = '0.1.0';
@@ -575,6 +603,229 @@ export const MCP_TOOLS: MCPTool[] = [
     inputSchema: {
       type: 'object',
       properties: {},
+    },
+  },
+
+  // ====== LEARNING & ADAPTATION TOOLS ======
+  {
+    name: 'project.learn_sync',
+    description: 'Trigger manual learning sync - extracts knowledge from summaries and Q&A history',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'project.learn_import',
+    description: 'Import learning data from another project',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        sourceProject: { type: 'string', description: 'Path to source project directory' },
+        dataTypes: { type: 'array', items: { type: 'string' }, description: 'Data types to import: summaries, decisions' },
+      },
+      required: ['sourceProject'],
+    },
+  },
+  {
+    name: 'project.learn_stats',
+    description: 'Get learning statistics - outcomes, success rates, patterns learned',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'project.learn_patterns',
+    description: 'Get learned success and failure patterns for a task type',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        taskType: { type: 'string', description: 'Task type to get patterns for (e.g., code_write, debug)' },
+      },
+      required: ['taskType'],
+    },
+  },
+  {
+    name: 'project.learn_suggestions',
+    description: 'Get improvement suggestions based on learned patterns',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        category: { type: 'string', enum: ['skill', 'pattern', 'approach', 'documentation'], description: 'Filter by improvement category' },
+        limit: { type: 'number', default: 10, description: 'Maximum suggestions to return' },
+      },
+    },
+  },
+  {
+    name: 'project.learn_export',
+    description: 'Export learning data for training purposes',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        taskType: { type: 'string', description: 'Filter by task type' },
+        minConfidence: { type: 'number', description: 'Minimum confidence threshold (0-1)' },
+      },
+    },
+  },
+
+  // ====== AGENT AWARENESS TOOLS ======
+  {
+    name: 'project.agent_state',
+    description: 'Get current agent state - current task, goals, blockers, energy level, mode',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'project.agent_capabilities',
+    description: 'Get agent capability profile - strengths, weak areas, success rates, preferred approaches',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'project.agent_antipatterns',
+    description: 'Get anti-patterns the agent has learned to avoid',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'project.agent_assess',
+    description: 'Self-assess current state and get suggestions',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        taskDescription: { type: 'string', description: 'Optional task description for context' },
+        recentErrors: { type: 'array', items: { type: 'string' }, description: 'Recent errors encountered' },
+        timeSpent: { type: 'number', description: 'Time spent on current task in milliseconds' },
+      },
+    },
+  },
+
+  // ====== TASK DETECTION TOOLS ======
+  {
+    name: 'project.task_detect',
+    description: 'Detect current task boundaries and context from recent activity',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'project.task_complete',
+    description: 'Mark current task as completed',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        taskId: { type: 'string', description: 'Task ID to mark complete' },
+      },
+    },
+  },
+  {
+    name: 'project.task_update_pending',
+    description: 'Update pending work for current task',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        taskId: { type: 'string', description: 'Task ID to update' },
+        pendingWork: { type: 'string', description: 'Description of remaining work' },
+      },
+      required: ['taskId', 'pendingWork'],
+    },
+  },
+
+  // ====== ANALYTICS TOOLS ======
+  {
+    name: 'project.ask_stats',
+    description: 'Get Q&A statistics including cache hit rate, response times, tier distribution',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        period: { type: 'string', enum: ['daily', 'weekly'], default: 'daily', description: 'Time period for stats' },
+      },
+    },
+  },
+  {
+    name: 'project.ask_top_questions',
+    description: 'Get most frequently asked questions',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        limit: { type: 'number', default: 10, description: 'Maximum questions to return' },
+      },
+    },
+  },
+  {
+    name: 'project.ask_quality',
+    description: 'Get answer quality metrics and cache coverage',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+
+  // ====== QUALITY TOOLS ======
+  {
+    name: 'project.quality_trends',
+    description: 'Get quality trends over time',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        days: { type: 'number', default: 7, description: 'Number of days to analyze' },
+      },
+    },
+  },
+  {
+    name: 'project.quality_report',
+    description: 'Generate comprehensive quality report',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        period: { type: 'string', enum: ['daily', 'weekly'], default: 'daily', description: 'Report period' },
+      },
+    },
+  },
+  {
+    name: 'project.quality_performance',
+    description: 'Get performance statistics',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+
+  // ====== CONTEXT TOOLS ======
+  {
+    name: 'project.context_stats',
+    description: 'Get dynamic context engine statistics',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+  {
+    name: 'project.context_export',
+    description: 'Export current context window for debugging or analysis',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+    },
+  },
+
+  // ====== SESSION INSIGHTS TOOLS ======
+  {
+    name: 'project.session_insights',
+    description: 'Get cross-session insights and patterns',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        days: { type: 'number', default: 30, description: 'Days to analyze' },
+      },
     },
   },
 ];
@@ -1134,6 +1385,79 @@ export async function handleToolCall(
 
     case 'project.should_continue':
       return handleShouldContinue();
+
+    // ====== LEARNING & ADAPTATION TOOLS ======
+    case 'project.learn_sync':
+      return handleLearnSync();
+
+    case 'project.learn_import':
+      return handleLearnImport(args.sourceProject as string, args.dataTypes as string[] | undefined);
+
+    case 'project.learn_stats':
+      return handleLearnStats();
+
+    case 'project.learn_patterns':
+      return handleLearnPatterns(args.taskType as string);
+
+    case 'project.learn_suggestions':
+      return handleLearnSuggestions(args.category as string | undefined, args.limit as number | undefined);
+
+    case 'project.learn_export':
+      return handleLearnExport(args.taskType as string | undefined, args.minConfidence as number | undefined);
+
+    // ====== AGENT AWARENESS TOOLS ======
+    case 'project.agent_state':
+      return handleAgentState();
+
+    case 'project.agent_capabilities':
+      return handleAgentCapabilities();
+
+    case 'project.agent_antipatterns':
+      return handleAgentAntiPatterns();
+
+    case 'project.agent_assess':
+      return handleAgentAssess(args.taskDescription as string | undefined, args.recentErrors as string[] | undefined, args.timeSpent as number | undefined);
+
+    // ====== TASK DETECTION TOOLS ======
+    case 'project.task_detect':
+      return handleTaskDetect();
+
+    case 'project.task_complete':
+      return handleTaskComplete(args.taskId as string | undefined);
+
+    case 'project.task_update_pending':
+      return handleTaskUpdatePending(args.taskId as string, args.pendingWork as string);
+
+    // ====== ANALYTICS TOOLS ======
+    case 'project.ask_stats':
+      return handleAskStats(args.period as 'daily' | 'weekly' | undefined);
+
+    case 'project.ask_top_questions':
+      return handleAskTopQuestions(args.limit as number | undefined);
+
+    case 'project.ask_quality':
+      return handleAskQuality();
+
+    // ====== QUALITY TOOLS ======
+    case 'project.quality_trends':
+      return handleQualityTrends(args.days as number | undefined);
+
+    case 'project.quality_report':
+      return handleQualityReport(args.period as 'daily' | 'weekly' | undefined);
+
+    case 'project.quality_performance':
+      return handleQualityPerformance();
+
+    // ====== CONTEXT TOOLS ======
+    case 'project.context_stats':
+      return handleContextStats();
+
+    case 'project.context_export':
+      return handleContextExport();
+
+    // ====== SESSION INSIGHTS TOOLS ======
+    case 'project.session_insights':
+      return handleSessionInsights(args.days as number | undefined);
 
     default:
       return {
@@ -2524,6 +2848,534 @@ async function handleShouldContinue(): Promise<{ content: Array<{ type: string; 
   if (result.suggestion) {
     output += `\n### Suggestion\n${result.suggestion}\n`;
   }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+// ============ LEARNING & ADAPTATION HANDLERS ============
+
+async function handleLearnSync(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const bridge = getLearningBridge(projectRoot);
+
+  const result = await bridge.syncNow();
+
+  let output = `## Learning Sync Results\n\n`;
+  output += `**Sync Type:** ${result.syncType}\n`;
+  output += `**Timestamp:** ${result.timestamp}\n`;
+  output += `**Summaries Processed:** ${result.summariesProcessed}\n`;
+  output += `**Q&A Events Processed:** ${result.qnaEventsProcessed}\n`;
+  output += `**Memories Created:** ${result.memoriesCreated}\n`;
+
+  if (result.errors.length > 0) {
+    output += `\n### Errors\n${result.errors.join('\n')}\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleLearnImport(sourceProject: string, dataTypes?: string[]): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const bridge = getLearningBridge(projectRoot);
+
+  const options: { sourceProject: string; dataTypes?: ('summaries' | 'decisions')[] } = {
+    sourceProject,
+    dataTypes: dataTypes as ('summaries' | 'decisions')[] | undefined,
+  };
+
+  const result = await bridge.importFrom(options);
+
+  let output = `## Import Results\n\n`;
+  output += `**Success:** ${result.success ? 'Yes' : 'No'}\n`;
+  output += `**Source Project:** ${result.sourceProject}\n`;
+  output += `**Items Imported:** ${result.itemsImported}\n`;
+  output += `**Imported Types:** ${result.importedTypes.join(', ') || 'none'}\n`;
+
+  if (result.errors.length > 0) {
+    output += `\n### Errors\n${result.errors.join('\n')}\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleLearnStats(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const tracker = getOutcomeTracker(projectRoot);
+  const bridge = getLearningBridge(projectRoot);
+
+  const stats = tracker.getStats();
+  const brainStatus = bridge.getStatus();
+
+  let output = `## Learning Statistics\n\n`;
+  output += `**Total Outcomes:** ${stats.totalOutcomes}\n`;
+  output += `**Overall Success Rate:** ${(stats.successRate * 100).toFixed(1)}%\n`;
+  output += `**Average Confidence:** ${(stats.averageConfidence * 100).toFixed(1)}%\n`;
+  output += `**Patterns Learned:** ${stats.patternsLearned}\n`;
+  output += `**Improvements Suggested:** ${stats.improvementsSuggested}\n`;
+
+  output += `\n### By Action Type\n`;
+  for (const [type, data] of Object.entries(stats.byActionType)) {
+    output += `- ${type}: ${data.count} actions, ${(data.successRate * 100).toFixed(1)}% success rate\n`;
+  }
+
+  output += `\n### Brain Status\n`;
+  output += `**Last Sync:** ${brainStatus.lastSync || 'never'}\n`;
+  output += `**Sync Mode:** ${brainStatus.syncMode}\n`;
+  output += `**Imported Projects:** ${brainStatus.importedProjects.join(', ') || 'none'}\n`;
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleLearnPatterns(taskType: string): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const tracker = getOutcomeTracker(projectRoot);
+
+  const successPatterns = tracker.getSuccessPatterns(taskType);
+  const failurePatterns = tracker.getFailurePatterns(taskType);
+  const patterns = tracker.getPatterns(taskType);
+
+  let output = `## Learning Patterns for ${taskType}\n\n`;
+
+  output += `### Success Patterns (${successPatterns.length})\n`;
+  if (successPatterns.length > 0) {
+    for (const pattern of successPatterns.slice(0, 10)) {
+      output += `- ${pattern}\n`;
+    }
+  } else {
+    output += `No success patterns recorded yet.\n`;
+  }
+
+  output += `\n### Failure Patterns to Avoid (${failurePatterns.length})\n`;
+  if (failurePatterns.length > 0) {
+    for (const pattern of failurePatterns.slice(0, 10)) {
+      output += `- ${pattern}\n`;
+    }
+  } else {
+    output += `No failure patterns recorded yet.\n`;
+  }
+
+  output += `\n### All Patterns\n`;
+  if (patterns.length > 0) {
+    for (const p of patterns.slice(0, 10)) {
+      output += `- ${p.pattern}: ${(p.successRate * 100).toFixed(1)}% success (seen ${p.frequency}x)\n`;
+    }
+  } else {
+    output += `No patterns recorded yet.\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleLearnSuggestions(category?: string, limit?: number): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const tracker = getOutcomeTracker(projectRoot);
+
+  const improvements = tracker.getSuggestions({
+    category: category as 'skill' | 'pattern' | 'approach' | 'documentation' | undefined,
+    limit: limit || 10,
+  });
+
+  let output = `## Improvement Suggestions\n\n`;
+
+  if (improvements.length === 0) {
+    output += `No improvement suggestions available yet. More data needed.\n`;
+  } else {
+    for (const imp of improvements) {
+      output += `### ${imp.category.toUpperCase()}: ${(imp.confidence * 100).toFixed(0)}% confidence\n`;
+      output += `${imp.description}\n`;
+      output += `**Suggested for:** ${imp.suggestedFor.join(', ')}\n\n`;
+    }
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleLearnExport(taskType?: string, minConfidence?: number): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const tracker = getOutcomeTracker(projectRoot);
+
+  const outcomes = tracker.exportForTraining({
+    taskType,
+    minConfidence,
+  });
+
+  let output = `## Learning Export\n\n`;
+  output += `**Total Exported:** ${outcomes.length}\n`;
+  output += `**Filter Task Type:** ${taskType || 'all'}\n`;
+  output += `**Min Confidence:** ${minConfidence !== undefined ? minConfidence : 'none'}\n\n`;
+
+  if (outcomes.length > 0) {
+    output += `### Sample Outcomes (first 5)\n`;
+    for (const o of outcomes.slice(0, 5)) {
+      output += `- [${o.success ? 'SUCCESS' : 'FAILURE'}] ${o.actionType}: ${o.actionDescription.slice(0, 50)}...\n`;
+    }
+  }
+
+  return { content: [{ type: 'text', text: `\`\`\`json\n${JSON.stringify(outcomes, null, 2)}\n\`\`\`\n\n${output}` }] };
+}
+
+// ============ AGENT AWARENESS HANDLERS ============
+
+async function handleAgentState(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const awareness = getSelfAwareness(projectRoot);
+  const state = awareness.getState();
+
+  let output = `## Agent State\n\n`;
+  output += `**Mode:** ${state.mode}\n`;
+  output += `**Energy Level:** ${(state.energyLevel * 100).toFixed(0)}%\n`;
+  output += `**Session Start:** ${state.sessionStartTime}\n`;
+  output += `**Total Actions This Session:** ${state.totalActionsThisSession}\n`;
+
+  if (state.currentTask) {
+    output += `\n### Current Task\n`;
+    output += `**ID:** ${state.currentTask.id}\n`;
+    output += `**Type:** ${state.currentTask.type}\n`;
+    output += `**Description:** ${state.currentTask.description}\n`;
+    output += `**Progress:** ${(state.currentTask.progress * 100).toFixed(0)}%\n`;
+    output += `**Complexity:** ${state.currentTask.complexity}\n`;
+  }
+
+  if (state.activeGoals.length > 0) {
+    output += `\n### Active Goals (${state.activeGoals.length})\n`;
+    for (const goal of state.activeGoals) {
+      output += `- [P${goal.priority}] ${goal.description}\n`;
+    }
+  }
+
+  if (state.blockedBy.length > 0) {
+    output += `\n### Blockers (${state.blockedBy.length})\n`;
+    for (const blocker of state.blockedBy) {
+      output += `- [${blocker.type}] ${blocker.description}\n`;
+    }
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleAgentCapabilities(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const awareness = getSelfAwareness(projectRoot);
+  const capabilities = awareness.getCapabilities();
+
+  let output = `## Agent Capabilities\n\n`;
+  output += `**Average Confidence:** ${(capabilities.averageConfidence * 100).toFixed(1)}%\n`;
+  output += `**Total Actions:** ${capabilities.totalActions}\n`;
+  output += `**Total Sessions:** ${capabilities.totalSessions}\n`;
+
+  output += `\n### Strengths\n`;
+  if (capabilities.strengths.length > 0) {
+    for (const s of capabilities.strengths) {
+      output += `- ${s}\n`;
+    }
+  } else {
+    output += `No strengths recorded yet.\n`;
+  }
+
+  output += `\n### Weak Areas\n`;
+  if (capabilities.weakAreas.length > 0) {
+    for (const w of capabilities.weakAreas) {
+      output += `- ${w}\n`;
+    }
+  } else {
+    output += `No weak areas recorded yet.\n`;
+  }
+
+  output += `\n### Recent Improvements\n`;
+  if (capabilities.recentImprovements.length > 0) {
+    for (const i of capabilities.recentImprovements.slice(-5)) {
+      output += `- ${i}\n`;
+    }
+  } else {
+    output += `No recent improvements recorded.\n`;
+  }
+
+  output += `\n### Success Rates by Action Type\n`;
+  for (const [type, rate] of Object.entries(capabilities.successRates)) {
+    output += `- ${type}: ${(rate * 100).toFixed(1)}%\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleAgentAntiPatterns(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const awareness = getSelfAwareness(projectRoot);
+  const antiPatterns = awareness.getAntiPatterns();
+
+  let output = `## Anti-Patterns (Patterns to Avoid)\n\n`;
+
+  if (antiPatterns.length === 0) {
+    output += `No anti-patterns recorded yet.\n`;
+  } else {
+    for (const ap of antiPatterns) {
+      output += `### ${ap.pattern}\n`;
+      output += `${ap.description}\n`;
+      output += `**Frequency:** ${ap.frequency} times\n`;
+      output += `**Last Occurrence:** ${ap.lastOccurrence}\n`;
+      output += `**Times Avoided:** ${ap.avoidedCount}\n\n`;
+    }
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleAgentAssess(taskDescription?: string, recentErrors?: string[], timeSpent?: number): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const awareness = getSelfAwareness(projectRoot);
+
+  const assessment = awareness.assessSelf({ taskDescription, recentErrors, timeSpent });
+
+  let output = `## Self-Assessment\n\n`;
+  output += `**Confidence:** ${(assessment.confidence * 100).toFixed(0)}%\n`;
+  output += `**Quality:** ${(assessment.quality * 100).toFixed(0)}%\n`;
+  output += `**Risk Level:** ${assessment.riskLevel.toUpperCase()}\n`;
+
+  if (assessment.potentialIssues.length > 0) {
+    output += `\n### Potential Issues\n`;
+    for (const issue of assessment.potentialIssues) {
+      output += `- ${issue}\n`;
+    }
+  }
+
+  if (assessment.suggestedApproaches.length > 0) {
+    output += `\n### Suggested Approaches\n`;
+    for (const approach of assessment.suggestedApproaches) {
+      output += `- ${approach}\n`;
+    }
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+// ============ TASK DETECTION HANDLERS ============
+
+async function handleTaskDetect(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const awareness = getSelfAwareness(projectRoot);
+  const state = awareness.getState();
+
+  let output = `## Task Detection\n\n`;
+
+  if (state.currentTask) {
+    output += `**Current Task Detected:**\n`;
+    output += `- ID: ${state.currentTask.id}\n`;
+    output += `- Type: ${state.currentTask.type}\n`;
+    output += `- Description: ${state.currentTask.description}\n`;
+    output += `- Progress: ${(state.currentTask.progress * 100).toFixed(0)}%\n`;
+    output += `- Complexity: ${state.currentTask.complexity}\n`;
+    output += `- Success Probability: ${(state.currentTask.successProbability * 100).toFixed(0)}%\n`;
+  } else {
+    output += `No active task detected.\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleTaskComplete(taskId?: string): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const awareness = getSelfAwareness(projectRoot);
+  const state = awareness.getState();
+
+  if (state.currentTask && (!taskId || state.currentTask.id === taskId)) {
+    awareness.completeAction(state.currentTask.id, { success: true });
+    return { content: [{ type: 'text', text: `Task ${state.currentTask.id} marked as completed.` }] };
+  }
+
+  return { content: [{ type: 'text', text: `Task ${taskId || 'current'} not found or does not match current task.` }] };
+}
+
+async function handleTaskUpdatePending(taskId: string, pendingWork: string): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const awareness = getSelfAwareness(projectRoot);
+  const state = awareness.getState();
+
+  if (state.currentTask && state.currentTask.id === taskId) {
+    state.currentTask.description = `${state.currentTask.description}\n\nPending: ${pendingWork}`;
+    awareness.setCurrentTask(state.currentTask);
+    return { content: [{ type: 'text', text: `Updated pending work for task ${taskId}.` }] };
+  }
+
+  return { content: [{ type: 'text', text: `Task ${taskId} not found or does not match current task.` }] };
+}
+
+// ============ ANALYTICS HANDLERS ============
+
+async function handleAskStats(period?: 'daily' | 'weekly'): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const report = await getAnalyticsReport(projectRoot, period || 'daily');
+
+  let output = `## Q&A Statistics (${report.period})\n\n`;
+  output += `**Period:** ${report.startDate} to ${report.endDate}\n`;
+  output += `**Total Questions:** ${report.summary.totalQuestions}\n`;
+  output += `**Cache Hits:** ${report.summary.totalCacheHits}\n`;
+  output += `**Hit Rate:** ${(report.summary.overallHitRate * 100).toFixed(1)}%\n`;
+  output += `**Average Confidence:** ${(report.summary.averageConfidence * 100).toFixed(1)}%\n`;
+  output += `**Avg Response Time:** ${report.summary.averageResponseTimeMs.toFixed(0)}ms\n`;
+
+  output += `\n### Tier Distribution\n`;
+  for (const [tier, count] of Object.entries(report.tierBreakdown)) {
+    output += `- Tier ${tier}: ${count}\n`;
+  }
+
+  output += `\n### Top Questions\n`;
+  for (const q of report.topQuestions.slice(0, 5)) {
+    output += `- [${q.count}x] ${q.question.slice(0, 60)}...\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleAskTopQuestions(limit?: number): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const questions = await getTopQuestions(projectRoot, limit || 10);
+
+  let output = `## Top Asked Questions\n\n`;
+
+  if (questions.length === 0) {
+    output += `No questions recorded yet.\n`;
+  } else {
+    for (let i = 0; i < questions.length; i++) {
+      const q = questions[i];
+      output += `${i + 1}. **Asked ${q.count} times** (avg confidence: ${(q.averageConfidence * 100).toFixed(0)}%)\n`;
+      output += `   ${q.question}\n\n`;
+    }
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleAskQuality(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const coverage = getCacheCoverage(projectRoot);
+
+  let output = `## Answer Quality & Cache Coverage\n\n`;
+  output += `**Total Questions:** ${coverage.totalQuestions}\n`;
+  output += `**Cached Questions:** ${coverage.cachedQuestions}\n`;
+  output += `**Coverage:** ${coverage.coveragePercent.toFixed(1)}%\n`;
+
+  output += `\n### Tier Coverage\n`;
+  for (const [tier, count] of Object.entries(coverage.tierCoverage)) {
+    output += `- Tier ${tier}: ${count}\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+// ============ QUALITY HANDLERS ============
+
+async function handleQualityTrends(days?: number): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const trends = getQualityTrends(projectRoot, days || 7);
+
+  let output = `## Quality Trends (${days || 7} days)\n\n`;
+  output += `**Current Period:**\n`;
+  output += `  - Total Requests: ${trends.current.totalRequests}\n`;
+  output += `  - Average Confidence: ${(trends.current.averageConfidence * 100).toFixed(1)}%\n`;
+  output += `  - Average Response Time: ${trends.current.averageResponseTime.toFixed(0)}ms\n`;
+  output += `\n**Previous Period:**\n`;
+  output += `  - Total Requests: ${trends.previous.totalRequests}\n`;
+  output += `  - Average Confidence: ${(trends.previous.averageConfidence * 100).toFixed(1)}%\n`;
+  output += `\n**Trends:**\n`;
+  for (const [key, value] of Object.entries(trends.trends)) {
+    output += `  - ${key}: ${value >= 0 ? '+' : ''}${value.toFixed(1)}%\n`;
+  }
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleQualityReport(period?: 'daily' | 'weekly'): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const report = generateQualityReport(projectRoot);
+
+  // generateQualityReport returns a markdown string
+  return { content: [{ type: 'text', text: report }] };
+}
+
+async function handleQualityPerformance(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const stats = getPerformanceStats(projectRoot);
+  const metrics = calculateQualityMetrics(projectRoot);
+
+  let output = `## Performance Statistics\n\n`;
+  output += `**Total Requests:** ${metrics.totalRequests}\n`;
+  output += `**Successful Requests:** ${metrics.successfulRequests}\n`;
+  output += `**Failed Requests:** ${metrics.failedRequests}\n`;
+  output += `**Average Response Time:** ${stats.averageResponseTime.toFixed(0)}ms\n`;
+  output += `\n**Latency Percentiles:**\n`;
+  output += `  - P50: ${stats.p50}ms\n`;
+  output += `  - P95: ${stats.p95}ms\n`;
+  output += `  - P99: ${stats.p99}ms\n`;
+  output += `\n**Token Usage:**\n`;
+  output += `  - Average: ${stats.tokenUsage.avg.toFixed(0)} tokens\n`;
+  output += `  - Max: ${stats.tokenUsage.max} tokens\n`;
+  output += `  - Min: ${stats.tokenUsage.min} tokens\n`;
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+// ============ CONTEXT HANDLERS ============
+
+async function handleContextStats(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const engine = getDynamicContextEngine(projectRoot);
+
+  let output = `## Dynamic Context Statistics\n\n`;
+
+  // Get stats if available
+  output += `**Context Engine:** Active\n`;
+
+  return { content: [{ type: 'text', text: output }] };
+}
+
+async function handleContextExport(): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const engine = getDynamicContextEngine(projectRoot);
+
+  const exported = engine.export();
+  const json = JSON.stringify(exported, null, 2);
+
+  let output = `## Context Export\n\n`;
+  output += `**Elements:** ${exported.elements?.length || 0}\n`;
+  output += `**Export Length:** ${json.length} characters\n`;
+
+  return { content: [{ type: 'text', text: output + `\n\`\`\`json\n${json.slice(0, 2000)}...\n\`\`\`\n` }] };
+}
+
+// ============ SESSION INSIGHTS HANDLERS ============
+
+async function handleSessionInsights(days?: number): Promise<{ content: Array<{ type: string; text: string }> }> {
+  const projectRoot = getProjectRoot();
+  const sessionIndex = loadSessionIndex(projectRoot);
+
+  // Filter sessions by date range
+  const cutoffTime = Date.now() - (days || 30) * 24 * 60 * 60 * 1000;
+  const sessions = sessionIndex.sessions.filter(s => new Date(s.startTime).getTime() >= cutoffTime);
+
+  let output = `## Cross-Session Insights (${days || 30} days)\n\n`;
+  output += `**Total Sessions:** ${sessionIndex.sessions.length}\n`;
+  output += `**Sessions in Period:** ${sessions.length}\n`;
+
+  // Aggregate topics
+  const allTopics = new Set<string>();
+  for (const session of sessions) {
+    for (const topic of session.topics || []) {
+      allTopics.add(topic);
+    }
+  }
+
+  output += `\n**Unique Topics:** ${allTopics.size}\n`;
+  output += `**Topics:** ${[...allTopics].slice(0, 10).join(', ')}\n`;
+
+  // Aggregate files
+  const allFiles = new Set<string>();
+  for (const session of sessions) {
+    for (const file of session.filesModified || []) {
+      allFiles.add(file);
+    }
+  }
+
+  output += `\n**Unique Files Touched:** ${allFiles.size}\n`;
 
   return { content: [{ type: 'text', text: output }] };
 }

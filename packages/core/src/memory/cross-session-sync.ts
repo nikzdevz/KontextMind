@@ -67,3 +67,76 @@ export async function performSync(): Promise<{ success: boolean; synced: number;
 
   return { success: errors.length === 0, synced, errors };
 }
+
+/**
+ * Get cross-session insights
+ */
+export async function getCrossSessionInsights(
+  projectRoot: string,
+  days: number = 30
+): Promise<{
+  totalSessions: number;
+  totalMessages: number;
+  commonTopics: string[];
+  patterns: { pattern: string; frequency: number }[];
+  productivity: { tasksCompleted: number; filesModified: number };
+}> {
+  const { loadSessionIndex } = await import('./session-index.js');
+  const { loadTaskIndex } = await import('./task-index.js');
+
+  const index = loadSessionIndex(projectRoot);
+  const taskIndex = loadTaskIndex(projectRoot);
+
+  const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+  // Filter sessions by date
+  const recentSessions = index.sessions.filter(s => new Date(s.startTime) >= cutoffDate);
+
+  // Calculate totals
+  const totalSessions = recentSessions.length;
+  const totalMessages = recentSessions.reduce((sum, s) => sum + (s.messageCount || 0), 0);
+
+  // Extract common topics
+  const topicCounts: Record<string, number> = {};
+  for (const session of recentSessions) {
+    for (const topic of session.topics || []) {
+      topicCounts[topic] = (topicCounts[topic] || 0) + 1;
+    }
+  }
+  const commonTopics = Object.entries(topicCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([topic]) => topic);
+
+  // Find patterns from summaries
+  const patterns: { pattern: string; frequency: number }[] = [];
+  const patternCounts: Record<string, number> = {};
+  for (const session of recentSessions) {
+    if (session.summary) {
+      // Extract simple patterns from summary keywords
+      const keywords = ['fix', 'add', 'update', 'implement', 'refactor', 'test', 'review', 'debug'];
+      for (const keyword of keywords) {
+        if (session.summary.toLowerCase().includes(keyword)) {
+          patternCounts[keyword] = (patternCounts[keyword] || 0) + 1;
+        }
+      }
+    }
+  }
+  for (const [pattern, frequency] of Object.entries(patternCounts)) {
+    patterns.push({ pattern, frequency });
+  }
+  patterns.sort((a, b) => b.frequency - a.frequency);
+
+  // Calculate productivity
+  const tasksCompleted = taskIndex.tasks.filter(t => t.status === 'completed').length;
+  const recentTasks = taskIndex.tasks.filter(t => new Date(t.startDate) >= cutoffDate);
+  const filesModified = recentTasks.reduce((sum, t) => sum + (t.filesTouched?.length || 0), 0);
+
+  return {
+    totalSessions,
+    totalMessages,
+    commonTopics,
+    patterns: patterns.slice(0, 5),
+    productivity: { tasksCompleted, filesModified },
+  };
+}

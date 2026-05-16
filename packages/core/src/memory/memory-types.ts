@@ -139,7 +139,7 @@ export interface TaskDependency {
 
 // ====== Storage Paths ======
 
-export const MEMORY_DIR = '.kontextmind/memory';
+export const MEMORY_DIR = '.kontextmind';
 export const SESSION_INDEX_FILE = 'session-index.json';
 export const TASK_INDEX_FILE = 'task-index.json';
 

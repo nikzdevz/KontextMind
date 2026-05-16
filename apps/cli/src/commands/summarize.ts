@@ -89,7 +89,7 @@ export async function summarizeCommand(options: OptionValues): Promise<void> {
       }
     }
 
-    const maxFiles = options.maxFiles ? parseInt(String(options.maxFiles), 10) : 50;
+    const maxFiles = options.maxFiles ? parseInt(String(options.maxFiles), 10) : undefined;
     const dryRun = Boolean(options.dryRun);
 
     console.log(chalk.bold('KontextMind Summarize'));

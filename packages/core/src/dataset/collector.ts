@@ -53,10 +53,14 @@ export interface SessionRecord {
   topics: string[];
 }
 
-// Load Q&A events from JSONL
+// Load Q&A events from JSONL - reads from NEW unified location
 export function loadQNAEvents(projectRoot: string): QNAEvent[] {
-  const eventsPath = join(projectRoot, '.logs', 'qna-events.jsonl');
-  if (!existsSync(eventsPath)) return [];
+  // Primary: new unified path
+  const newPath = join(projectRoot, '.kontextmind', 'chatbot', 'qa-history.jsonl');
+  const legacyPath = join(projectRoot, '.logs', 'qna-events.jsonl');
+
+  const eventsPath = existsSync(newPath) ? newPath : (existsSync(legacyPath) ? legacyPath : null);
+  if (!eventsPath) return [];
 
   try {
     const content = readFileSync(eventsPath, 'utf-8');
@@ -128,36 +132,63 @@ export function loadQAHistory(projectRoot: string): QAHistoryRecord[] {
   }
 }
 
-// Load sessions
+// Load sessions - reads from both session files and session index
 export function loadSessions(projectRoot: string): SessionRecord[] {
+  const records: SessionRecord[] = [];
   const sessionsDir = join(projectRoot, '.kontextmind', 'sessions');
-  if (!existsSync(sessionsDir)) return [];
+  const memoryDir = join(projectRoot, '.kontextmind', 'memory');
 
-  try {
-    const files = readdirSync(sessionsDir).filter(f => f.endsWith('.json'));
-    const records: SessionRecord[] = [];
-
-    for (const file of files) {
-      try {
-        const content = readFileSync(join(sessionsDir, file), 'utf-8');
-        const session = JSON.parse(content);
-        records.push({
-          id: session.id,
-          projectName: session.projectName,
-          messages: session.messages || [],
-          createdAt: session.createdAt,
-          updatedAt: session.updatedAt,
-          topics: session.context?.topics || [],
-        });
-      } catch {
-        // Skip invalid files
+  // 1. Load from session JSON files
+  if (existsSync(sessionsDir)) {
+    try {
+      const files = readdirSync(sessionsDir).filter(f => f.endsWith('.json'));
+      for (const file of files) {
+        try {
+          const content = readFileSync(join(sessionsDir, file), 'utf-8');
+          const session = JSON.parse(content);
+          records.push({
+            id: session.id,
+            projectName: session.projectName,
+            messages: session.messages || [],
+            createdAt: session.createdAt,
+            updatedAt: session.updatedAt,
+            topics: session.context?.topics || [],
+          });
+        } catch {
+          // Skip invalid files
+        }
       }
+    } catch {
+      // Directory access error
     }
-
-    return records;
-  } catch {
-    return [];
   }
+
+  // 2. Also load from session-index.json for richer session data
+  const sessionIndexPath = join(memoryDir, 'session-index.json');
+  if (existsSync(sessionIndexPath)) {
+    try {
+      const index = JSON.parse(readFileSync(sessionIndexPath, 'utf-8'));
+      const sessions = index.sessions || [];
+
+      for (const session of sessions) {
+        // Add session index data if not already present
+        if (!records.find(r => r.id === session.sessionId)) {
+          records.push({
+            id: session.sessionId,
+            projectName: session.projectName,
+            messages: [], // Session index doesn't store messages, just metadata
+            createdAt: session.startTime,
+            updatedAt: session.endTime || session.startTime,
+            topics: session.topics || [],
+          });
+        }
+      }
+    } catch {
+      // Skip invalid index
+    }
+  }
+
+  return records;
 }
 
 // Collect all data from configured sources

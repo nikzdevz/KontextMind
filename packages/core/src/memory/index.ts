@@ -8,9 +8,10 @@ export * from './task-detector.js';
 export * from './search-index.js';
 export * from './timeline-builder.js';
 export * from './continuity-engine.js';
+export * from './cross-session-sync.js';
 
 // Phase 1 - Core Brain: Semantic Memory
 export * from './semantic/index.js';
 
 // Phase 3 - Cross-Session Memory Sync
-export * from './cross-session-sync.js';
+// (cross-session-sync.ts exports are now included above)

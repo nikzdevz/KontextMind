@@ -94,7 +94,7 @@ export async function summarizeProject(options: SummarizerOptions): Promise<Summ
     projectRoot,
     projectName,
     providerConfig,
-    maxFiles = 50,
+    maxFiles = Infinity,
     maxFunctions = 100,
     maxModules = 20,
     maxAPIs = 50,

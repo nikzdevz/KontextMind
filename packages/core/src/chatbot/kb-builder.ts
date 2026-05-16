@@ -772,22 +772,36 @@ ${intentGuidance}
     ? providerResult.error
     : 'Failed to generate response. Please check your LLM provider configuration.';
 
-  // Log the failed attempt
-  await logQNAEvent(projectRoot, {
+  // Build the JSON event for failed attempt
+  const errorEvent = {
     responseId,
-    sessionId: options.sessionId,
+    sessionId: options.sessionId || null,
     question: question.slice(0, 50) + (question.length > 50 ? '...' : ''),
     questionHash: simpleHash(question),
     answer: `[LLM Error: ${errorMessage}]`,
+    confidence: 0,
     sources: semanticChunks.slice(0, 5).map(c => c.type),
     rawCodeAccess: false,
     mode,
     source,
     feedbackSupported: source !== 'cli',
-    confidence: 0,
     codeRequestDetected: codeRequest,
-    conversationTurn: options.conversationTurn,
-  });
+    conversationTurn: options.conversationTurn || 0,
+    feedbackReceived: null,
+    feedbackTimestamp: null,
+    timestamp: new Date().toISOString(),
+  };
+
+  // Log failed attempt to qa-history.jsonl
+  const errorJsonEvent = JSON.stringify(errorEvent);
+  const qaHistoryPath = join(projectRoot, '.kontextmind', 'chatbot', 'qa-history.jsonl');
+  if (existsSync(qaHistoryPath)) {
+    const existing = readFileSync(qaHistoryPath, 'utf-8');
+    writeFileSafe(qaHistoryPath, existing + errorJsonEvent + '\n');
+  } else {
+    ensureDir(join(projectRoot, '.kontextmind', 'chatbot'));
+    writeFileSafe(qaHistoryPath, errorJsonEvent + '\n');
+  }
 
   return {
     responseId,
@@ -1343,13 +1357,14 @@ async function logQNAEvent(
     const dirPath = join(projectRoot, '.logs');
     ensureDir(dirPath);
 
-    // Write JSON event
-    const jsonPath = join(projectRoot, '.logs', 'qna-events.jsonl');
-    if (existsSync(jsonPath)) {
-      const existing = readFileSync(jsonPath, 'utf-8');
-      writeFileSafe(jsonPath, existing + jsonEvent + '\n');
+    // Write JSON event to qa-history.jsonl (same file analytics/learning read from)
+    const qaHistoryPath = join(projectRoot, '.kontextmind', 'chatbot', 'qa-history.jsonl');
+    if (existsSync(qaHistoryPath)) {
+      const existing = readFileSync(qaHistoryPath, 'utf-8');
+      writeFileSafe(qaHistoryPath, existing + jsonEvent + '\n');
     } else {
-      writeFileSafe(jsonPath, jsonEvent + '\n');
+      ensureDir(join(projectRoot, '.kontextmind', 'chatbot'));
+      writeFileSafe(qaHistoryPath, jsonEvent + '\n');
     }
 
     // Append text log

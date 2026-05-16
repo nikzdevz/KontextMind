@@ -106,6 +106,12 @@ mcp__kontextmind__project.search {"query": "api routes"}
 mcp__kontextmind__project.create_handoff {"title": "Fullstack Verification"}
 mcp__kontextmind__project.write_task_summary {"taskId": "123", "summary": "Completed"}
 mcp__kontextmind__project.write_session_summary
+mcp__kontextmind__project.learn_stats {}
+mcp__kontextmind__project.learn_patterns {"taskType": "code_write"}
+mcp__kontextmind__project.agent_state {}
+mcp__kontextmind__project.agent_capabilities {}
+mcp__kontextmind__project.ask_stats {"period": "daily"}
+mcp__kontextmind__project.quality_report {"period": "weekly"}
 \`\`\`
 
 **INCORRECT (will fail):**
@@ -114,6 +120,42 @@ mcp__kontextmind__project-status (WRONG - uses dash)
 mcp__kontextmind__projectcheck_provider (WRONG - missing dot)
 mcp__kontextmind__project_status (WRONG - uses underscore)
 \`\`\`
+
+## New MCP Tools (Phase 11)
+
+The following new MCP tools are now available:
+
+### Learning & Adaptation
+- \`project.learn_sync\` - Trigger manual learning sync
+- \`project.learn_import\` - Import learning from another project
+- \`project.learn_stats\` - Get learning statistics
+- \`project.learn_patterns\` - Get success/failure patterns
+- \`project.learn_suggestions\` - Get improvement suggestions
+- \`project.learn_export\` - Export learning data
+
+### Agent Awareness
+- \`project.agent_state\` - Get current agent state
+- \`project.agent_capabilities\` - Get capability profile
+- \`project.agent_antipatterns\` - Get anti-patterns to avoid
+- \`project.agent_assess\` - Self-assess current state
+
+### Task Detection
+- \`project.task_detect\` - Detect task boundaries
+- \`project.task_complete\` - Mark task complete
+- \`project.task_update_pending\` - Update pending work
+
+### Analytics & Quality
+- \`project.ask_stats\` - Q&A statistics
+- \`project.ask_top_questions\` - Most asked questions
+- \`project.ask_quality\` - Answer quality metrics
+- \`project.quality_trends\` - Quality trends
+- \`project.quality_report\` - Quality report
+- \`project.quality_performance\` - Performance statistics
+
+### Context & Insights
+- \`project.context_stats\` - Context engine stats
+- \`project.context_export\` - Export context window
+- \`project.session_insights\` - Cross-session insights
 
 ## Required KontextMind Usage
 
@@ -736,57 +778,117 @@ export const MCP_PLACEHOLDER_TEMPLATE: TemplateDefinition = {
 export const MCP_TOOLS_TEMPLATE: TemplateDefinition = {
   filename: '.mcp/tools.json',
   template: JSON.stringify({
-    version: '1.0',
+    version: '2.0',
     sourceOfTruth: 'packages/mcp/src/mcp-server.ts MCP_TOOLS',
-    toolCount: 44,
+    toolCount: 70,
+    toolCategories: {
+      'status_search': ['project.status', 'project.search', 'project.check_provider', 'project.get_recent_tasks', 'project.get_last_session', 'project.resume_task'],
+      'summary_retrieval': ['project.get_file_summary', 'project.get_function_summary', 'project.get_module_summary', 'project.get_api_summary', 'project.get_decision_summary', 'project.get_blocker_summary', 'project.get_symbol_summary'],
+      'dependency_analysis': ['project.find_dependencies', 'project.find_callers', 'project.find_related_files', 'project.find_blockers', 'project.get_all_summaries'],
+      'qa': ['project.ask_readonly'],
+      'write_operations': ['project.create_handoff', 'project.write_task_summary', 'project.write_session_summary', 'project.add_task_dependency'],
+      'refresh_scan': ['project.refresh_summary', 'project.refresh_all_summaries', 'project.security_scan'],
+      'session_management': ['project.get_session_index', 'project.get_session_stats', 'project.search_sessions', 'project.get_recent_files'],
+      'timeline': ['project.get_timeline', 'project.get_recent_activity'],
+      'task_management': ['project.get_current_task', 'project.get_task_sessions', 'project.get_session_task', 'project.get_task_dependencies', 'project.get_blocked_tasks'],
+      'memory_search': ['project.search_memory', 'project.search_entities', 'project.find_related_sessions'],
+      'continuity': ['project.get_continuity_suggestions', 'project.analyze_continuity', 'project.get_task_resumption_context', 'project.should_continue'],
+      'learning': ['project.learn_sync', 'project.learn_import', 'project.learn_stats', 'project.learn_patterns', 'project.learn_suggestions', 'project.learn_export'],
+      'agent_awareness': ['project.agent_state', 'project.agent_capabilities', 'project.agent_antipatterns', 'project.agent_assess'],
+      'task_detection': ['project.task_detect', 'project.task_complete', 'project.task_update_pending'],
+      'analytics': ['project.ask_stats', 'project.ask_top_questions', 'project.ask_quality'],
+      'quality': ['project.quality_trends', 'project.quality_report', 'project.quality_performance'],
+      'context': ['project.context_stats', 'project.context_export'],
+      'session_insights': ['project.session_insights']
+    },
     tools: [
-      { name: 'project.status', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.search', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_file_summary', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_function_summary', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_module_summary', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_api_summary', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_decision_summary', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_blocker_summary', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_symbol_summary', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.find_dependencies', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.find_callers', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.find_related_files', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.find_blockers', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.ask_readonly', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.create_handoff', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.refresh_summary', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.refresh_all_summaries', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.security_scan', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_all_summaries', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.check_provider', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_recent_tasks', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_last_session', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.resume_task', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.write_task_summary', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.write_session_summary', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_session_index', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_session_stats', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.search_sessions', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_recent_files', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_timeline', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_recent_activity', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_current_task', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_task_sessions', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_session_task', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.search_memory', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.search_entities', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.find_related_sessions', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.add_task_dependency', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_task_dependencies', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_blocked_tasks', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_continuity_suggestions', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.analyze_continuity', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.get_task_resumption_context', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } },
-      { name: 'project.should_continue', description: 'Runtime MCP tool exposed by KontextMind', inputSchema: { type: 'object', properties: {} } }
+      // Status & Search
+      { name: 'project.status', description: 'Get project status', inputSchema: { type: 'object', properties: {} } },
+      { name: 'project.search', description: 'Search files/symbols/content', inputSchema: { type: 'object', properties: { query: { type: 'string' }, type: { type: 'string', enum: ['file', 'symbol', 'all'] } }, required: ['query'] } },
+      { name: 'project.check_provider', description: 'Check LLM provider config', inputSchema: { type: 'object', properties: {} } },
+      { name: 'project.get_recent_tasks', description: 'Get recent task summaries', inputSchema: { type: 'object', properties: { limit: { type: 'number' } } } },
+      { name: 'project.get_last_session', description: 'Get previous session summary', inputSchema: { type: 'object', properties: {} } },
+      { name: 'project.resume_task', description: 'Resume a task', inputSchema: { type: 'object', properties: { taskId: { type: 'string' }, keywords: { type: 'string' } } } },
+      // Summary Retrieval
+      { name: 'project.get_file_summary', description: 'Get file summary', inputSchema: { type: 'object', properties: { path: { type: 'string' } }, required: ['path'] } },
+      { name: 'project.get_function_summary', description: 'Get function summary', inputSchema: { type: 'object', properties: { symbolId: { type: 'string' } }, required: ['symbolId'] } },
+      { name: 'project.get_module_summary', description: 'Get module summary', inputSchema: { type: 'object', properties: { path: { type: 'string' } }, required: ['path'] } },
+      { name: 'project.get_api_summary', description: 'Get API summary', inputSchema: { type: 'object', properties: { endpoint: { type: 'string' } }, required: ['endpoint'] } },
+      { name: 'project.get_decision_summary', description: 'Get decision summary', inputSchema: { type: 'object', properties: { decisionId: { type: 'string' } }, required: ['decisionId'] } },
+      { name: 'project.get_blocker_summary', description: 'Get blocker summary', inputSchema: { type: 'object', properties: { blockerId: { type: 'string' } }, required: ['blockerId'] } },
+      { name: 'project.get_symbol_summary', description: 'Get symbol summary', inputSchema: { type: 'object', properties: { name: { type: 'string' }, file: { type: 'string' } }, required: ['name'] } },
+      // Dependency Analysis
+      { name: 'project.find_dependencies', description: 'Find file dependencies', inputSchema: { type: 'object', properties: { path: { type: 'string' } }, required: ['path'] } },
+      { name: 'project.find_callers', description: 'Find function callers', inputSchema: { type: 'object', properties: { name: { type: 'string' } }, required: ['name'] } },
+      { name: 'project.find_related_files', description: 'Find related files', inputSchema: { type: 'object', properties: { path: { type: 'string' } }, required: ['path'] } },
+      { name: 'project.find_blockers', description: 'Find blockers', inputSchema: { type: 'object', properties: { symbolId: { type: 'string' } }, required: ['symbolId'] } },
+      { name: 'project.get_all_summaries', description: 'Get all summaries', inputSchema: { type: 'object', properties: { type: { type: 'string' }, limit: { type: 'number' } } } },
+      // Q&A
+      { name: 'project.ask_readonly', description: 'Ask question (readonly)', inputSchema: { type: 'object', properties: { question: { type: 'string' } }, required: ['question'] } },
+      // Write Operations
+      { name: 'project.create_handoff', description: 'Create handoff', inputSchema: { type: 'object', properties: { summary: { type: 'string' }, next_steps: { type: 'string' } }, required: ['summary'] } },
+      { name: 'project.write_task_summary', description: 'Write task summary', inputSchema: { type: 'object', properties: { title: { type: 'string' }, goal: { type: 'string' } }, required: ['goal'] } },
+      { name: 'project.write_session_summary', description: 'Write session summary', inputSchema: { type: 'object', properties: { goals: { type: 'string' } } } },
+      { name: 'project.add_task_dependency', description: 'Add task dependency', inputSchema: { type: 'object', properties: { taskId: { type: 'string' }, dependsOn: { type: 'string' } }, required: ['taskId', 'dependsOn'] } },
+      // Refresh & Scan
+      { name: 'project.refresh_summary', description: 'Refresh stale summaries', inputSchema: { type: 'object', properties: { paths: { type: 'array', items: { type: 'string' } } } } },
+      { name: 'project.refresh_all_summaries', description: 'Refresh all summaries', inputSchema: { type: 'object', properties: { types: { type: 'array', items: { type: 'string' } } } } },
+      { name: 'project.security_scan', description: 'Security scan', inputSchema: { type: 'object', properties: { include_secrets: { type: 'boolean' } } } },
+      // Session Management
+      { name: 'project.get_session_index', description: 'Get session index', inputSchema: { type: 'object', properties: { days: { type: 'number' }, limit: { type: 'number' } } } },
+      { name: 'project.get_session_stats', description: 'Get session stats', inputSchema: { type: 'object', properties: {} } },
+      { name: 'project.search_sessions', description: 'Search sessions', inputSchema: { type: 'object', properties: { query: { type: 'string' }, limit: { type: 'number' } }, required: ['query'] } },
+      { name: 'project.get_recent_files', description: 'Get recent files', inputSchema: { type: 'object', properties: { days: { type: 'number' }, limit: { type: 'number' } } } },
+      // Timeline
+      { name: 'project.get_timeline', description: 'Get activity timeline', inputSchema: { type: 'object', properties: { hours: { type: 'number' }, format: { type: 'string' } } } },
+      { name: 'project.get_recent_activity', description: 'Get recent activity', inputSchema: { type: 'object', properties: { days: { type: 'number' } } } },
+      // Task Management
+      { name: 'project.get_current_task', description: 'Get current task', inputSchema: { type: 'object', properties: {} } },
+      { name: 'project.get_task_sessions', description: 'Get task sessions', inputSchema: { type: 'object', properties: { taskId: { type: 'string' } }, required: ['taskId'] } },
+      { name: 'project.get_session_task', description: 'Get session task', inputSchema: { type: 'object', properties: { sessionId: { type: 'string' } }, required: ['sessionId'] } },
+      { name: 'project.get_task_dependencies', description: 'Get task dependencies', inputSchema: { type: 'object', properties: { taskId: { type: 'string' } }, required: ['taskId'] } },
+      { name: 'project.get_blocked_tasks', description: 'Get blocked tasks', inputSchema: { type: 'object', properties: {} } },
+      // Memory Search
+      { name: 'project.search_memory', description: 'Search memory', inputSchema: { type: 'object', properties: { query: { type: 'string' }, types: { type: 'array' }, days: { type: 'number' }, limit: { type: 'number' } }, required: ['query'] } },
+      { name: 'project.search_entities', description: 'Search entities', inputSchema: { type: 'object', properties: { entity: { type: 'string' }, type: { type: 'string' } }, required: ['entity'] } },
+      { name: 'project.find_related_sessions', description: 'Find related sessions', inputSchema: { type: 'object', properties: { sessionId: { type: 'string' }, limit: { type: 'number' } }, required: ['sessionId'] } },
+      // Continuity
+      { name: 'project.get_continuity_suggestions', description: 'Get continuity suggestions', inputSchema: { type: 'object', properties: {} } },
+      { name: 'project.analyze_continuity', description: 'Analyze continuity', inputSchema: { type: 'object', properties: {} } },
+      { name: 'project.get_task_resumption_context', description: 'Get task resumption context', inputSchema: { type: 'object', properties: { taskId: { type: 'string' } }, required: ['taskId'] } },
+      { name: 'project.should_continue', description: 'Check if should continue', inputSchema: { type: 'object', properties: {} } },
+      // Learning (NEW)
+      { name: 'project.learn_sync', description: 'Manual learning sync', inputSchema: { type: 'object', properties: {} } },
+      { name: 'project.learn_import', description: 'Import from project', inputSchema: { type: 'object', properties: { sourceProject: { type: 'string' }, dataTypes: { type: 'array', items: { type: 'string' } } }, required: ['sourceProject'] } },
+      { name: 'project.learn_stats', description: 'Learning statistics', inputSchema: { type: 'object', properties: {} } },
+      { name: 'project.learn_patterns', description: 'Get success/failure patterns', inputSchema: { type: 'object', properties: { taskType: { type: 'string' } }, required: ['taskType'] } },
+      { name: 'project.learn_suggestions', description: 'Get improvement suggestions', inputSchema: { type: 'object', properties: { category: { type: 'string' }, limit: { type: 'number' } } } },
+      { name: 'project.learn_export', description: 'Export learning data', inputSchema: { type: 'object', properties: { taskType: { type: 'string' }, minConfidence: { type: 'number' } } } },
+      // Agent Awareness (NEW)
+      { name: 'project.agent_state', description: 'Get agent state', inputSchema: { type: 'object', properties: {} } },
+      { name: 'project.agent_capabilities', description: 'Get agent capabilities', inputSchema: { type: 'object', properties: {} } },
+      { name: 'project.agent_antipatterns', description: 'Get anti-patterns', inputSchema: { type: 'object', properties: {} } },
+      { name: 'project.agent_assess', description: 'Self-assess current state', inputSchema: { type: 'object', properties: { taskDescription: { type: 'string' }, recentErrors: { type: 'array', items: { type: 'string' } }, timeSpent: { type: 'number' } } } },
+      // Task Detection (NEW)
+      { name: 'project.task_detect', description: 'Detect task boundaries', inputSchema: { type: 'object', properties: {} } },
+      { name: 'project.task_complete', description: 'Mark task complete', inputSchema: { type: 'object', properties: { taskId: { type: 'string' } } } },
+      { name: 'project.task_update_pending', description: 'Update pending work', inputSchema: { type: 'object', properties: { taskId: { type: 'string' }, pendingWork: { type: 'string' } }, required: ['taskId', 'pendingWork'] } },
+      // Analytics (NEW)
+      { name: 'project.ask_stats', description: 'Q&A statistics', inputSchema: { type: 'object', properties: { period: { type: 'string', enum: ['daily', 'weekly'] } } } },
+      { name: 'project.ask_top_questions', description: 'Top asked questions', inputSchema: { type: 'object', properties: { limit: { type: 'number' } } } },
+      { name: 'project.ask_quality', description: 'Answer quality metrics', inputSchema: { type: 'object', properties: {} } },
+      // Quality (NEW)
+      { name: 'project.quality_trends', description: 'Quality trends', inputSchema: { type: 'object', properties: { days: { type: 'number' } } } },
+      { name: 'project.quality_report', description: 'Quality report', inputSchema: { type: 'object', properties: { period: { type: 'string', enum: ['daily', 'weekly'] } } } },
+      { name: 'project.quality_performance', description: 'Performance stats', inputSchema: { type: 'object', properties: {} } },
+      // Context (NEW)
+      { name: 'project.context_stats', description: 'Context engine stats', inputSchema: { type: 'object', properties: {} } },
+      { name: 'project.context_export', description: 'Export context window', inputSchema: { type: 'object', properties: {} } },
+      // Session Insights (NEW)
+      { name: 'project.session_insights', description: 'Cross-session insights', inputSchema: { type: 'object', properties: { days: { type: 'number' } } } }
     ],
-    phase: 10,
-    description: 'MCP tool metadata mirror for agent clients. Runtime schemas are served by tools/list.'
+    phase: 11,
+    description: 'MCP tool metadata - 70 tools including Learning, Agent Awareness, Task Detection, Analytics, Quality, Context'
   }, null, 2),
 };
 

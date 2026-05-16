@@ -2,7 +2,7 @@
 
 **The Shared Project Brain for AI Coding Agents**
 
-KontextMind is a comprehensive CLI tool and MCP server that provides AI coding agents with a centralized knowledge base about your project. It implements a full brain system with learning, memory, context management, and agentic capabilities.
+KontextMind is a comprehensive CLI tool and MCP server that provides AI coding agents with a centralized knowledge base about your project. It implements a full brain system with learning, memory, context management, agentic capabilities, and a 70+ endpoint HTTP API server.
 
 ---
 
@@ -15,7 +15,7 @@ KontextMind is a comprehensive CLI tool and MCP server that provides AI coding a
 5. [Brain Ask Architecture](#brain-ask-architecture)
 6. [Learning System](#learning-system)
 7. [MCP Server](#mcp-server)
-8. [Setup Scripts](#setup-scripts)
+8. [API Server](#api-server)
 9. [Architecture](#architecture)
 
 ---
@@ -156,13 +156,18 @@ kontextmind mcp --mode full-agent --transport http --port 7332
 | `kontextmind scan` | Index all project files |
 | `kontextmind index` | Extract symbols and build knowledge graph |
 | `kontextmind summarize` | Generate AI-powered summaries |
+| `kontextmind kb build` | Build Q&A knowledge base |
 
 ### Knowledge & Q&A
 
 | Command | Description |
 |---------|-------------|
 | `kontextmind ask <question>` | Ask about the project |
-| `kontextmind kb build` | Build Q&A knowledge base |
+| `kontextmind session create` | Create new chat session |
+| `kontextmind session list` | List all sessions |
+| `kontextmind session chat <id> <question>` | Chat in session |
+| `kontextmind session show <id>` | Show session details |
+| `kontextmind session delete <id>` | Delete session |
 
 ### Server & MCP
 
@@ -172,32 +177,60 @@ kontextmind mcp --mode full-agent --transport http --port 7332
 | `kontextmind mcp` | Start MCP server (stdio/http) |
 | `kontextmind daemon` | Background daemon mode |
 
-### Session Management
+### Agent & Analytics (NEW)
 
 | Command | Description |
 |---------|-------------|
-| `kontextmind session create` | Create new chat session |
-| `kontextmind session list` | List all sessions |
-| `kontextmind session chat <id> <question>` | Chat in session |
-| `kontextmind session show <id>` | Show session details |
-| `kontextmind session delete <id>` | Delete session |
+| `kontextmind agent` | Agent awareness mode |
+| `kontextmind analytics` | Q&A statistics |
+| `kontextmind insights` | Cross-session insights |
+| `kontextmind search <query>` | Search codebase |
+| `kontextmind task list` | List tasks |
+| `kontextmind task complete` | Mark task complete |
+
+### Learning Commands
+
+| Command | Description |
+|---------|-------------|
+| `kontextmind learn sync` | Trigger learning sync |
+| `kontextmind learn stats` | Learning statistics |
+| `kontextmind learn patterns` | Success/failure patterns |
+| `kontextmind learn export` | Export learning data |
+| `kontextmind learn import` | Import learning data |
+
+### Quality Commands
+
+| Command | Description |
+|---------|-------------|
+| `kontextmind quality report` | Quality report |
+| `kontextmind quality trends` | Quality trends |
 
 ### Dataset & Export
 
 | Command | Description |
 |---------|-------------|
-| `kontextmind dataset export` | Export training dataset |
-| `kontextmind dataset stats` | Show dataset statistics |
+| `kontextmind dataset export` | Export Q&A training dataset |
+| `kontextmind dataset export-summaries` | Export code summaries as training data |
+| `kontextmind dataset stats` | Show Q&A dataset statistics |
+| `kontextmind dataset stats-summaries` | Show summary dataset statistics |
 | `kontextmind dataset validate` | Validate quality |
+| `kontextmind dataset version list` | List dataset versions |
 
-### Other
+### Security & Audit
 
 | Command | Description |
 |---------|-------------|
 | `kontextmind secrets` | Scan for secrets in code |
 | `kontextmind audit` | Show audit summary |
 | `kontextmind obsidian` | Export to Obsidian |
-| `kontextmind config` | Manage configuration |
+
+### Configuration
+
+| Command | Description |
+|---------|-------------|
+| `kontextmind config --action show` | Show config |
+| `kontextmind config --action list` | List providers |
+| `kontextmind config --action add --name x --type y --apiKey z` | Add provider |
 
 ---
 
@@ -358,40 +391,92 @@ kontextmind learn --suggest
 
 ## MCP Server
 
-### Available Tools (44 Total)
+### Available Tools (70+ Total)
 
-**Project Tools:**
+**Status & Search:**
 - `project.status` - Get project status
 - `project.search` - Search files/symbols
-- `project.ask_readonly` - Ask questions
-- `project.check_provider` - Verify LLM provider
+- `project.check_provider` - Check LLM provider
+- `project.search_entities` - Search entities
 
 **Summary Tools:**
 - `project.get_file_summary` - Get file summary
 - `project.get_function_summary` - Get function summary
 - `project.get_module_summary` - Get module summary
+- `project.get_api_summary` - Get API summary
+- `project.get_decision_summary` - Get decision summary
+- `project.get_blocker_summary` - Get blocker summary
+- `project.get_symbol_summary` - Get symbol summary
+- `project.get_all_summaries` - Get all summaries
 - `project.refresh_summary` - Refresh stale summaries
 - `project.refresh_all_summaries` - Refresh all summaries
 
 **Session/Task Tools:**
+- `project.get_session_index` - List all sessions
+- `project.get_session_stats` - Session statistics
+- `project.search_sessions` - Search sessions
+- `project.get_last_session` - Last session details
 - `project.write_session_summary` - Write session summary
-- `project.write_task_summary` - Write task summary
 - `project.get_current_task` - Get active task
-- `project.should_continue` - Check if should continue
-- `project.get_continuity_suggestions` - Get suggestions
+- `project.get_recent_tasks` - Recent tasks
+- `project.resume_task` - Resume task
+- `project.write_task_summary` - Write task summary
+- `project.task_detect` - Detect task boundaries
+- `project.task_complete` - Mark task complete
+- `project.task_update_pending` - Update pending work
 
 **Handoff Tools:**
 - `project.create_handoff` - Create handoff document
+- `project.get_task_resumption_context` - Resume context
 
 **Memory Search:**
-- `project.search_memory` - Search sessions/tasks
-- `project.search_sessions` - Search by keyword
-- `project.get_session_index` - View all sessions
+- `project.search_memory` - Search sessions/tasks/handoffs
+- `project.get_recent_files` - Recent files
+- `project.find_related_sessions` - Find related sessions
 
 **Dependencies:**
 - `project.find_dependencies` - Find imports
 - `project.find_callers` - Find function callers
 - `project.find_related_files` - Find related files
+- `project.find_blockers` - Find blockers
+
+**Learning:**
+- `project.learn_sync` - Trigger learning sync
+- `project.learn_stats` - Learning statistics
+- `project.learn_patterns` - Success/failure patterns
+- `project.learn_suggestions` - Improvement suggestions
+- `project.learn_import` - Import from other project
+- `project.learn_export` - Export learning data
+
+**Agent Awareness:**
+- `project.agent_state` - Current agent state
+- `project.agent_capabilities` - Capability profile
+- `project.agent_antipatterns` - Anti-patterns to avoid
+- `project.agent_assess` - Self-assess current state
+
+**Quality & Analytics:**
+- `project.quality_trends` - Quality trends
+- `project.quality_report` - Quality report
+- `project.quality_performance` - Performance stats
+- `project.ask_stats` - Q&A statistics
+- `project.ask_top_questions` - Most asked questions
+- `project.ask_quality` - Answer quality metrics
+
+**Context & Insights:**
+- `project.context_stats` - Context engine stats
+- `project.context_export` - Export context
+- `project.session_insights` - Cross-session insights
+- `project.get_timeline` - Activity timeline
+- `project.get_recent_activity` - Recent activity
+
+**Continuity:**
+- `project.should_continue` - Check pending work
+- `project.get_continuity_suggestions` - Get suggestions
+- `project.analyze_continuity` - Analyze continuity
+- `project.get_blocked_tasks` - Get blocked tasks
+- `project.get_task_dependencies` - Task dependencies
+- `project.add_task_dependency` - Add dependency
+- `project.get_task_sessions` - Sessions for task
 
 **Security:**
 - `project.security_scan` - Scan for security issues
@@ -414,6 +499,88 @@ kontextmind mcp --mode full-agent --transport http --port 7332
 | `chatbot-readonly` | Chatbot mode, read-only |
 | `suggest` | Suggest changes, no apply |
 | `edit-with-approval` | Edit with approval |
+| `full-agent` | Full agent capabilities |
+
+---
+
+## API Server
+
+### Starting the Server
+
+```bash
+# Start API server on port 7331
+kontextmind serve
+
+# Start with custom port
+kontextmind serve --port 8080
+
+# Start MCP server with full-agent mode
+kontextmind mcp --mode full-agent
+```
+
+### Authentication
+
+```bash
+# Login with username/password
+curl -X POST http://localhost:7331/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"secret"}'
+
+# Get access token
+curl -X POST http://localhost:7331/auth/token \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin","password":"secret","grant_type":"password"}'
+
+# Verify token
+curl -X POST http://localhost:7331/auth/verify \
+  -H "Authorization: Bearer <token>"
+```
+
+### Core Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/health` | GET | Health check |
+| `/projects` | GET | List projects |
+| `/projects` | POST | Create project |
+| `/projects/:id` | GET | Get project |
+| `/conversations` | GET | List conversations |
+| `/conversations` | POST | Create conversation |
+| `/conversations/:id` | POST | Send message |
+| `/projects/:id/pipeline/status` | GET | Pipeline status |
+| `/projects/:id/pipeline/stream` | GET | SSE stream |
+
+### Learning Endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/projects/:id/learning/config` | GET/PUT | Learning config |
+| `/projects/:id/learning/stats` | GET | Learning statistics |
+
+### Request Example
+
+```bash
+# Create conversation with bearer token
+curl -X POST http://localhost:7331/conversations \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"My Session","projectId":"<project-id>"}'
+
+# Send message
+curl -X POST http://localhost:7331/conversations/<id>/messages \
+  -H "Authorization: Bearer <token>" \
+  -H "Content-Type: application/json" \
+  -d '{"content":"What does this project do?"}'
+```
+
+### API Server Modes
+
+| Mode | Description |
+|------|-------------|
+| `readonly` | Read-only access (default) |
+| `chatbot-readonly` | Chatbot Q&A mode |
+| `suggest` | Suggestions enabled |
+| `edit-with-approval` | Write with approval |
 | `full-agent` | Full agent capabilities |
 
 ---
@@ -630,14 +797,41 @@ kontextmind/
 | Task | Command |
 |------|---------|
 | Initialize | `kontextmind init --mode full-agent --yes` |
+| Interactive setup | `kontextmind setup` |
 | Scan files | `kontextmind scan` |
 | Index symbols | `kontextmind index` |
 | Summarize | `kontextmind summarize` |
 | Build KB | `kontextmind kb build` |
 | Ask question | `kontextmind ask "your question?"` |
+| Start API server | `kontextmind serve --port 7331` |
 | Start MCP | `kontextmind mcp --mode full-agent` |
-| Interactive setup | `kontextmind setup` |
 | Check status | `kontextmind status` |
+| Agent mode | `kontextmind agent` |
+| Analytics | `kontextmind analytics` |
+| Insights | `kontextmind insights` |
+| Quality report | `kontextmind quality report` |
+| Learn sync | `kontextmind learn sync` |
+
+## API Server Quick Reference
+
+| Task | Command |
+|------|---------|
+| Health check | `curl http://localhost:7331/health` |
+| Login | `curl -X POST http://localhost:7331/auth/login -H "Content-Type: application/json" -d '{"username":"admin","password":"secret"}'` |
+| Create project | `curl -X POST http://localhost:7331/projects -H "Authorization: Bearer <token>" -H "Content-Type: application/json" -d '{"name":"my-project"}'` |
+| Ask question | `curl -X POST http://localhost:7331/ask -H "Authorization: Bearer <token>" -H "Content-Type: application/json" -d '{"question":"What does this project do?"}'` |
+
+---
+
+## Key Statistics
+
+| Metric | Value |
+|--------|-------|
+| CLI Commands | 30+ |
+| MCP Tools | 70+ |
+| API Endpoints | 70+ |
+| Documentation Files | 9 |
+| Feature Areas | 33 |
 
 ---
 

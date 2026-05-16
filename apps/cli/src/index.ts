@@ -31,7 +31,59 @@ import {
   datasetStatsCommand,
   datasetVersionCommand,
   datasetValidateCommand,
+  datasetExportSummariesCommand,
+  datasetStatsSummariesCommand,
 } from './commands/dataset.js';
+import {
+  learnSyncCommand,
+  learnStatsCommand,
+  learnPatternsCommand,
+  learnSuggestionsCommand,
+  learnImportCommand,
+  learnExportCommand,
+} from './commands/learn.js';
+import {
+  agentStateCommand,
+  agentCapabilitiesCommand,
+  agentAntipatternsCommand,
+  agentAssessCommand,
+  agentUpdateStateCommand,
+} from './commands/agent.js';
+import {
+  taskDetectCommand,
+  taskCompleteCommand,
+  taskUpdateCommand,
+  taskListCommand,
+  taskShowCommand,
+  taskCreateCommand,
+} from './commands/task.js';
+import {
+  analyticsStatsCommand,
+  analyticsTopQuestionsCommand,
+  analyticsQualityCommand,
+  analyticsIntentDistributionCommand,
+} from './commands/analytics.js';
+import {
+  qualityTrendsCommand,
+  qualityReportCommand,
+  qualityPerformanceCommand,
+  qualityScoreCommand,
+} from './commands/quality.js';
+import {
+  insightsSessionCommand,
+  insightsContextCommand,
+  insightsExportCommand,
+  insightsTimelineCommand,
+  insightsRecentCommand,
+  insightsContinuityCommand,
+} from './commands/insights.js';
+import {
+  searchCommand,
+  searchMemoryCommand,
+  searchEntitiesCommand,
+  searchSessionsCommand,
+  searchFileCommand,
+} from './commands/search.js';
 
 const program = new Command();
 
@@ -265,11 +317,325 @@ program
       .option('--output <path>', 'Output file path')
       .option('--json', 'Output as JSON')
       .action((action, options) => datasetVersionCommand(action, options))
+  )
+  .addCommand(
+    new Command('export-summaries')
+      .description('Export code summaries as training data')
+      .option('--format <format>', 'Output format: jsonl, json, sharegpt', 'jsonl')
+      .option('--output <path>', 'Output file path')
+      .option('--min-confidence <n>', 'Minimum confidence threshold', '0.3')
+      .option('--types <types>', 'Comma-separated types: file,function,module,api,decision')
+      .option('--json', 'Output as JSON')
+      .action((options) => datasetExportSummariesCommand(options))
+  )
+  .addCommand(
+    new Command('stats-summaries')
+      .description('Show summary dataset statistics')
+      .option('--json', 'Output as JSON')
+      .action((options) => datasetStatsSummariesCommand(options))
   );
 
-// Placeholder for future commands
-const futureCommands = ['handoff'];
-for (const cmd of futureCommands) {
+// ====== NEW CLI COMMANDS (Phase 11) ======
+
+// Learn subcommands
+program
+  .command('learn')
+  .description('Learning and adaptation tools')
+  .addCommand(
+    new Command('sync')
+      .description('Trigger manual learning sync')
+      .action(learnSyncCommand)
+  )
+  .addCommand(
+    new Command('stats')
+      .description('Get learning statistics')
+      .action(learnStatsCommand)
+  )
+  .addCommand(
+    new Command('patterns')
+      .description('Get success/failure patterns')
+      .argument('[taskType]', 'Filter by task type (e.g., code_write, debug)')
+      .option('--json', 'Output as JSON')
+      .action((taskType, options) => learnPatternsCommand(taskType, options))
+  )
+  .addCommand(
+    new Command('suggestions')
+      .description('Get improvement suggestions')
+      .option('--limit <n>', 'Maximum suggestions', '10')
+      .option('--category <cat>', 'Filter by category')
+      .option('--json', 'Output as JSON')
+      .action((options) => learnSuggestionsCommand(options))
+  )
+  .addCommand(
+    new Command('import')
+      .description('Import learning from another project')
+      .argument('<sourceProject>', 'Source project path')
+      .option('--data-types <types>', 'Data types to import')
+      .action((sourceProject, options) => learnImportCommand(sourceProject, options))
+  )
+  .addCommand(
+    new Command('export')
+      .description('Export learning data for training')
+      .option('--task-type <type>', 'Filter by task type')
+      .option('--min-confidence <n>', 'Minimum confidence', '0.5')
+      .option('--output <path>', 'Output file path')
+      .option('--json', 'Output as JSON')
+      .action((options) => learnExportCommand(options))
+  );
+
+// Agent subcommands
+program
+  .command('agent')
+  .description('Agent self-awareness tools')
+  .addCommand(
+    new Command('state')
+      .description('Get current agent state')
+      .action(agentStateCommand)
+  )
+  .addCommand(
+    new Command('capabilities')
+      .description('Get agent capability profile')
+      .action(agentCapabilitiesCommand)
+  )
+  .addCommand(
+    new Command('antipatterns')
+      .description('Get anti-patterns to avoid')
+      .action(agentAntipatternsCommand)
+  )
+  .addCommand(
+    new Command('assess')
+      .description('Self-assess current state')
+      .argument('[taskDescription]', 'Task description')
+      .option('--time <ms>', 'Time spent in milliseconds')
+      .option('--recent-errors <errors>', 'Comma-separated recent errors')
+      .action((taskDescription, options) => agentAssessCommand(taskDescription, options))
+  )
+  .addCommand(
+    new Command('update-state')
+      .description('Update agent state')
+      .option('--task <task>', 'Set current task')
+      .option('--mode <mode>', 'Set mode')
+      .option('--energy <level>', 'Set energy level')
+      .option('--add-goal <goal>', 'Add a goal')
+      .option('--add-blocker <blocker>', 'Add a blocker')
+      .option('--clear-blockers', 'Clear all blockers')
+      .action((options) => agentUpdateStateCommand(options))
+  );
+
+// Task subcommands
+program
+  .command('task')
+  .description('Task management tools')
+  .addCommand(
+    new Command('detect')
+      .description('Detect current task boundaries')
+      .action(taskDetectCommand)
+  )
+  .addCommand(
+    new Command('complete')
+      .description('Mark task as complete')
+      .argument('[taskId]', 'Task ID')
+      .action((taskId, options) => taskCompleteCommand(taskId, options))
+  )
+  .addCommand(
+    new Command('update')
+      .description('Update pending work for a task')
+      .argument('[taskId]', 'Task ID')
+      .option('--pending <work>', 'Pending work description')
+      .action((taskId, options) => taskUpdateCommand(taskId, options))
+  )
+  .addCommand(
+    new Command('list')
+      .description('List all tasks')
+      .option('--limit <n>', 'Maximum tasks', '20')
+      .option('--status <status>', 'Filter by status')
+      .action((options) => taskListCommand(options))
+  )
+  .addCommand(
+    new Command('show')
+      .description('Show task details')
+      .argument('[taskId]', 'Task ID')
+      .action((taskId) => taskShowCommand(taskId))
+  )
+  .addCommand(
+    new Command('create')
+      .description('Create a new task')
+      .argument('<title>', 'Task title')
+      .option('--goal <goal>', 'Task goal')
+      .action((title, options) => taskCreateCommand(title, options))
+  );
+
+// Analytics subcommands
+program
+  .command('analytics')
+  .description('Q&A and analytics tools')
+  .addCommand(
+    new Command('stats')
+      .description('Get Q&A statistics')
+      .option('--weekly', 'Show weekly instead of daily')
+      .option('--json', 'Output as JSON')
+      .action((options) => analyticsStatsCommand(options))
+  )
+  .addCommand(
+    new Command('top-questions')
+      .description('List most asked questions')
+      .option('--limit <n>', 'Maximum questions', '10')
+      .option('--json', 'Output as JSON')
+      .action((options) => analyticsTopQuestionsCommand(options))
+  )
+  .addCommand(
+    new Command('quality')
+      .description('Get answer quality metrics')
+      .option('--json', 'Output as JSON')
+      .action((options) => analyticsQualityCommand(options))
+  )
+  .addCommand(
+    new Command('intent-distribution')
+      .description('Get intent distribution')
+      .option('--weekly', 'Show weekly instead of daily')
+      .option('--json', 'Output as JSON')
+      .action((options) => analyticsIntentDistributionCommand(options))
+  );
+
+// Quality subcommands
+program
+  .command('quality')
+  .description('Quality tracking and reporting')
+  .addCommand(
+    new Command('trends')
+      .description('Get quality trends')
+      .option('--days <n>', 'Number of days', '7')
+      .option('--json', 'Output as JSON')
+      .action((options) => qualityTrendsCommand(options))
+  )
+  .addCommand(
+    new Command('report')
+      .description('Generate quality report')
+      .option('--period <period>', 'Period: daily, weekly', 'daily')
+      .option('--json', 'Output as JSON')
+      .action((options) => qualityReportCommand(options))
+  )
+  .addCommand(
+    new Command('performance')
+      .description('Get performance statistics')
+      .option('--json', 'Output as JSON')
+      .action((options) => qualityPerformanceCommand(options))
+  )
+  .addCommand(
+    new Command('score')
+      .description('Get overall quality score')
+      .option('--json', 'Output as JSON')
+      .action((options) => qualityScoreCommand(options))
+  );
+
+// Insights subcommands
+program
+  .command('insights')
+  .description('Context and session insights')
+  .addCommand(
+    new Command('session')
+      .description('Get cross-session insights')
+      .option('--days <n>', 'Number of days', '30')
+      .option('--json', 'Output as JSON')
+      .action((options) => insightsSessionCommand(options))
+  )
+  .addCommand(
+    new Command('context')
+      .description('Get context engine stats')
+      .option('--json', 'Output as JSON')
+      .action((options) => insightsContextCommand(options))
+  )
+  .addCommand(
+    new Command('export')
+      .description('Export current context')
+      .option('--output <path>', 'Output file path')
+      .option('--json', 'Output as JSON')
+      .action((options) => insightsExportCommand(options))
+  )
+  .addCommand(
+    new Command('timeline')
+      .description('Get activity timeline')
+      .option('--hours <n>', 'Number of hours', '72')
+      .option('--format <fmt>', 'Format: summary, detailed', 'summary')
+      .option('--json', 'Output as JSON')
+      .action((options) => insightsTimelineCommand(options))
+  )
+  .addCommand(
+    new Command('recent')
+      .description('Get recent activity summary')
+      .option('--days <n>', 'Number of days', '3')
+      .option('--json', 'Output as JSON')
+      .action((options) => insightsRecentCommand(options))
+  )
+  .addCommand(
+    new Command('continuity')
+      .description('Check for work to continue from previous sessions')
+      .option('--json', 'Output as JSON')
+      .action((options) => insightsContinuityCommand(options))
+  );
+
+// Search subcommands
+const searchCmd = program
+  .command('search')
+  .description('Search files, symbols, and content')
+  .argument('[query]', 'Search query')
+  .option('--type <type>', 'Search type: file, symbol, content, all', 'all')
+  .option('--limit <n>', 'Maximum results', '20')
+  .option('--json', 'Output as JSON')
+  .action((query, options) => searchCommand(query, options));
+
+searchCmd
+  .addCommand(
+    new Command('memory')
+      .description('Search sessions, tasks, handoffs')
+      .argument('<query>', 'Search query')
+      .option('--types <types>', 'Types to search')
+      .option('--days <n>', 'Days to look back', '30')
+      .option('--limit <n>', 'Maximum results', '20')
+      .option('--json', 'Output as JSON')
+      .action((query, options) => searchMemoryCommand(query, options))
+  );
+searchCmd
+  .addCommand(
+    new Command('entities')
+      .description('Search files, functions, components')
+      .argument('<name>', 'Entity name')
+      .option('--type <type>', 'Entity type')
+      .option('--limit <n>', 'Maximum results', '20')
+      .option('--json', 'Output as JSON')
+      .action((entity, options) => searchEntitiesCommand(entity, options))
+  );
+searchCmd
+  .addCommand(
+    new Command('sessions')
+      .description('Search historical sessions')
+      .argument('<query>', 'Search query')
+      .option('--limit <n>', 'Maximum results', '10')
+      .option('--json', 'Output as JSON')
+      .action((query, options) => searchSessionsCommand(query, options))
+  );
+searchCmd
+  .addCommand(
+    new Command('file')
+      .description('Get file content')
+      .argument('[filename]', 'Filename')
+      .option('--lines <n>', 'Number of lines', '100')
+      .action((filename, options) => searchFileCommand(filename, options))
+  );
+
+// Ask stats command
+import { askStatsCommand } from './commands/ask-stats.js';
+program
+  .command('ask-stats')
+  .description('Q&A cache statistics')
+  .argument('<action>', 'Action: stats, top-questions, coverage')
+  .option('--weekly', 'Show weekly instead of daily')
+  .option('--limit <n>', 'Maximum results', '10')
+  .action((action, options) => askStatsCommand(action, options));
+
+// Placeholder commands
+const legacyFutureCommands = ['handoff'];
+for (const cmd of legacyFutureCommands) {
   program
     .command(cmd)
     .action(() => placeholderCommand(cmd));
