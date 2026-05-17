@@ -1,0 +1,104 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: registry.kraftstack.in
+  IMAGE_NAME: kontextmind
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Get commit SHA
+        id: sha
+        run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 8
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build project
+        run: pnpm build
+
+      - name: Login to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          dockerfile: Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.sha.outputs.sha }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Output SHA
+        run: echo "image_sha=${{ steps.sha.outputs.sha }}" >> $GITHUB_OUTPUT
+
+  update-gitops:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout GitOps repo
+        uses: actions/checkout@v4
+        with:
+          repository: nikzdevz/kraftstack-gitops
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+
+      - name: Get commit SHA
+        id: sha
+        run: echo "sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
+      - name: Update image
+        run: |
+          cd gitops
+          sed -i 's|image: .*kontextmind:.*|image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.build.outputs.image_sha }}|g' \
+            kubernetes/05-apps/kontextmind/deployment.yml
+
+      - name: Commit and push
+        run: |
+          cd gitops
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add .
+          git commit -m "Build: KontextMind@${{ steps.sha.outputs.sha }}"
+          git push
+
+  deploy:
+    needs: update-gitops
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Argo CD sync
+        run: |
+          curl -X POST https://argocd.kraftstack.in/api/v1/applications/kontextmind/sync \
+            -H "Authorization: Bearer ${{ secrets.ARGOCD_TOKEN }}" \
+            -H "Content-Type: application/json"
